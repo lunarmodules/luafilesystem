@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.6 2004/10/27 18:04:50 tomas Exp $
+** $Id: lfs.c,v 1.7 2004/11/01 08:57:56 tomas Exp $
 */
 
 #include <errno.h>
@@ -233,7 +233,7 @@ static int make_dir (lua_State *L) {
 	fail =  mkdir (path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
 	                     S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
 #endif
-	lua_pushboolean (L, fail);
+	lua_pushboolean (L, !fail);
 	umask (oldmask);
 	return 1;
 }
