@@ -1,133 +1,132 @@
-<! See Copyright Notice in license.html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-
 <head>
+<meta name="generator" content="HTML Tidy, see www.w3.org">
 <title>LuaFileSystem</title>
 <style type="text/css">
 ul { list-style-type: disc };
 </style>
 </head>
-
 <body bgcolor="#FFFFFF">
-
 <hr>
-
 <center>
-<table border=0 cellspacing=2 cellpadding=2>
-<tr><td align=center><a href="http://www.keplerproject.org/luafilesystem">
-<img border=0 alt="LuaFileSystem logo" src="luafilesystem.png"></a>
-<tr><td align=center><big><b>LuaFileSystem Reference Manual</b></big>
-<tr><td align=center valign=top>File system library for the 
-<a href="http://www.lua.org">Lua</a>
-programming language
+<table border="0" cellspacing="2" cellpadding="2">
+<tr>
+<td align="center"><a href=
+"http://www.keplerproject.org/luafilesystem"><img border="0" alt=
+"LuaFileSystem logo" src="luafilesystem.png"></a> </td>
+</tr>
+
+<tr>
+<td align="center"><big><b>LuaFileSystem Reference Manual</b></big>
+</td>
+</tr>
+
+<tr>
+<td align="center" valign="top">File system library for the <a
+href="http://www.lua.org">Lua</a> programming language</td>
+</tr>
 </table>
 </center>
-<p>
 
-<center><small>
-<a href="index.html">home</a> &middot;
-<a href="#introduction">introduction</a> &middot;
-<a href="#reference">reference</a> &middot;
-<a href="#example">example</a>
-</small></center>
-<p>
+<center><small><a href="index.html">home</a> &middot; <a href=
+"#introduction">introduction</a> &middot; <a href=
+"#reference">reference</a> &middot; <a href=
+"#example">example</a></small></center>
 
 <hr>
+<a name="introduction"></a> 
 
-<a name="introduction"></a>
 <h2>Introduction</h2>
 
-<p>
-LuaFileSystem is a <a href="http://www.lua.org">Lua</a> library
-developed to complement the set of functions related to file systems offered
-by the standard Lua distribution.
-<p>
-LuaFileSystem is free software and uses the same
-<a href="license.html">license</a>
-as Lua 5.0.
-</p>
+<p>LuaFileSystem is a <a href="http://www.lua.org">Lua</a> library
+developed to complement the set of functions related to file
+systems offered by the standard Lua distribution.</p>
 
+<p>LuaFileSystem is free software and uses the same <a href=
+"license.html">license</a> as Lua 5.0.</p>
 
-<a name="reference"></a>
+<a name="reference"></a> 
+
 <h2>Reference</h2>
 
-<p>
-LuaFileSystem offers the following functions:
+<p>LuaFileSystem offers the following functions:</p>
+
 <ul>
-  <a name="attributes"></a>
-  <li> <b><tt>lfs.attributes (filepath)</tt></b> <br>
-    Obtains the file attributes.
-    The attributes are:
-    <ul>
-    <i>dev</i>, device inode resides on;<br>
-    <i>ino</i>, inode's number;<br>
-    <i>mode</i>, inode protection mode (<small>values could be
-      <tt>file</tt>, <tt>directory</tt>, <tt>link</tt>, <tt>socket</tt>, <tt>named pipe</tt>, <tt>char device</tt>, <tt>block device</tt> or <tt>other</tt></small>);<br>
-    <i>nlink</i>, number of hard links to the file;<br>
-    <i>uid</i>, user-id of owner;<br>
-    <i>gid</i>, group-id of owner;<br>
-    <i>rdev</i>, device type, for special file inode;<br>
-    <i>access</i>, time of last access;<br>
-    <i>modification</i>, time of last data modification;<br>
-    <i>change</i>, time of last file status change;<br>
-    <i>size</i>, file size, in bytes;<br>
-    <i>blocks</i>, block allocated for file; (Unix only)<br>
-    <i>blksize</i>, optimal file system I/O blocksize; (Unix only)<br>
-    </ul>
-    Returns a table with file attributes described above.
+<li style="list-style: none"><a name="attributes"></a></li>
 
-  <a name="chdir"></a>
-  <li> <b><tt>lfs.chdir (path)</tt></b> <br>
-    Changes the current working directory to the given <tt>path</tt>.<br>
-    Returns <tt>true</tt> in case of success or <tt>nil</tt> plus an error
-    string.
+<li><b><tt>lfs.attributes (filepath)</tt></b><br>
+ Obtains the file attributes. The attributes are: 
 
-  <a name="getcwd"></a>
-  <li> <b><tt>lfs.currentdir ()</tt></b> <br>
-    Returns a string with the current working directory or
-    <code>nil</code> plus an error string.
+<div style="margin-left: 2em"><i>dev</i>, device inode resides
+on;<br>
+ <i>ino</i>, inode's number;<br>
+ <i>mode</i>, inode protection mode (<small>values could be
+<tt>file</tt>, <tt>directory</tt>, <tt>link</tt>, <tt>socket</tt>,
+<tt>named pipe</tt>, <tt>char device</tt>, <tt>block device</tt> or
+<tt>other</tt></small>);<br>
+ <i>nlink</i>, number of hard links to the file;<br>
+ <i>uid</i>, user-id of owner;<br>
+ <i>gid</i>, group-id of owner;<br>
+ <i>rdev</i>, device type, for special file inode;<br>
+ <i>access</i>, time of last access;<br>
+ <i>modification</i>, time of last data modification;<br>
+ <i>change</i>, time of last file status change;<br>
+ <i>size</i>, file size, in bytes;<br>
+ <i>blocks</i>, block allocated for file; (Unix only)<br>
+ <i>blksize</i>, optimal file system I/O blocksize; (Unix only)<br>
+</div>
 
-  <a name="dir"></a>
-  <li> <b><tt>lfs.dir (path)</tt></b> <br>
-    Lua iterator over the entries of a given directory.
-    Raises an error if <tt>path</tt> is not a directory.
+Returns a table with file attributes described above. <a name=
+"chdir"></a></li>
 
-  <a name="lock"></a>
-  <li> <b><tt>lfs.lock (filehandle, mode[, start[, length]])</tt></b> <br>
-    Locks a file or a part of it.
-    This function works on <em>open files</em>;
-    the file handle should be specified as the first argument.
-    The string <code>mode</code> could be either <code>r</code> (for a
-    read/shared lock) or <code>w</code> (for a write/exclusive lock).
-    The optional arguments <code>start</code> and <code>length</code> can be
-    used to specify a starting point and its length;
-    both should be numbers.<br>
-    Returns a boolean indicating if the operation was successful;
-    in case of error, it returns <code>false</code> plus an error string.
+<li><b><tt>lfs.chdir (path)</tt></b><br>
+ Changes the current working directory to the given
+<tt>path</tt>.<br>
+ Returns <tt>true</tt> in case of success or <tt>nil</tt> plus an
+error string. <a name="getcwd"></a></li>
 
-  <a name="mkdir"></a>
-  <li> <b><tt>lfs.mkdir (dirname)</tt></b> <br>
-    Creates a new directory.
-    The argument is the name of the new directory.<br>
-    Returns a boolean indicating whether the operation succeeds or not
-    (in this case, an error string is returned too).
+<li><b><tt>lfs.currentdir ()</tt></b><br>
+ Returns a string with the current working directory or
+<code>nil</code> plus an error string. <a name="dir"></a></li>
 
-  <a name="unlock"></a>
-  <li> <b><tt>lfs.unlock (filehandle[, start[, length]])</tt></b> <br>
-    Unlocks a file or a part of it.
-    This function works on <em>open files</em>;
-    the file handle should be specified as the first argument.
-    The optional arguments <code>start</code> and <code>length</code> can be
-    used to specify a starting point and its length;
-    both should be numbers.<br>
-    Returns a boolean indicating if the operation was successful;
-    in case of error, it returns <code>false</code> plus a string describing the
-    error.
+<li><b><tt>lfs.dir (path)</tt></b><br>
+ Lua iterator over the entries of a given directory. Raises an
+error if <tt>path</tt> is not a directory. <a name="lock"></a></li>
 
+<li><b><tt>lfs.lock (filehandle, mode[, start[,
+length]])</tt></b><br>
+ Locks a file or a part of it. This function works on <em>open
+files</em>; the file handle should be specified as the first
+argument. The string <code>mode</code> could be either
+<code>r</code> (for a read/shared lock) or <code>w</code> (for a
+write/exclusive lock). The optional arguments <code>start</code>
+and <code>length</code> can be used to specify a starting point and
+its length; both should be numbers.<br>
+ Returns a boolean indicating if the operation was successful; in
+case of error, it returns <code>false</code> plus an error string.
+<a name="mkdir"></a></li>
+
+<li><b><tt>lfs.mkdir (dirname)</tt></b><br>
+ Creates a new directory. The argument is the name of the new
+directory.<br>
+ Returns a boolean indicating whether the operation succeeds or not
+(in this case, an error string is returned too). <a name=
+"unlock"></a></li>
+
+<li><b><tt>lfs.unlock (filehandle[, start[, length]])</tt></b><br>
+ Unlocks a file or a part of it. This function works on <em>open
+files</em>; the file handle should be specified as the first
+argument. The optional arguments <code>start</code> and
+<code>length</code> can be used to specify a starting point and its
+length; both should be numbers.<br>
+ Returns a boolean indicating if the operation was successful; in
+case of error, it returns <code>false</code> plus a string
+describing the error.</li>
 </ul>
 
+<a name="example"></a> 
 
-<a name="example"></a>
 <h2>Example</h2>
 
 <pre>
@@ -154,39 +153,45 @@ end
 attrdir (".")
 </pre>
 
+<a name="contents"></a> 
 
-<a name="contents"></a>
 <h2>Contents</h2>
-<p>
+
 <ul>
-  <li> <a href="#introduction">Introduction</a>
-  <li> <a href="#reference">Reference</a>
-    <ul>
-      <li> <a href="#chdir">chdir</a>
-      <li> <a href="#currentdir">currentdir</a>
-      <li> <a href="#dir">dir</a>
-      <li> <a href="#lock">lock</a>
-      <li> <a href="#mkdir">mkdir</a>
-      <li> <a href="#unlock">unlock</a>
-    </ul>
-  <li> <a href="#examples">Examples</a>
+<li><a href="#introduction">Introduction</a></li>
+
+<li><a href="#reference">Reference</a> 
+
+<ul>
+<li><a href="#chdir">chdir</a></li>
+
+<li><a href="#currentdir">currentdir</a></li>
+
+<li><a href="#dir">dir</a></li>
+
+<li><a href="#lock">lock</a></li>
+
+<li><a href="#mkdir">mkdir</a></li>
+
+<li><a href="#unlock">unlock</a></li>
 </ul>
-</p>
+</li>
 
+<li><a href="#examples">Examples</a></li>
+</ul>
 
-<p>
-<center><small>
-<a href="index.html">home</a> &middot;
-<a href="#introduction">introduction</a> &middot;
-<a href="#reference">reference</a> &middot;
-<a href="#example">example</a>
-</small></center>
-<p>
+<br>
+<br>
+ 
+
+<center><small><a href="index.html">home</a> &middot; <a href=
+"#introduction">introduction</a> &middot; <a href=
+"#reference">reference</a> &middot; <a href=
+"#example">example</a></small></center>
 
 <hr>
-<small>
-$Id: manual.html,v 1.7 2004/11/10 14:09:45 tuler Exp $
-</small>
-
+<small>$Id: manual.html,v 1.7 2004/11/10 14:09:45 tuler Exp
+$</small>
 </body>
-</html> 
+</html>
+
