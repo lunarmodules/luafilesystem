@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.7 2004/10/15 10:45:18 tomas Exp $
+# $Id: Makefile,v 1.8 2004/10/27 18:40:31 tomas Exp $
 
 T= lfs
 
@@ -37,4 +37,4 @@ dist: dist_dir
 
 dist_dir:
 	mkdir -p $(DIST_DIR)
-	cp config $(SRCS) $T.h $T.def Makefile *html $(DIST_DIR)
+	cp config $(SRCS) $T.h $T.def Makefile *html luafilesystem.png $(DIST_DIR)
