@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.8 2004/11/01 15:27:13 tomas Exp $
+** $Id: lfs.c,v 1.9 2004/11/03 10:11:18 tomas Exp $
 */
 
 #include <errno.h>
@@ -444,6 +444,25 @@ static int file_info (lua_State *L) {
 }
 
 
+/*
+** Assumes the table is on top of the stack.
+*/
+static void set_info (lua_State *L) {
+	lua_pushliteral (L, "_COPYRIGHT");
+	lua_pushliteral (L, "Copyright (C) 2004 Kepler Project");
+	lua_settable (L, -3);
+	lua_pushliteral (L, "_DESCRIPTION");
+	lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
+	lua_settable (L, -3);
+	lua_pushliteral (L, "_NAME");
+	lua_pushliteral (L, "LuaFileSystem");
+	lua_settable (L, -3);
+	lua_pushliteral (L, "_VERSION");
+	lua_pushliteral (L, "1.0a");
+	lua_settable (L, -3);
+}
+
+
 static const struct luaL_reg fslib[] = {
 	{"attributes", file_info},
 	{"chdir", change_dir},
@@ -458,5 +477,6 @@ static const struct luaL_reg fslib[] = {
 int luaopen_lfs (lua_State *L) {
 	dir_create_meta (L);
 	luaL_openlib (L, "lfs", fslib, 0);
+	set_info (L);
 	return 1;
 }
