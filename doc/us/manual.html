@@ -62,6 +62,8 @@ LuaFileSystem offers the following functions:
   <li> <b><tt>lfs.chdir (path)</tt></b> <br>
     Changes the current
     working directory to the given <tt>path</tt>.
+    Returns <tt>true</tt> in case of success or <tt>nil</tt> plus an error
+    string.
 
   <a name="getcwd"></a>
   <li> <b><tt>lfs.currentdir ()</tt></b> <br>
@@ -83,14 +85,14 @@ LuaFileSystem offers the following functions:
     The optional arguments <code>start</code> and <code>length</code> can be
     used to specify a starting point and its length;
     both should be numbers.
-    This function returns a boolean indicating if the operation was successful;
-    in case of error, it returns <code>false</code> plus a string describing the
-    error.
+    Returns a boolean indicating if the operation was successful;
+    in case of error, it returns <code>false</code> plus an error string.
 
   <a name="mkdir"></a>
   <li> <b><tt>lfs.mkdir (dirname)</tt></b> <br>
     Creates a new directory.
     The argument is the name of the new directory.
+    Returns a boolean indicating whether the operation succeeds or not.
 
   <a name="unlock"></a>
   <li> <b><tt>lfs.unlock (filehandle[, start[, length]])</tt></b> <br>
@@ -165,7 +167,7 @@ attrdir (".")
 
 <hr>
 <small>
-$Id: manual.html,v 1.4 2004/10/29 16:15:59 tomas Exp $
+$Id: manual.html,v 1.5 2004/11/01 15:27:13 tomas Exp $
 </small>
 
 </body>

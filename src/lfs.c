@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.7 2004/11/01 08:57:56 tomas Exp $
+** $Id: lfs.c,v 1.8 2004/11/01 15:27:13 tomas Exp $
 */
 
 #include <errno.h>
@@ -64,10 +64,15 @@ typedef struct dir_data {
 */
 static int change_dir (lua_State *L) {
 	const char *path = luaL_checkstring(L, 1);
-	if (chdir(path)) 
-		luaL_error(L,"Unable to change working directory to '%s'\n%s\n",
+	if (chdir(path)) {
+		lua_pushnil (L);
+		lua_pushfstring (L,"Unable to change working directory to '%s'\n%s\n",
 				path, chdir_error);
-	return 0;
+		return 2;
+	} else {
+		lua_pushboolean (L, 1);
+		return 1;
+	}
 }
 
 /*
@@ -234,6 +239,8 @@ static int make_dir (lua_State *L) {
 	                     S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
 #endif
 	lua_pushboolean (L, !fail);
+	if (fail)
+        lua_pushfstring (L, "%s", strerror(errno));
 	umask (oldmask);
 	return 1;
 }
