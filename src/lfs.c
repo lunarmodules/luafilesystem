@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.9 2004/11/03 10:11:18 tomas Exp $
+** $Id: lfs.c,v 1.10 2004/11/04 22:21:28 tuler Exp $
 */
 
 #include <errno.h>
@@ -354,7 +354,11 @@ static int dir_create_meta (lua_State *L) {
 /*
 ** Convert the inode protection mode to a string.
 */
+#ifdef WIN32
+static const char *mode2string (unsigned short mode) {
+#else
 static const char *mode2string (mode_t mode) {
+#endif
   if ( S_ISREG(mode) )
     return "file";
   else if ( S_ISDIR(mode) )
@@ -431,6 +435,7 @@ static int file_info (lua_State *L) {
 	lua_pushliteral (L, "size");
 	lua_pushnumber (L, (lua_Number)info.st_size);
 	lua_rawset (L, -3);
+#ifndef WIN32
 	/* blocks allocated for file */
 	lua_pushliteral (L, "blocks");
 	lua_pushnumber (L, (lua_Number)info.st_blocks);
@@ -439,6 +444,7 @@ static int file_info (lua_State *L) {
 	lua_pushliteral (L, "blksize");
 	lua_pushnumber (L, (lua_Number)info.st_blksize);
 	lua_rawset (L, -3);
+#endif
 
 	return 1;
 }
