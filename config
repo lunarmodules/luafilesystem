@@ -10,11 +10,13 @@ LIB_EXT= .dylib
 LIB_OPTION= -dynamiclib #for MacOS X
 #LIB_OPTION= -shared #for Linux
 
+COMPAT_DIR= ../compat
+
 # Compilation directives
 # On FreeBSD systems, the following line should be commented
 DLLIB= -ldl
 WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings
-INCS= -I/usr/local/include/lua5 -I../compat
+INCS= -I/usr/local/include/lua5 -I$(COMPAT_DIR)
 LIBS= -L$(LIB_DIR) -llua -llualib -lm $(DLLIB)
 CFLAGS= $(WARN) $(INCS)
 CC= gcc
