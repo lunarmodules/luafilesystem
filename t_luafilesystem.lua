@@ -1,4 +1,4 @@
--- $Id: t_luafilesystem.lua,v 1.1 2004/07/27 14:15:24 tomas Exp $
+-- $Id: t_luafilesystem.lua,v 1.1.1.1 2004/07/27 14:15:24 tomas Exp $
 if not luafilesystem and loadlib then
 	local libname = "LIB_NAME"
 	local libopen = "luaopen_luafilesystem"

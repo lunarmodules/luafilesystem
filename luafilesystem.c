@@ -9,7 +9,7 @@
 **   luafilesystem.lock (fh, mode)
 **   luafilesystem.unlock (fh)
 **
-** $Id: luafilesystem.c,v 1.1 2004/07/27 14:15:24 tomas Exp $
+** $Id: luafilesystem.c,v 1.1.1.1 2004/07/27 14:15:24 tomas Exp $
 */
 
 #include <errno.h>
