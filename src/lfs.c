@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.4 2004/10/23 22:33:11 tomas Exp $
+** $Id: lfs.c,v 1.5 2004/10/27 18:01:01 tomas Exp $
 */
 
 #include <errno.h>
@@ -368,14 +368,6 @@ static const char *mode2string (mode_t mode) {
 
 
 /*
-** Convert a struct timespec to a Lua table.
-*/
-static lua_Number time2number (struct timespec t) {
-	return (lua_Number)t.tv_sec + (lua_Number)t.tv_nsec / 1000000000.0;
-}
-
-
-/*
 ** Get file information
 */
 static int file_info (lua_State *L) {
@@ -418,15 +410,15 @@ static int file_info (lua_State *L) {
 	lua_rawset (L, -3);
 	/* time of last access */
 	lua_pushliteral (L, "access");
-	lua_pushnumber (L, time2number (info.st_atimespec));
+	lua_pushnumber (L, info.st_atime);
 	lua_rawset (L, -3);
 	/* time of last data modification */
 	lua_pushliteral (L, "modification");
-	lua_pushnumber (L, time2number (info.st_mtimespec));
+	lua_pushnumber (L, info.st_mtime);
 	lua_rawset (L, -3);
 	/* time of last file status change */
 	lua_pushliteral (L, "change");
-	lua_pushnumber (L, time2number (info.st_ctimespec));
+	lua_pushnumber (L, info.st_ctime);
 	lua_rawset (L, -3);
 	/* file size, in bytes */
 	lua_pushliteral (L, "size");
