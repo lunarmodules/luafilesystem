@@ -1,0 +1,144 @@
+<! See Copyright Notice in license.html>
+<html>
+
+<head>
+<title>LuaFileSystem</title>
+<style type="text/css">
+ul { list-style-type: disc };
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<hr>
+
+<center>
+<table border=0 cellspacing=2 cellpadding=2>
+<tr><td align=center><a href="http://www.keplerproject.org/luafilesystem">
+<img border=0 alt="LuaFileSystem logo" src="luafilesystem.png"></a>
+<tr><td align=center><big><b>LuaFileSystem Reference Manual</b></big>
+<tr><td align=center valign=top>File system library for the 
+<a href="http://www.lua.org">Lua</a>
+programming language
+</table>
+</center>
+<p>
+
+<center><small>
+<a href="index.html">home</a> &middot;
+<a href="#introduction">introduction</a> &middot;
+<a href="#reference">reference</a> &middot;
+<a href="#example">example</a>
+</small></center>
+<p>
+
+<hr>
+
+<a name="introduction"></a>
+<h2>Introduction</h2>
+
+<p>
+LuaFileSystem is a <a href="http://www.lua.org">Lua</a> library
+developed to complement the set of functions related to file systems offered
+by the standard Lua distribution.
+<p>
+LuaFileSystem is free software and uses the same
+<a href="license.html">license</a>
+as Lua 5.0.
+</p>
+
+
+<a name="reference"></a>
+<h2>Reference</h2>
+
+<p>
+LuaFileSystem offers the following functions:
+<ul>
+  <a name="chdir"></a>
+  <li> <b><tt>luafilesystem.chdir (path)</tt></b> <br>
+    Changes the current
+    working directory to the given <tt>path</tt>.
+
+  <a name="getcwd"></a>
+  <li> <b><tt>luafilesystem.currentdir ()</tt></b> <br>
+    Returns the current
+    working directory or <code>nil</code> plus an error string.
+
+  <a name="dir"></a>
+  <li> <b><tt>luafilesystem.dir (path)</tt></b> <br>
+    Lua iterator over the entries
+    of a given directory.
+
+  <a name="lock"></a>
+  <li> <b><tt>luafilesystem.lock (filehandle, mode[, start[, length]])</tt></b> <br>
+    Locks a file or a part of it.
+    This function works on <em>open files</em>;
+    the file handle should be specified as the first argument.
+    The string <code>mode</code> could be either <code>r</code> (for a
+    read/shared lock) or <code>w</code> (for a write/exclusive lock).
+    The optional arguments <code>start</code> and <code>length</code> can be
+    used to specify a starting point and its length;
+    both should be numbers.
+    This function returns a boolean indicating if the operation was successful;
+    in case of error, it returns <code>false</code> plus a string describing the
+    error.
+
+  <a name="mkdir"></a>
+  <li> <b><tt>luafilesystem.mkdir (dirname)</tt></b> <br>
+    Creates a new directory.
+    The argument is the name of the new directory.
+
+  <a name="unlock"></a>
+  <li> <b><tt>luafilesystem.unlock (filehandle[, start[, length]])</tt></b> <br>
+    Unlocks a file or a part of it.
+    This function works on <em>open files</em>;
+    the file handle should be specified as the first argument.
+    The optional arguments <code>start</code> and <code>length</code> can be
+    used to specify a starting point and its length;
+    both should be numbers.
+    This function returns a boolean indicating if the operation was successful;
+    in case of error, it returns <code>false</code> plus a string describing the
+    error.
+
+</ul>
+
+
+<a name="example"></a>
+<h2>Example</h2>
+
+
+<a name="contents"></a>
+<h2>Contents</h2>
+<p>
+<ul>
+  <li> <a href="#introduction">Introduction</a>
+  <li> <a href="#reference">Reference</a>
+    <ul>
+      <li> <a href="#chdir">chdir</a>
+      <li> <a href="#currentdir">currentdir</a>
+      <li> <a href="#dir">dir</a>
+      <li> <a href="#lock">lock</a>
+      <li> <a href="#mkdir">mkdir</a>
+      <li> <a href="#unlock">unlock</a>
+    </ul>
+  <li> <a href="#examples">Examples</a>
+</ul>
+</p>
+
+
+<p>
+<center><small>
+<a href="index.html">home</a> &middot;
+<a href="#introduction">introduction</a> &middot;
+<a href="#reference">reference</a> &middot;
+<a href="#example">example</a>
+</small></center>
+<p>
+
+<hr>
+<small>
+$Id: manual.html,v 1.1 2004/07/27 14:15:24 tomas Exp $
+</small>
+
+</body>
+</html> 
