@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.12 2004/11/05 10:54:28 tomas Exp $
+** $Id: lfs.c,v 1.13 2004/11/10 15:30:53 tuler Exp $
 */
 
 #include <errno.h>
@@ -350,7 +350,7 @@ static int dir_create_meta (lua_State *L) {
  #define S_ISLNK(mode)  (0)
  #define S_ISSOCK(mode)  (0)
  #define S_ISFIFO(mode)  (0)
- #define S_ISCHR(mode)  (0)
+ #define S_ISCHR(mode)  (mode&_S_IFCHR)
  #define S_ISBLK(mode)  (0)
 #endif
 /*
@@ -466,7 +466,7 @@ static void set_info (lua_State *L) {
 	lua_pushliteral (L, "LuaFileSystem");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_VERSION");
-	lua_pushliteral (L, "1.0a");
+	lua_pushliteral (L, "1.0b");
 	lua_settable (L, -3);
 }
 
