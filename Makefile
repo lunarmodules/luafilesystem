@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2004/11/10 14:44:01 tuler Exp $
+# $Id: Makefile,v 1.10 2005/01/18 09:36:11 tomas Exp $
 
 T= lfs
 
@@ -23,9 +23,9 @@ compat-5.1.o: $(COMPAT_DIR)/compat-5.1.c
 	$(CC) -c $(CFLAGS) -o $@ $(COMPAT_DIR)/compat-5.1.c
 
 install: $(LIBNAME)
-	mkdir -p $(LIB_DIR)
-	cp $(LIBNAME) $(LIB_DIR)
-	ln -f -s $(LIB_DIR)/$(LIBNAME) $(LIB_DIR)/$T$(LIB_EXT)
+	mkdir -p $(LUA_LIBDIR)
+	cp $(LIBNAME) $(LUA_LIBDIR)
+	ln -f -s $(LUA_LIBDIR)/$(LIBNAME) $(LUA_LIBDIR)/$T$(LIB_EXT)
 
 clean:
 	rm -f $L $(LIBNAME) $(OBJS)

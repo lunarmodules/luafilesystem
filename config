@@ -1,8 +1,10 @@
 # Installation directories
 # System's libraries directory (where binary libraries are installed)
-LIB_DIR= /usr/local/lib
+LUA_LIBDIR= /usr/local/lib/lua/5.0
 # System's lua directory (where Lua libraries are installed)
-LUA_DIR= /usr/local/lua
+LUA_DIR= /usr/local/share/lua/5.0
+# Lua includes directory
+LUA_INC= /usr/local/include/lua5
 
 # OS dependent
 LIB_EXT= .dylib
@@ -16,8 +18,8 @@ COMPAT_DIR= .
 # On FreeBSD systems, the following line should be commented
 DLLIB= -ldl
 WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings
-INCS= -I/usr/local/include/lua5 -I$(COMPAT_DIR)
-LIBS= -L$(LIB_DIR) -llua -llualib -lm $(DLLIB)
+INCS= -I$(LUA_INC) -I$(COMPAT_DIR)
+LIBS= -L$(LUA_LIBDIR) -llua -llualib -lm $(DLLIB)
 CFLAGS= $(WARN) $(INCS)
 CC= gcc
 
