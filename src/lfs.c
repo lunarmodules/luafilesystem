@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.5 2004/10/27 18:01:01 tomas Exp $
+** $Id: lfs.c,v 1.6 2004/10/27 18:04:50 tomas Exp $
 */
 
 #include <errno.h>
@@ -431,14 +431,6 @@ static int file_info (lua_State *L) {
 	/* optimal file system I/O blocksize */
 	lua_pushliteral (L, "blksize");
 	lua_pushnumber (L, (lua_Number)info.st_blksize);
-	lua_rawset (L, -3);
-	/* user defined flags for file */
-	lua_pushliteral (L, "flags");
-	lua_pushnumber (L, (lua_Number)info.st_flags);
-	lua_rawset (L, -3);
-	/* file generation number */
-	lua_pushliteral (L, "gen");
-	lua_pushnumber (L, (lua_Number)info.st_gen);
 	lua_rawset (L, -3);
 
 	return 1;
