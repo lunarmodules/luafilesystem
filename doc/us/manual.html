@@ -110,6 +110,30 @@ LuaFileSystem offers the following functions:
 <a name="example"></a>
 <h2>Example</h2>
 
+<pre>
+require"lfs"
+
+function attrdir (path)
+    for file in lfs.dir(path) do
+        if file ~= "." and file ~= ".." then
+            local f = path..'/'..file
+            print ("\t "..f)
+            local attr = lfs.attributes (f)
+            assert (type(attr) == "table")
+            if attr.mode == "directory" then
+                attrdir (f)
+            else
+                for name, value in pairs(attr) do
+                    print (name, value)
+                end
+            end
+        end
+    end
+end
+
+attrdir (".")
+</pre>
+
 
 <a name="contents"></a>
 <h2>Contents</h2>
@@ -141,7 +165,7 @@ LuaFileSystem offers the following functions:
 
 <hr>
 <small>
-$Id: manual.html,v 1.3 2004/10/27 18:01:42 tomas Exp $
+$Id: manual.html,v 1.4 2004/10/29 16:15:59 tomas Exp $
 </small>
 
 </body>
