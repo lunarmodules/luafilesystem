@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.13 2004/11/10 15:30:53 tuler Exp $
+** $Id: lfs.c,v 1.14 2004/11/17 14:08:04 tomas Exp $
 */
 
 #include <errno.h>
@@ -29,10 +29,10 @@
 #include <sys/types.h>
 #endif
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-#include <compat-5.1.h>
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+#include "compat-5.1.h"
 
 #include "lfs.h"
 
