@@ -71,8 +71,8 @@ LuaFileSystem offers the following functions:
     <i>modification</i>, time of last data modification;<br>
     <i>change</i>, time of last file status change;<br>
     <i>size</i>, file size, in bytes;<br>
-    <i>blocks</i>, block allocated for file;<br>
-    <i>blksize</i>, optimal file system I/O blocksize;<br>
+    <i>blocks</i>, block allocated for file; (Unix only)<br>
+    <i>blksize</i>, optimal file system I/O blocksize; (Unix only)<br>
     </ul>
     Returns a table with file attributes described above.
 
@@ -185,7 +185,7 @@ attrdir (".")
 
 <hr>
 <small>
-$Id: manual.html,v 1.6 2004/11/05 10:37:29 tomas Exp $
+$Id: manual.html,v 1.7 2004/11/10 14:09:45 tuler Exp $
 </small>
 
 </body>
