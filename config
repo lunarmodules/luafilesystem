@@ -10,7 +10,7 @@ LIB_EXT= .dylib
 LIB_OPTION= -dynamiclib #for MacOS X
 #LIB_OPTION= -shared #for Linux
 
-COMPAT_DIR= ../compat
+COMPAT_DIR= .
 
 # Compilation directives
 # On FreeBSD systems, the following line should be commented

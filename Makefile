@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2004/10/15 10:07:53 tomas Exp $
+# $Id: Makefile,v 1.7 2004/10/15 10:45:18 tomas Exp $
 
 T= lfs
 
@@ -20,6 +20,7 @@ $(LIBNAME): $(OBJS)
 	$(CC) $(CFLAGS) $(LIB_OPTION) -o $(LIBNAME) $(OBJS) $(LIBS)
 
 compat-5.1.o: $(COMPAT_DIR)/compat-5.1.c
+	$(CC) -c $(CFLAGS) -o $@ $(COMPAT_DIR)/compat-5.1.c
 
 install: $(LIBNAME)
 	mkdir -p $(LIB_DIR)
