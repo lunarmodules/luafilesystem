@@ -32,9 +32,31 @@ assert (lfs.chdir (reldir), "could not change back to current directory")
 assert (lfs.currentdir() == current, "error trying to change directories")
 assert (lfs.chdir ("this couldn't be an actual directory") == nil, "could change to a non-existent directory")
 -- Changing creating and removing directories
-assert (lfs.mkdir (tmp.."/lfs_tmp_dir"), "could not make a new directory")
-assert (os.remove (tmp.."/lfs_tmp_dir"), "could not remove new directory")
-assert (lfs.mkdir (tmp.."/lfs_tmp_dir/lfs_tmp_dir") == false, "could create a directory inside a non-existent one")
+local tmpdir = tmp.."/lfs_tmp_dir"
+assert (lfs.mkdir (tmpdir), "could not make a new directory")
+local attrib, errmsg = lfs.attributes (tmpdir)
+if not attrib then
+	error ("could not get attributes of file `"..tmpdir.."':\n"..errmsg)
+else
+	-- Change access time
+	assert (lfs.touch (tmpdir, 11))
+	local new_att = assert (lfs.attributes (tmpdir))
+	assert (new_att.access == 11, "could not set access time")
+	assert (new_att.modification == 11, "could not set modification time")
+	-- Change access and modification time
+	assert (lfs.touch (tmpdir, 33, 22))
+	local new_att = assert (lfs.attributes (tmpdir))
+	assert (new_att.access == 33, "could not set access time")
+	assert (new_att.modification == 22, "could not set modification time")
+	-- Restore access time to current value
+	assert (lfs.touch (tmpdir))
+	new_att = assert (lfs.attributes (tmpdir))
+	assert (new_att.access == attrib.access)
+	assert (new_att.modification == attrib.modification)
+end
+assert (os.remove (tmpdir), "could not remove new directory")
+assert (lfs.mkdir (tmpdir.."/lfs_tmp_dir") == false, "could create a directory inside a non-existent one")
 -- 
 assert (lfs.attributes ("this couldn't be an actual file") == nil, "could get attributes of a non-existent file")
 assert (type(lfs.attributes (upper)) == "table", "couldn't get attributes of upper directory")
+print"Ok!"

@@ -7,9 +7,10 @@
 **   lfs.dir (path)
 **   lfs.mkdir (path)
 **   lfs.lock (fh, mode)
+**   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.14 2004/11/17 14:08:04 tomas Exp $
+** $Id: lfs.c,v 1.15 2005/01/18 10:48:02 tomas Exp $
 */
 
 #include <errno.h>
@@ -17,6 +18,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <utime.h>
 
 #ifdef WIN32
 #include <direct.h>
@@ -131,7 +133,7 @@ static int _file_lock (lua_State *L, FILE *fh, const char *mode, const long star
 		case 'r': lkmode = _LK_NBLCK; break;
 		case 'w': lkmode = _LK_NBLCK; break;
 		case 'u': lkmode = _LK_UNLCK; break;
-		default : luaL_error (L, "%s: invalid mode", funcname);
+		default : return luaL_error (L, "%s: invalid mode", funcname);
 	}
 	if (!len) {
 		fseek (fh, 0L, SEEK_END);
@@ -345,13 +347,27 @@ static int dir_create_meta (lua_State *L) {
 
 
 #ifdef _WIN32
- #define S_ISDIR(mode)  (mode&_S_IFDIR)
- #define S_ISREG(mode)  (mode&_S_IFREG)
- #define S_ISLNK(mode)  (0)
- #define S_ISSOCK(mode)  (0)
- #define S_ISFIFO(mode)  (0)
- #define S_ISCHR(mode)  (mode&_S_IFCHR)
- #define S_ISBLK(mode)  (0)
+ #ifndef S_ISDIR
+   #define S_ISDIR(mode)  (mode&_S_IFDIR)
+ #endif
+ #ifndef S_ISREG
+   #define S_ISREG(mode)  (mode&_S_IFREG)
+ #endif
+ #ifndef S_ISLNK
+   #define S_ISLNK(mode)  (0)
+ #endif
+ #ifndef S_ISSOCK
+   #define S_ISSOCK(mode)  (0)
+ #endif
+ #ifndef S_ISFIFO
+   #define S_ISFIFO(mode)  (0)
+ #endif
+ #ifndef S_ISCHR
+   #define S_ISCHR(mode)  (mode&_S_IFCHR)
+ #endif
+ #ifndef S_ISBLK
+   #define S_ISBLK(mode)  (0)
+ #endif
 #endif
 /*
 ** Convert the inode protection mode to a string.
@@ -377,6 +393,30 @@ static const char *mode2string (mode_t mode) {
 	return "block device";
   else
 	return "other";
+}
+
+
+/*
+** Set access time and modification values for file
+*/
+static int file_utime (lua_State *L) {
+	const char *file = luaL_checkstring (L, 1);
+	struct utimbuf utb, *buf;
+
+	if (lua_gettop (L) == 1) /* set to current date/time */
+		buf = NULL;
+	else {
+		utb.actime = (time_t)luaL_optnumber (L, 2, 0);
+		utb.modtime = (time_t)luaL_optnumber (L, 3, utb.actime);
+		buf = &utb;
+	}
+	if (utime (file, buf)) {
+		lua_pushnil (L);
+		lua_pushfstring (L, "%s", strerror (errno));
+		return 2;
+	}
+	lua_pushboolean (L, 1);
+	return 1;
 }
 
 
@@ -478,6 +518,7 @@ static const struct luaL_reg fslib[] = {
 	{"dir", dir_iter_factory},
 	{"lock", file_lock},
 	{"mkdir", make_dir},
+	{"touch", file_utime},
 	{"unlock", file_unlock},
 	{NULL, NULL},
 };
