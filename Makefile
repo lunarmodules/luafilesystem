@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2004/09/29 17:46:24 tomas Exp $
+# $Id: Makefile,v 1.5 2004/10/15 10:04:15 tomas Exp $
 
 T= lfs
 
@@ -11,13 +11,15 @@ ZIP_FILE= $(DIST_DIR).zip
 LIBNAME= lib$T.$V$(LIB_EXT)
 
 SRCS= $T.c
-OBJS= $T.o
+OBJS= $T.o compat-5.1.o
 
 
 lib: $(LIBNAME)
 
 $(LIBNAME): $(OBJS)
 	$(CC) $(CFLAGS) $(LIB_OPTION) -o $(LIBNAME) $(OBJS) $(LIBS)
+
+compat-5.1.o: compat-5.1.c
 
 install: $(LIBNAME)
 	mkdir -p $(LIB_DIR)

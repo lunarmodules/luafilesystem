@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.2 2004/10/14 11:13:29 tomas Exp $
+** $Id: lfs.c,v 1.3 2004/10/15 10:04:15 tomas Exp $
 */
 
 #include <errno.h>
@@ -32,9 +32,9 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include <compat-5.1.h>
 
 #include "lfs.h"
-#include "compat-5.1.h"
 
 /* Define 'strerror' for systems that do not implement it */
 #ifdef NO_STRERROR
