@@ -55,22 +55,22 @@ as Lua 5.0.
 LuaFileSystem offers the following functions:
 <ul>
   <a name="chdir"></a>
-  <li> <b><tt>luafilesystem.chdir (path)</tt></b> <br>
+  <li> <b><tt>lfs.chdir (path)</tt></b> <br>
     Changes the current
     working directory to the given <tt>path</tt>.
 
   <a name="getcwd"></a>
-  <li> <b><tt>luafilesystem.currentdir ()</tt></b> <br>
+  <li> <b><tt>lfs.currentdir ()</tt></b> <br>
     Returns the current
     working directory or <code>nil</code> plus an error string.
 
   <a name="dir"></a>
-  <li> <b><tt>luafilesystem.dir (path)</tt></b> <br>
+  <li> <b><tt>lfs.dir (path)</tt></b> <br>
     Lua iterator over the entries
     of a given directory.
 
   <a name="lock"></a>
-  <li> <b><tt>luafilesystem.lock (filehandle, mode[, start[, length]])</tt></b> <br>
+  <li> <b><tt>lfs.lock (filehandle, mode[, start[, length]])</tt></b> <br>
     Locks a file or a part of it.
     This function works on <em>open files</em>;
     the file handle should be specified as the first argument.
@@ -84,12 +84,12 @@ LuaFileSystem offers the following functions:
     error.
 
   <a name="mkdir"></a>
-  <li> <b><tt>luafilesystem.mkdir (dirname)</tt></b> <br>
+  <li> <b><tt>lfs.mkdir (dirname)</tt></b> <br>
     Creates a new directory.
     The argument is the name of the new directory.
 
   <a name="unlock"></a>
-  <li> <b><tt>luafilesystem.unlock (filehandle[, start[, length]])</tt></b> <br>
+  <li> <b><tt>lfs.unlock (filehandle[, start[, length]])</tt></b> <br>
     Unlocks a file or a part of it.
     This function works on <em>open files</em>;
     the file handle should be specified as the first argument.
@@ -137,7 +137,7 @@ LuaFileSystem offers the following functions:
 
 <hr>
 <small>
-$Id: manual.html,v 1.1 2004/07/27 14:15:24 tomas Exp $
+$Id: manual.html,v 1.2 2004/07/29 16:47:11 tomas Exp $
 </small>
 
 </body>
