@@ -1,15 +1,15 @@
 /*
 ** File system manipulation library.
 ** This library offers these functions:
-**   luafilesystem.attributes (filepath [, attributename])
-**   luafilesystem.chdir (path)
-**   luafilesystem.currentdir ()
-**   luafilesystem.dir (path)
-**   luafilesystem.mkdir (path)
-**   luafilesystem.lock (fh, mode)
-**   luafilesystem.unlock (fh)
+**   lfs.attributes (filepath [, attributename])
+**   lfs.chdir (path)
+**   lfs.currentdir ()
+**   lfs.dir (path)
+**   lfs.mkdir (path)
+**   lfs.lock (fh, mode)
+**   lfs.unlock (fh)
 **
-** $Id: luafilesystem.c,v 1.1 2004/07/27 14:15:24 tomas Exp $
+** $Id: lfs.c,v 1.1 2004/07/29 14:26:33 tomas Exp $
 */
 
 #include <errno.h>
@@ -33,7 +33,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "luafilesystem.h"
+#include "lfs.h"
 
 /* Define 'strerror' for systems that do not implement it */
 #ifdef NO_STRERROR
@@ -344,8 +344,8 @@ static const struct luaL_reg fslib[] = {
 	{NULL, NULL},
 };
 
-int luaopen_luafilesystem (lua_State *L) {
+int luaopen_lfs (lua_State *L) {
 	dir_create_meta (L);
-	luaL_openlib (L, "luafilesystem", fslib, 0);
+	luaL_openlib (L, "lfs", fslib, 0);
 	return 1;
 }

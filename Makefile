@@ -1,6 +1,6 @@
-# $Id: Makefile,v 1.1 2004/07/27 14:15:24 tomas Exp $
+# $Id: Makefile,v 1.2 2004/07/29 14:26:33 tomas Exp $
 
-T= luafilesystem
+T= lfs
 
 include ./config
 
