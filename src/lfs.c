@@ -10,7 +10,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.18 2005/01/21 10:19:04 tomas Exp $
+** $Id: lfs.c,v 1.19 2005/01/24 10:19:49 tuler Exp $
 */
 
 #include <errno.h>
@@ -19,7 +19,7 @@
 #include <time.h>
 #include <sys/stat.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h>
 #include <io.h>
 #include <sys/locking.h>
@@ -117,13 +117,13 @@ static FILE *check_file (lua_State *L, int idx, const char *funcname) {
 */
 static int _file_lock (lua_State *L, FILE *fh, const char *mode, const long start, long len, const char *funcname) {
 	int code;
-#ifdef WIN32
+#ifdef _WIN32
 	/* lkmode valid values are:
-	   _LK_LOCK    Locks the specified bytes. If the bytes cannot be locked, the program immediately tries again after 1 second. If, after 10 attempts, the bytes cannot be locked, the constant returns an error.
-	   _LK_NBLCK   Locks the specified bytes. If the bytes cannot be locked, the constant returns an error.
-	   _LK_NBRLCK  Same as _LK_NBLCK.
-	   _LK_RLCK    Same as _LK_LOCK.
-	   _LK_UNLCK   Unlocks the specified bytes, which must have been previously locked.
+	   LK_LOCK    Locks the specified bytes. If the bytes cannot be locked, the program immediately tries again after 1 second. If, after 10 attempts, the bytes cannot be locked, the constant returns an error.
+	   LK_NBLCK   Locks the specified bytes. If the bytes cannot be locked, the constant returns an error.
+	   LK_NBRLCK  Same as _LK_NBLCK.
+	   LK_RLCK    Same as _LK_LOCK.
+	   LK_UNLCK   Unlocks the specified bytes, which must have been previously locked.
 
 	   Regions should be locked only briefly and should be unlocked before closing a file or exiting the program.
 
@@ -131,9 +131,9 @@ static int _file_lock (lua_State *L, FILE *fh, const char *mode, const long star
 	*/
 	int lkmode;
 	switch (*mode) {
-		case 'r': lkmode = _LK_NBLCK; break;
-		case 'w': lkmode = _LK_NBLCK; break;
-		case 'u': lkmode = _LK_UNLCK; break;
+		case 'r': lkmode = LK_NBLCK; break;
+		case 'w': lkmode = LK_NBLCK; break;
+		case 'u': lkmode = LK_UNLCK; break;
 		default : return luaL_error (L, "%s: invalid mode", funcname);
 	}
 	if (!len) {
@@ -208,7 +208,7 @@ static void cgilua_sleep( lua_State *L )
 {
   unsigned int usec = (unsigned int)luaL_check_number( L, 1 );
 
-#ifndef WIN32
+#ifndef _WIN32
   sleep( (unsigned int)ceil( usec/1000.0 ));
 #else
   Sleep( (DWORD)usec );
@@ -233,7 +233,7 @@ static void cgilua_filesize( lua_State *L )
 static int make_dir (lua_State *L) {
 	const char *path = luaL_checkstring (L, 1);
 	int fail;
-#ifdef WIN32
+#ifdef _WIN32
 	int oldmask = umask (0);
 	fail = _mkdir (path);
 #else
@@ -373,7 +373,7 @@ static int dir_create_meta (lua_State *L) {
 /*
 ** Convert the inode protection mode to a string.
 */
-#ifdef WIN32
+#ifdef _WIN32
 static const char *mode2string (unsigned short mode) {
 #else
 static const char *mode2string (mode_t mode) {
@@ -478,7 +478,7 @@ static int file_info (lua_State *L) {
 	lua_pushliteral (L, "size");
 	lua_pushnumber (L, (lua_Number)info.st_size);
 	lua_rawset (L, -3);
-#ifndef WIN32
+#ifndef _WIN32
 	/* blocks allocated for file */
 	lua_pushliteral (L, "blocks");
 	lua_pushnumber (L, (lua_Number)info.st_blocks);
