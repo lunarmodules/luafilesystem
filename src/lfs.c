@@ -5,11 +5,12 @@
 **   lfs.chdir (path)
 **   lfs.currentdir ()
 **   lfs.dir (path)
-**   lfs.mkdir (path)
 **   lfs.lock (fh, mode)
+**   lfs.mkdir (path)
+**   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.17 2005/01/19 14:28:58 tomas Exp $
+** $Id: lfs.c,v 1.18 2005/01/21 10:19:04 tomas Exp $
 */
 
 #include <errno.h>
@@ -22,11 +23,13 @@
 #include <direct.h>
 #include <io.h>
 #include <sys/locking.h>
+#include <sys/utime.h>
 #else
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <utime.h>
 #endif
 
 #include "lua.h"
@@ -395,6 +398,30 @@ static const char *mode2string (mode_t mode) {
 
 
 /*
+** Set access time and modification values for file
+*/
+static int file_utime (lua_State *L) {
+	const char *file = luaL_checkstring (L, 1);
+	struct utimbuf utb, *buf;
+
+	if (lua_gettop (L) == 1) /* set to current date/time */
+		buf = NULL;
+	else {
+		utb.actime = (time_t)luaL_optnumber (L, 2, 0);
+		utb.modtime = (time_t)luaL_optnumber (L, 3, utb.actime);
+		buf = &utb;
+	}
+	if (utime (file, buf)) {
+		lua_pushnil (L);
+		lua_pushfstring (L, "%s", strerror (errno));
+		return 2;
+	}
+	lua_pushboolean (L, 1);
+	return 1;
+}
+
+
+/*
 ** Get file information
 */
 static int file_info (lua_State *L) {
@@ -480,7 +507,7 @@ static void set_info (lua_State *L) {
 	lua_pushliteral (L, "LuaFileSystem");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_VERSION");
-	lua_pushliteral (L, "1.0");
+	lua_pushliteral (L, "1.1b");
 	lua_settable (L, -3);
 }
 
@@ -492,6 +519,7 @@ static const struct luaL_reg fslib[] = {
 	{"dir", dir_iter_factory},
 	{"lock", file_lock},
 	{"mkdir", make_dir},
+	{"touch", file_utime},
 	{"unlock", file_unlock},
 	{NULL, NULL},
 };
