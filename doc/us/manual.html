@@ -56,24 +56,41 @@ LuaFileSystem offers the following functions:
 <ul>
   <a name="attributes"></a>
   <li> <b><tt>lfs.attributes (filepath)</tt></b> <br>
-    Returns a table with file attributes.
+    Obtains the file attributes.
+    The attributes are:
+    <ul>
+    <i>dev</i>, device inode resides on;<br>
+    <i>ino</i>, inode's number;<br>
+    <i>mode</i>, inode protection mode (<small>values could be
+      <tt>file</tt>, <tt>directory</tt>, <tt>link</tt>, <tt>socket</tt>, <tt>named pipe</tt>, <tt>char device</tt>, <tt>block device</tt> or <tt>other</tt></small>);<br>
+    <i>nlink</i>, number of hard links to the file;<br>
+    <i>uid</i>, user-id of owner;<br>
+    <i>gid</i>, group-id of owner;<br>
+    <i>rdev</i>, device type, for special file inode;<br>
+    <i>access</i>, time of last access;<br>
+    <i>modification</i>, time of last data modification;<br>
+    <i>change</i>, time of last file status change;<br>
+    <i>size</i>, file size, in bytes;<br>
+    <i>blocks</i>, block allocated for file;<br>
+    <i>blksize</i>, optimal file system I/O blocksize;<br>
+    </ul>
+    Returns a table with file attributes described above.
 
   <a name="chdir"></a>
   <li> <b><tt>lfs.chdir (path)</tt></b> <br>
-    Changes the current
-    working directory to the given <tt>path</tt>.
+    Changes the current working directory to the given <tt>path</tt>.<br>
     Returns <tt>true</tt> in case of success or <tt>nil</tt> plus an error
     string.
 
   <a name="getcwd"></a>
   <li> <b><tt>lfs.currentdir ()</tt></b> <br>
-    Returns the current
-    working directory or <code>nil</code> plus an error string.
+    Returns a string with the current working directory or
+    <code>nil</code> plus an error string.
 
   <a name="dir"></a>
   <li> <b><tt>lfs.dir (path)</tt></b> <br>
-    Lua iterator over the entries
-    of a given directory.
+    Lua iterator over the entries of a given directory.
+    Raises an error if <tt>path</tt> is not a directory.
 
   <a name="lock"></a>
   <li> <b><tt>lfs.lock (filehandle, mode[, start[, length]])</tt></b> <br>
@@ -84,15 +101,16 @@ LuaFileSystem offers the following functions:
     read/shared lock) or <code>w</code> (for a write/exclusive lock).
     The optional arguments <code>start</code> and <code>length</code> can be
     used to specify a starting point and its length;
-    both should be numbers.
+    both should be numbers.<br>
     Returns a boolean indicating if the operation was successful;
     in case of error, it returns <code>false</code> plus an error string.
 
   <a name="mkdir"></a>
   <li> <b><tt>lfs.mkdir (dirname)</tt></b> <br>
     Creates a new directory.
-    The argument is the name of the new directory.
-    Returns a boolean indicating whether the operation succeeds or not.
+    The argument is the name of the new directory.<br>
+    Returns a boolean indicating whether the operation succeeds or not
+    (in this case, an error string is returned too).
 
   <a name="unlock"></a>
   <li> <b><tt>lfs.unlock (filehandle[, start[, length]])</tt></b> <br>
@@ -101,8 +119,8 @@ LuaFileSystem offers the following functions:
     the file handle should be specified as the first argument.
     The optional arguments <code>start</code> and <code>length</code> can be
     used to specify a starting point and its length;
-    both should be numbers.
-    This function returns a boolean indicating if the operation was successful;
+    both should be numbers.<br>
+    Returns a boolean indicating if the operation was successful;
     in case of error, it returns <code>false</code> plus a string describing the
     error.
 
@@ -167,7 +185,7 @@ attrdir (".")
 
 <hr>
 <small>
-$Id: manual.html,v 1.5 2004/11/01 15:27:13 tomas Exp $
+$Id: manual.html,v 1.6 2004/11/05 10:37:29 tomas Exp $
 </small>
 
 </body>

@@ -9,7 +9,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.10 2004/11/04 22:21:28 tuler Exp $
+** $Id: lfs.c,v 1.11 2004/11/05 10:37:29 tomas Exp $
 */
 
 #include <errno.h>
@@ -403,7 +403,7 @@ static int file_info (lua_State *L) {
 	lua_pushliteral (L, "mode");
 	lua_pushstring (L, mode2string (info.st_mode));
 	lua_rawset (L, -3);
-	/* number or hard links to the file */
+	/* number of hard links to the file */
 	lua_pushliteral (L, "nlink");
 	lua_pushnumber (L, (lua_Number)info.st_nlink);
 	lua_rawset (L, -3);
