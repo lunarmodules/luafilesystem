@@ -60,6 +60,11 @@ as Lua 5.0.
 Current version is 1.0 alpha.
 It was developed for Lua 5.0.
 </p>
+<p>
+Version 1.0 follows the
+<a href="http://www.keplerproject.org/compat">package proposal</a>
+for Lua 5.1
+(see section <a href="#installation">Installation</a> for more details).
 
 
 <a name="download"></a>
@@ -77,8 +82,32 @@ LuaFileSystem can be downloaded in source code from the following links:
 <h2>What's new</h2>
 <p>
 <ul>
-  <li>[2/Aug/2004] Version 1.0 alpha released
+  <li>[?/?/2004] Version 1.0 alpha released
 </ul>
+
+
+<a name="installation"></a>
+<h2>Installation</h2>
+<p>
+LuaFileSystem is distributed as a pair of C source and header files.
+The distribution provides a <tt>Makefile</tt> prepared to compile the
+library and install it.
+The file <tt>config</tt> should be edited to suit the needs of the aimed
+platform.
+</p>
+<p>
+LuaFileSystem follows the
+<a href="http://www.keplerproject.org/compat">package proposal</a>
+for Lua 5.1,
+therefore this package should be "installed".
+In other words,
+if you are using Lua 5.0,
+the files <tt>compat-5.1.c</tt> and <tt>compat-5.1.h</tt> must be used
+in the compilation and the file <tt>compat-5.1.lua</tt> must be installed
+in the <tt>LUA_PATH</tt>.
+If you are using Lua 5.1,
+nothing should be done.
+</p>
 
 
 <a name="credits"></a>
@@ -106,7 +135,7 @@ Comments are welcome!
 <p>
 <hr>
 <small>
-$Id: index.html,v 1.1 2004/07/27 14:15:24 tomas Exp $
+$Id: index.html,v 1.2 2004/10/23 22:33:11 tomas Exp $
 </small>
 
 </body>

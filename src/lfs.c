@@ -9,13 +9,14 @@
 **   lfs.lock (fh, mode)
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.3 2004/10/15 10:04:15 tomas Exp $
+** $Id: lfs.c,v 1.4 2004/10/23 22:33:11 tomas Exp $
 */
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #ifdef WIN32
 #include <direct.h>
@@ -26,7 +27,6 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #endif
 
 #include <lua.h>
@@ -335,7 +335,126 @@ static int dir_create_meta (lua_State *L) {
 }
 
 
+#ifdef _WIN32
+ #define S_ISDIR(mode)  (mode&_S_IFDIR)
+ #define S_ISREG(mode)  (mode&_S_IFREG)
+ #define S_ISLNK(mode)  (0)
+ #define S_ISSOCK(mode)  (0)
+ #define S_ISFIFO(mode)  (0)
+ #define S_ISCHR(mode)  (0)
+ #define S_ISBLK(mode)  (0)
+#endif
+/*
+** Convert the inode protection mode to a string.
+*/
+static const char *mode2string (mode_t mode) {
+  if ( S_ISREG(mode) )
+    return "file";
+  else if ( S_ISDIR(mode) )
+    return "directory";
+  else if ( S_ISLNK(mode) )
+	return "link";
+  else if ( S_ISSOCK(mode) )
+    return "socket";
+  else if ( S_ISFIFO(mode) )
+	return "named pipe";
+  else if ( S_ISCHR(mode) )
+	return "char device";
+  else if ( S_ISBLK(mode) )
+	return "block device";
+  else
+	return "other";
+}
+
+
+/*
+** Convert a struct timespec to a Lua table.
+*/
+static lua_Number time2number (struct timespec t) {
+	return (lua_Number)t.tv_sec + (lua_Number)t.tv_nsec / 1000000000.0;
+}
+
+
+/*
+** Get file information
+*/
+static int file_info (lua_State *L) {
+	struct stat info;
+	const char *file = luaL_checkstring (L, 1);
+
+	if (stat(file, &info)) {
+		lua_pushnil (L);
+		lua_pushfstring (L, "cannot obtain information from file `%s'", file);
+		return 2;
+	}
+	lua_newtable (L);
+	/* device inode resides on */
+	lua_pushliteral (L, "dev");
+	lua_pushnumber (L, (lua_Number)info.st_dev);
+	lua_rawset (L, -3);
+	/* inode's number */
+	lua_pushliteral (L, "ino");
+	lua_pushnumber (L, (lua_Number)info.st_ino);
+	lua_rawset (L, -3);
+	/* inode protection mode */
+	lua_pushliteral (L, "mode");
+	lua_pushstring (L, mode2string (info.st_mode));
+	lua_rawset (L, -3);
+	/* number or hard links to the file */
+	lua_pushliteral (L, "nlink");
+	lua_pushnumber (L, (lua_Number)info.st_nlink);
+	lua_rawset (L, -3);
+	/* user-id of owner */
+	lua_pushliteral (L, "uid");
+	lua_pushnumber (L, (lua_Number)info.st_uid);
+	lua_rawset (L, -3);
+	/* group-id of owner */
+	lua_pushliteral (L, "gid");
+	lua_pushnumber (L, (lua_Number)info.st_gid);
+	lua_rawset (L, -3);
+	/* device type, for special file inode */
+	lua_pushliteral (L, "rdev");
+	lua_pushnumber (L, (lua_Number)info.st_rdev);
+	lua_rawset (L, -3);
+	/* time of last access */
+	lua_pushliteral (L, "access");
+	lua_pushnumber (L, time2number (info.st_atimespec));
+	lua_rawset (L, -3);
+	/* time of last data modification */
+	lua_pushliteral (L, "modification");
+	lua_pushnumber (L, time2number (info.st_mtimespec));
+	lua_rawset (L, -3);
+	/* time of last file status change */
+	lua_pushliteral (L, "change");
+	lua_pushnumber (L, time2number (info.st_ctimespec));
+	lua_rawset (L, -3);
+	/* file size, in bytes */
+	lua_pushliteral (L, "size");
+	lua_pushnumber (L, (lua_Number)info.st_size);
+	lua_rawset (L, -3);
+	/* blocks allocated for file */
+	lua_pushliteral (L, "blocks");
+	lua_pushnumber (L, (lua_Number)info.st_blocks);
+	lua_rawset (L, -3);
+	/* optimal file system I/O blocksize */
+	lua_pushliteral (L, "blksize");
+	lua_pushnumber (L, (lua_Number)info.st_blksize);
+	lua_rawset (L, -3);
+	/* user defined flags for file */
+	lua_pushliteral (L, "flags");
+	lua_pushnumber (L, (lua_Number)info.st_flags);
+	lua_rawset (L, -3);
+	/* file generation number */
+	lua_pushliteral (L, "gen");
+	lua_pushnumber (L, (lua_Number)info.st_gen);
+	lua_rawset (L, -3);
+
+	return 1;
+}
+
+
 static const struct luaL_reg fslib[] = {
+	{"attributes", file_info},
 	{"chdir", change_dir},
 	{"currentdir", get_dir},
 	{"dir", dir_iter_factory},
