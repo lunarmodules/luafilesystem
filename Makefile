@@ -1,34 +1,35 @@
-# $Id: Makefile,v 1.13 2005/01/21 10:19:04 tomas Exp $
+# $Id: Makefile,v 1.14 2005/04/08 18:55:00 tomas Exp $
 
 T= lfs
 
 include ./config
 
-V= 1.1b
+V= 1.1
 DIST_DIR= luafilesystem-$V
 TAR_FILE= $(DIST_DIR).tar.gz
 ZIP_FILE= $(DIST_DIR).zip
 LIBNAME= lib$T.$V$(LIB_EXT)
 
-SRCS= $T.c
-OBJS= $T.o compat-5.1.o
+COMPAT_O= $(COMPAT_DIR)/compat-5.1.o
+SRCS= src/$T.c
+OBJS= src/$T.o $(COMPAT_O)
 
 
-lib: $(LIBNAME)
+lib: src/$(LIBNAME)
 
-$(LIBNAME): $(OBJS)
-	$(CC) $(CFLAGS) $(LIB_OPTION) -o $(LIBNAME) $(OBJS) $(LIBS)
+src/$(LIBNAME): $(OBJS)
+	$(CC) $(CFLAGS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS) $(LIBS)
 
-compat-5.1.o: $(COMPAT_DIR)/compat-5.1.c
+$(COMPAT_O): $(COMPAT_DIR)/compat-5.1.c
 	$(CC) -c $(CFLAGS) -o $@ $(COMPAT_DIR)/compat-5.1.c
 
-install: $(LIBNAME)
+install: src/$(LIBNAME)
 	mkdir -p $(LUA_LIBDIR)
-	cp $(LIBNAME) $(LUA_LIBDIR)
+	cp src/$(LIBNAME) $(LUA_LIBDIR)
 	ln -f -s $(LUA_LIBDIR)/$(LIBNAME) $(LUA_LIBDIR)/$T$(LIB_EXT)
 
 clean:
-	rm -f $L $(LIBNAME) $(OBJS)
+	rm -f $L src/$(LIBNAME) $(OBJS)
 
 dist: dist_dir
 	tar -czf $(TAR_FILE) $(DIST_DIR)
