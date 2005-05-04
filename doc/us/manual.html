@@ -1,43 +1,54 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-<meta name="generator" content="HTML Tidy, see www.w3.org">
-<title>LuaFileSystem</title>
-<style type="text/css">
-ul { list-style-type: disc };
-</style>
+	<title>LuaFileSystem</title>
+    <link rel="stylesheet" href="http://www.keplerproject.org/doc.css" type="text/css"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
-<body bgcolor="#FFFFFF">
-<hr>
-<center>
-<table border="0" cellspacing="2" cellpadding="2">
-<tr>
-<td align="center"><a href=
-"http://www.keplerproject.org/luafilesystem"><img border="0" alt=
-"LuaFileSystem logo" src="luafilesystem.png"></a> </td>
-</tr>
 
-<tr>
-<td align="center"><big><b>LuaFileSystem Reference Manual</b></big>
-</td>
-</tr>
+<body>
 
-<tr>
-<td align="center" valign="top">File system library for the <a
-href="http://www.lua.org">Lua</a> programming language</td>
-</tr>
-</table>
-</center>
+<div id="container">
 
-<center><small><a href="index.html">home</a> &middot; <a href=
-"#introduction">introduction</a> &middot; <a href=
-"#reference">reference</a> &middot; <a href=
-"#example">example</a></small></center>
+<div id="product">
+	<div id="product_logo"><a href="http://www.keplerproject.org">
+		<img alt="LuaFileSystem" src="luafilesystem.png"/>
+	</a></div>
+	<div id="product_name"><big><b>LuaFileSystem</b></big></div>
+	<div id="product_description">File System Library for the Lua Programming Language</div>
+</div> <!-- id="product" -->
 
-<hr>
-<a name="introduction"></a> 
+<div id="main">
+	
+<div id="navigation">
+<h1>LuaFileSystem</h1>
+	<ul>
+		<li><a href="index.html">Home</a>
+			<ul>
+				<li><a href="index.html#overview">Overview</a></li>
+				<li><a href="index.html#status">Status</a></li>
+				<li><a href="index.html#download">Download</a></li>
+				<li><a href="index.html#history">History</a></li>
+				<li><a href="index.html#credits">Credits</a></li>
+				<li><a href="index.html#contact">Contact us</a></li>
+			</ul>
+		</li>
+		<li><strong>Manual</strong>
+			<ul>
+				<li><a href="manual.html#introduction">Introduction</a></li>
+				<li><a href="manual.html#installation">Installation</a></li>
+				<li><a href="manual.html#reference">Reference</a></li>
+			</ul>
+		</li>
+		<li><a href="examples.html">Examples</a></li>
+		<li><a href="license.html">License</a></li>
+	</ul>
+</div> <!-- id="navigation" -->
 
-<h2>Introduction</h2>
+<div id="content">
+
+<h2><a name="introduction"></a>Introduction</h2>
 
 <p>LuaFileSystem is a <a href="http://www.lua.org">Lua</a> library
 developed to complement the set of functions related to file
@@ -46,9 +57,26 @@ systems offered by the standard Lua distribution.</p>
 <p>LuaFileSystem is free software and uses the same <a href=
 "license.html">license</a> as Lua 5.0.</p>
 
-<a name="reference"></a> 
+<h2><a name="installation"></a>Installation</h2>
 
-<h2>Reference</h2>
+<p>
+LuaFileSystem is distributed as a pair of C source and header
+files. The distribution provides a <tt>Makefile</tt> prepared to
+compile the library and install it. The file <tt>config</tt> should
+be edited to suit the needs of the aimed platform.
+</p>
+
+<p>
+LuaFileSystem follows the
+<a href="http://www.keplerproject.org/compat">package proposal</a>
+for Lua 5.1, therefore this package should be "installed".
+In other words,
+if you are using Lua 5.0, the files <tt>compat-5.1.c</tt> and
+<tt>compat-5.1.h</tt> must be used in the compilation and the file
+<tt>compat-5.1.lua</tt> must be installed in the <tt>LUA_PATH</tt>.
+If you are using Lua 5.1, nothing should be done.</p>
+
+<h2><a name="reference"></a>Reference</h2>
 
 <p>LuaFileSystem offers the following functions:</p>
 
@@ -147,72 +175,18 @@ case of error, it returns <code>false</code> plus a string
 describing the error.</li>
 </ul>
 
-<a name="example"></a> 
-<h2>Example</h2>
+</div> <!-- id="content" -->
 
-<pre>
-require"lfs"
+</div> <!-- id="main" -->
 
-function attrdir (path)
-    for file in lfs.dir(path) do
-        if file ~= "." and file ~= ".." then
-            local f = path..'/'..file
-            print ("\t "..f)
-            local attr = lfs.attributes (f)
-            assert (type(attr) == "table")
-            if attr.mode == "directory" then
-                attrdir (f)
-            else
-                for name, value in pairs(attr) do
-                    print (name, value)
-                end
-            end
-        end
-    end
-end
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+	<p><small>
+	$Id: manual.html,v 1.10 2005/05/04 02:28:51 tuler Exp $
+	</small></p>
+</div> <!-- id="about" -->
 
-attrdir (".")
-</pre>
+</div> <!-- id="container" -->
 
-<a name="contents"></a> 
-
-<h2>Contents</h2>
-
-<ul>
-<li><a href="#introduction">Introduction</a></li>
-
-<li><a href="#reference">Reference</a> 
-
-<ul>
-<li><a href="#chdir">chdir</a></li>
-
-<li><a href="#currentdir">currentdir</a></li>
-
-<li><a href="#dir">dir</a></li>
-
-<li><a href="#lock">lock</a></li>
-
-<li><a href="#mkdir">mkdir</a></li>
-
-<li><a href="#unlock">unlock</a></li>
-</ul>
-</li>
-
-<li><a href="#examples">Examples</a></li>
-</ul>
-
-<br>
-<br>
- 
-
-<center><small><a href="index.html">home</a> &middot; <a href=
-"#introduction">introduction</a> &middot; <a href=
-"#reference">reference</a> &middot; <a href=
-"#example">example</a></small></center>
-
-<hr>
-<small>$Id: manual.html,v 1.7 2004/11/10 14:09:45 tuler Exp
-$</small>
 </body>
 </html>
-
