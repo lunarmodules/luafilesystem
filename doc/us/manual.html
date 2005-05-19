@@ -15,7 +15,7 @@
 	<div id="product_logo"><a href="http://www.keplerproject.org">
 		<img alt="LuaFileSystem" src="luafilesystem.png"/>
 	</a></div>
-	<div id="product_name"><big><b>LuaFileSystem</b></big></div>
+	<div id="product_name"><big><strong>LuaFileSystem</strong></big></div>
 	<div id="product_description">File System Library for the Lua Programming Language</div>
 </div> <!-- id="product" -->
 
@@ -61,8 +61,8 @@ systems offered by the standard Lua distribution.</p>
 
 <p>
 LuaFileSystem is distributed as a pair of C source and header
-files. The distribution provides a <tt>Makefile</tt> prepared to
-compile the library and install it. The file <tt>config</tt> should
+files. The distribution provides a <code>Makefile</code> prepared to
+compile the library and install it. The file <code>config</code> should
 be edited to suit the needs of the aimed platform.
 </p>
 
@@ -71,109 +71,119 @@ LuaFileSystem follows the
 <a href="http://www.keplerproject.org/compat">package proposal</a>
 for Lua 5.1, therefore this package should be "installed".
 In other words,
-if you are using Lua 5.0, the files <tt>compat-5.1.c</tt> and
-<tt>compat-5.1.h</tt> must be used in the compilation and the file
-<tt>compat-5.1.lua</tt> must be installed in the <tt>LUA_PATH</tt>.
+if you are using Lua 5.0, the files <code>compat-5.1.c</code> and
+<code>compat-5.1.h</code> must be used in the compilation and the file
+<code>compat-5.1.lua</code> must be installed in the <code>LUA_PATH</code>.
 If you are using Lua 5.1, nothing should be done.</p>
 
 <h2><a name="reference"></a>Reference</h2>
 
 <p>LuaFileSystem offers the following functions:</p>
 
-<ul>
-<a name="attributes"></a>
-<li><b><tt>lfs.attributes (filepath)</tt></b><br>
- Obtains the file attributes. The attributes are: 
+<dl>
+    <dt><a name="attributes"></a><strong><code>lfs.attributes (filepath)</code></strong></dt>
+    <dd>Returns a table with the file attributes corresponding to <code>filepath</code>.
+    The attributes are: 
+        <dl>
+        <dt><strong><code>dev</code></strong></dt>
+        <dd>device that the inode resides on</dd>
+        
+        <dt><strong><code>ino</code></strong></dt>
+        <dd>inode's number</dd>
+        
+        <dt><strong><code>mode</code></strong></dt>
+        <dd>inode protection mode (string, values could be <code>file</code>,
+        <code>directory</code>, <code>link</code>, <code>socket</code>,
+        <code>named pipe</code>, <code>char device</code>, <code>block device</code> or
+        <code>other</code>)</dd>
+        
+        <dt><strong><code>nlink</code></strong></dt>
+		<dd>number of hard links to the file</dd>
 
-<div style="margin-left: 2em"><i>dev</i>, device inode resides
-on;<br>
- <i>ino</i>, inode's number;<br>
- <i>mode</i>, inode protection mode (<small>values could be
-<tt>file</tt>, <tt>directory</tt>, <tt>link</tt>, <tt>socket</tt>,
-<tt>named pipe</tt>, <tt>char device</tt>, <tt>block device</tt> or
-<tt>other</tt></small>);<br>
- <i>nlink</i>, number of hard links to the file;<br>
- <i>uid</i>, user-id of owner;<br>
- <i>gid</i>, group-id of owner;<br>
- <i>rdev</i>, device type, for special file inode;<br>
- <i>access</i>, time of last access;<br>
- <i>modification</i>, time of last data modification;<br>
- <i>change</i>, time of last file status change;<br>
- <i>size</i>, file size, in bytes;<br>
- <i>blocks</i>, block allocated for file; (Unix only)<br>
- <i>blksize</i>, optimal file system I/O blocksize; (Unix only)<br>
-</div>
+        <dt><strong><code>uid</code></strong></dt>
+		<dd>user-id of owner</dd
 
-Returns a table with file attributes described above.
-</li>
+        <dt><strong><code>gid</code></strong></dt>
+		<dd>group-id of owner</dd>
 
-<a name="chdir"></a>
-<li><b><tt>lfs.chdir (path)</tt></b><br>
- Changes the current working directory to the given
-<tt>path</tt>.<br>
- Returns <tt>true</tt> in case of success or <tt>nil</tt> plus an
-error string.
-</li>
+        <dt><strong><code>rdev</code></strong></dt>
+		<dd>device type, for special file inode</dd>
 
-<a name="getcwd"></a>
-<li><b><tt>lfs.currentdir ()</tt></b><br>
- Returns a string with the current working directory or
-<code>nil</code> plus an error string.
-</li>
+        <dt><strong><code>access</code></strong></dt>
+		<dd>time of last access</dd>
 
-<a name="dir"></a>
-<li><b><tt>lfs.dir (path)</tt></b><br>
- Lua iterator over the entries of a given directory. Raises an
-error if <tt>path</tt> is not a directory.
-</li>
+        <dt><strong><code>modification</code></strong></dt>
+		<dd>time of last data modification</dd>
 
-<a name="lock"></a>
-<li><b><tt>lfs.lock (filehandle, mode[, start[, length]])</tt></b><br>
- Locks a file or a part of it. This function works on <em>open
-files</em>; the file handle should be specified as the first
-argument. The string <code>mode</code> could be either
-<code>r</code> (for a read/shared lock) or <code>w</code> (for a
-write/exclusive lock). The optional arguments <code>start</code>
-and <code>length</code> can be used to specify a starting point and
-its length; both should be numbers.<br>
- Returns a boolean indicating if the operation was successful; in
-case of error, it returns <code>false</code> plus an error string.
-</li>
+        <dt><strong><code>change</code></strong></dt>
+		<dd>time of last file status change</dd>
 
-<a name="mkdir"></a>
-<li><b><tt>lfs.mkdir (dirname)</tt></b><br>
- Creates a new directory. The argument is the name of the new
-directory.<br>
- Returns a boolean indicating whether the operation succeeds or not
-(in this case, an error string is returned too).
-</li>
+        <dt><strong><code>size</code></strong></dt>
+		<dd>file size, in bytes</dd>
 
-<a name="touch"></a>
-<li><b><tt>lfs.touch (filepath [, atime [, mtime]])</tt></b><br>
-Set access and modification times of a file.
-This function is a bind to <tt>utime</tt> function.
-The first argument is the filename,
-the second argument is the access time,
-and the third argument is the modification time.
-Both times are provided in seconds (which should be generated with
-Lua standard function <tt>os.date</tt>).
-If the modifition time is omitted, the access time provided is used;
-if both times are omitted, the current time is used.<br>
-Returns a boolean indicating whethet the operation succeeds or not
-(followed by an error string in case it fails).
-</li>
+        <dt><strong><code>blocks</code></strong></dt>
+		<dd>block allocated for file; (Unix only)</dd>
+        
+        <dt><strong><code>blksize</code></strong></dt>
+		<dd>optimal file system I/O blocksize; (Unix only)</dd>
+    </dl>
 
-<a name="unlock"></a>
-<li><b><tt>lfs.unlock (filehandle[, start[, length]])</tt></b><br>
- Unlocks a file or a part of it. This function works on <em>open
-files</em>; the file handle should be specified as the first
-argument. The optional arguments <code>start</code> and
-<code>length</code> can be used to specify a starting point and its
-length; both should be numbers.<br>
- Returns a boolean indicating if the operation was successful; in
-case of error, it returns <code>false</code> plus a string
-describing the error.</li>
-</ul>
+
+    <dt><a name="chdir"></a><strong><code>lfs.chdir (path)</code></strong></dt>
+    <dd>Changes the current working directory to the given
+    <code>path</code>.<br />
+    Returns <code>true</code> in case of success or <code>nil</code> plus an
+    error string.</dd>
+    
+    
+    <dt><a name="getcwd"></a><strong><code>lfs.currentdir ()</code></strong></dt>
+    <dd>Returns a string with the current working directory or <code>nil</code>
+    plus an error string.</dd>
+    
+    <dt><a name="dir"></a><strong><code>lfs.dir (path)</code></strong></dt>
+    <dd>Lua iterator over the entries of a given directory. Raises an
+    error if <code>path</code> is not a directory.</dd>
+    
+    <dt><a name="lock"></a><strong><code>lfs.lock (filehandle, mode[, start[, length]])</code></strong></dt>
+    <dd>Locks a file or a part of it. This function works on <em>open files</em>; the
+    file handle should be specified as the first argument.
+    The string <code>mode</code> could be either
+    <code>r</code> (for a read/shared lock) or <code>w</code> (for a
+    write/exclusive lock). The optional arguments <code>start</code>
+    and <code>length</code> can be used to specify a starting point and
+    its length; both should be numbers.<br />
+    Returns a boolean indicating if the operation was successful; in
+    case of error, it returns <code>false</code> plus an error string.
+    </dd>
+    
+    <dt><a name="mkdir"></a><strong><code>lfs.mkdir (dirname)</code></strong></dt>
+    <dd>Creates a new directory. The argument is the name of the new
+    directory.<br />
+    Returns a boolean indicating whether the operation succeeds or not
+    (in this case, an error string is returned too).</dd>
+    
+    <dt><a name="touch"></a><strong><code>lfs.touch (filepath [, atime [, mtime]])</code></strong></dt>
+    <dd>Set access and modification times of a file. This function is
+    a bind to <code>utime</code> function. The first argument is the
+    filename, the second argument is the access time,
+    and the third argument is the modification time.
+    Both times are provided in seconds (which should be generated with
+    Lua standard function <code>os.date</code>).
+    If the modifition time is omitted, the access time provided is used;
+    if both times are omitted, the current time is used.<br />
+    Returns a boolean indicating whethet the operation succeeds or not
+    (followed by an error string in case it fails).</dd>
+    
+    <dt><a name="unlock"></a><strong><code>lfs.unlock (filehandle[, start[, length]])</code></strong></dt>
+    <dd>Unlocks a file or a part of it. This function works on
+    <em>open files</em>; the file handle should be specified as the first
+    argument. The optional arguments <code>start</code> and
+    <code>length</code> can be used to specify a starting point and its
+    length; both should be numbers.<br />
+    Returns a boolean indicating if the operation was successful; in
+    case of error, it returns <code>false</code> plus a string
+    describing the error.</dd>
+</dl>
 
 </div> <!-- id="content" -->
 
@@ -182,7 +192,7 @@ describing the error.</li>
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
 	<p><small>
-	$Id: manual.html,v 1.10 2005/05/04 02:28:51 tuler Exp $
+	$Id: manual.html,v 1.11 2005/05/19 20:24:31 uid20002 Exp $
 	</small></p>
 </div> <!-- id="about" -->
 
