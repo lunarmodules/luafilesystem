@@ -87,10 +87,10 @@ If you are using Lua 5.1, nothing should be done.</p>
         <dl>
         <dt><strong><code>dev</code></strong></dt>
         <dd>on Unix systems, represents the device that the inode resides on. On Windows systems,
-        represents the drive number of the disk containing the file.</dd>
+        represents the drive number of the disk containing the file</dd>
         
         <dt><strong><code>ino</code></strong></dt>
-        <dd>on Unix systems, represents the inode number. On Windows systems this has no meaning.</dd>
+        <dd>on Unix systems, represents the inode number. On Windows systems this has no meaning</dd>
         
         <dt><strong><code>mode</code></strong></dt>
         <dd>string representing the associated protection mode (the values could be
@@ -102,14 +102,14 @@ If you are using Lua 5.1, nothing should be done.</p>
 		<dd>number of hard links to the file</dd>
 
         <dt><strong><code>uid</code></strong></dt>
-		<dd>user-id of owner</dd>
+		<dd>user-id of owner (Unix only, always 0 on Windows)</dd>
 
         <dt><strong><code>gid</code></strong></dt>
-		<dd>group-id of owner</dd>
+		<dd>group-id of owner (Unix only, always 0 on Windows)</dd>
 
         <dt><strong><code>rdev</code></strong></dt>
 		<dd>on Unix systems, represents the device type, for special file inode.
-        On Windows systems represents the same as <code>dev</code>.</dd>
+        On Windows systems represents the same as <code>dev</code></dd>
 
         <dt><strong><code>access</code></strong></dt>
 		<dd>time of last access</dd>
@@ -194,7 +194,7 @@ If you are using Lua 5.1, nothing should be done.</p>
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
 	<p><small>
-	$Id: manual.html,v 1.15 2005/05/20 18:18:13 uid20002 Exp $
+	$Id: manual.html,v 1.16 2005/05/20 18:23:29 uid20002 Exp $
 	</small></p>
 </div> <!-- id="about" -->
 
