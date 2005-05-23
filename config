@@ -17,7 +17,7 @@ COMPAT_DIR= ../compat/src
 # Compilation directives
 # On FreeBSD systems, the following line should be commented
 DLLIB= -ldl
-LUA_LIBS= -llua -llualib -lm
+LUA_LIBS= -llua50 -lm
 WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings
 INCS= -I$(LUA_INC) -I$(COMPAT_DIR)
 LIBS= $(LUA_LIBS) $(DLLIB)
