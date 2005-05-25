@@ -1,14 +1,14 @@
-# $Id: Makefile,v 1.16 2005/05/20 18:32:51 uid20006 Exp $
+# $Id: Makefile,v 1.17 2005/05/25 12:55:32 tomas Exp $
 
 T= lfs
 
 include ./config
 
-V= 1.1
+V= 1.1.0
 DIST_DIR= luafilesystem-$V
 TAR_FILE= $(DIST_DIR).tar.gz
 ZIP_FILE= $(DIST_DIR).zip
-LIBNAME= lib$T.$V$(LIB_EXT)
+LIBNAME= lib$T.$V.so
 
 COMPAT_O= $(COMPAT_DIR)/compat-5.1.o
 SRCS= src/$T.c
@@ -18,7 +18,7 @@ OBJS= src/$T.o $(COMPAT_O)
 lib: src/$(LIBNAME)
 
 src/$(LIBNAME): $(OBJS)
-	$(CC) $(CFLAGS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) $(LIBS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS)
 
 $(COMPAT_O): $(COMPAT_DIR)/compat-5.1.c
 	$(CC) -c $(CFLAGS) -o $@ $(COMPAT_DIR)/compat-5.1.c

@@ -1,15 +1,11 @@
 # Installation directories
 # System's libraries directory (where binary libraries are installed)
 LUA_LIBDIR= /usr/local/lib/lua/5.0
-# System's lua directory (where Lua libraries are installed)
-LUA_DIR= /usr/local/share/lua/5.0
 # Lua includes directory
 LUA_INC= /usr/local/include/lua5
 
 # OS dependent
-#LIB_EXT= .dylib
-LIB_EXT= .so
-#LIB_OPTION= -dynamiclib #for MacOS X
+#LIB_OPTION= -bundle -undefined  dynamic_lookup #for MacOS X
 LIB_OPTION= -shared #for Linux
 
 COMPAT_DIR= ../compat/src
@@ -17,7 +13,7 @@ COMPAT_DIR= ../compat/src
 # Compilation directives
 # On FreeBSD systems, the following line should be commented
 DLLIB= -ldl
-LUA_LIBS= -llua50 -lm
+#LUA_LIBS= -llua50 -lm
 WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings
 INCS= -I$(LUA_INC) -I$(COMPAT_DIR)
 LIBS= $(LUA_LIBS) $(DLLIB)
