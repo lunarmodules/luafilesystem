@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.18 2005/05/28 21:48:36 tomas Exp $
+# $Id: Makefile,v 1.19 2005/05/30 17:54:49 uid20006 Exp $
 
 T= lfs
 
 include ./config
 
-V= 1.1.0
+V= 1.1
 DIST_DIR= luafilesystem-$V
 TAR_FILE= $(DIST_DIR).tar.gz
 ZIP_FILE= $(DIST_DIR).zip
