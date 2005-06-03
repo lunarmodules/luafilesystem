@@ -7,10 +7,11 @@
 **   lfs.dir (path)
 **   lfs.lock (fh, mode)
 **   lfs.mkdir (path)
+**   lfs.rmdir (path)
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.21 2005/05/20 18:32:19 uid20006 Exp $
+** $Id: lfs.c,v 1.22 2005/06/03 21:50:59 tuler Exp $
 */
 
 #include <errno.h>
@@ -250,6 +251,23 @@ static int make_dir (lua_State *L) {
 	return 1;
 }
 
+/*
+** Removes a directory.
+** @param #1 Directory path.
+*/
+static int remove_dir (lua_State *L) {
+	const char *path = luaL_checkstring (L, 1);
+	int fail;
+
+	fail = rmdir (path);
+
+	lua_pushboolean (L, !fail);
+	if (fail) {
+		lua_pushfstring (L, "%s", strerror(errno));
+		return 2;
+	}
+	return 1;
+}
 
 /*
 ** Directory iterator
@@ -519,6 +537,7 @@ static const struct luaL_reg fslib[] = {
 	{"dir", dir_iter_factory},
 	{"lock", file_lock},
 	{"mkdir", make_dir},
+	{"rmdir", remove_dir},
 	{"touch", file_utime},
 	{"unlock", file_unlock},
 	{NULL, NULL},
