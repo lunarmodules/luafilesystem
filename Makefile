@@ -1,13 +1,10 @@
-# $Id: Makefile,v 1.19 2005/05/30 17:54:49 uid20006 Exp $
+# $Id: Makefile,v 1.20 2005/06/04 18:22:29 tomas Exp $
 
 T= lfs
 
 include ./config
 
 V= 1.1
-DIST_DIR= luafilesystem-$V
-TAR_FILE= $(DIST_DIR).tar.gz
-ZIP_FILE= $(DIST_DIR).zip
 LIBNAME= lib$T.$V.so
 
 COMPAT_O= $(COMPAT_DIR)/compat-5.1.o
@@ -29,13 +26,4 @@ install: src/$(LIBNAME)
 	ln -f -s $(LUA_LIBDIR)/$(LIBNAME) $(LUA_LIBDIR)/$T.so
 
 clean:
-	rm -f $L src/$(LIBNAME) $(OBJS)
-
-dist: dist_dir
-	tar -czf $(TAR_FILE) $(DIST_DIR)
-	zip -rq $(ZIP_FILE) $(DIST_DIR)/*
-	rm -rf $(DIST_DIR)
-
-dist_dir:
-	mkdir -p $(DIST_DIR)
-	cp config $(SRCS) $T.h $T.def Makefile *html luafilesystem.png $(DIST_DIR)
+	rm -f src/$(LIBNAME) $(OBJS)
