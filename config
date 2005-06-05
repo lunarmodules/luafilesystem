@@ -5,9 +5,10 @@ LUA_LIBDIR= /usr/local/lib/lua/5.0
 LUA_INC= /usr/local/include/lua5
 
 # OS dependent
-#LIB_OPTION= -bundle -undefined  dynamic_lookup #for MacOS X
 LIB_OPTION= -shared #for Linux
+#LIB_OPTION= -bundle -undefined dynamic_lookup #for MacOS X
 
+LIBNAME= lib$T-$V.so
 COMPAT_DIR= ../compat/src
 
 # Compilation directives
@@ -20,3 +21,4 @@ LIBS= $(LUA_LIBS) $(DLLIB)
 CFLAGS= $(WARN) $(INCS)
 CC= gcc
 
+# $Id: config,v 1.11 2005/06/05 00:36:18 tomas Exp $

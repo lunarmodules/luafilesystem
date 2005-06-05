@@ -1,11 +1,9 @@
-# $Id: Makefile,v 1.20 2005/06/04 18:22:29 tomas Exp $
+# $Id: Makefile,v 1.21 2005/06/05 00:36:18 tomas Exp $
 
 T= lfs
+V= 1.1
 
 include ./config
-
-V= 1.1
-LIBNAME= lib$T.$V.so
 
 COMPAT_O= $(COMPAT_DIR)/compat-5.1.o
 SRCS= src/$T.c
