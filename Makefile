@@ -1,9 +1,10 @@
-# $Id: Makefile,v 1.21 2005/06/05 00:36:18 tomas Exp $
+# $Id: Makefile,v 1.22 2005/06/06 20:10:10 tomas Exp $
 
 T= lfs
 V= 1.1
+CONFIG= ./config
 
-include ./config
+include $(CONFIG)
 
 COMPAT_O= $(COMPAT_DIR)/compat-5.1.o
 SRCS= src/$T.c
