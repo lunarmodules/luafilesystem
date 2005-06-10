@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.23 2005/06/06 22:15:53 tomas Exp $
+# $Id: Makefile,v 1.24 2005/06/10 13:01:15 tomas Exp $
 
 T= lfs
-V= 1.1
+V= 1.2
 CONFIG= ./config
 
 include $(CONFIG)
@@ -14,7 +14,7 @@ OBJS= src/$T.o $(COMPAT_O)
 lib: src/$(LIBNAME)
 
 src/$(LIBNAME): $(OBJS)
-	export MACOSX_DEPLOYMENT_TARGET="10.3"; $(CC) $(CFLAGS) $(LIBS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS)
+	export MACOSX_DEPLOYMENT_TARGET="10.3"; $(CC) $(CFLAGS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS)
 
 $(COMPAT_O): $(COMPAT_DIR)/compat-5.1.c
 	$(CC) -c $(CFLAGS) -o $@ $(COMPAT_DIR)/compat-5.1.c

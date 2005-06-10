@@ -12,13 +12,9 @@ LIBNAME= lib$T-$V.so
 COMPAT_DIR= ../compat/src
 
 # Compilation directives
-# On FreeBSD systems, the following line should be commented
-#DLLIB= -ldl
-#LUA_LIBS= -llua50 -lm
 WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings
 INCS= -I$(LUA_INC) -I$(COMPAT_DIR)
-LIBS= $(LUA_LIBS) $(DLLIB)
 CFLAGS= $(WARN) $(INCS)
 CC= gcc
 
-# $Id: config,v 1.12 2005/06/06 20:10:10 tomas Exp $
+# $Id: config,v 1.13 2005/06/10 13:01:15 tomas Exp $
