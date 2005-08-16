@@ -54,7 +54,7 @@ new_att = assert (lfs.attributes (tmpdir))
 assert (new_att.access == attrib.access)
 assert (new_att.modification == attrib.modification)
 -- Remove new directory
-assert (os.remove (tmpdir), "could not remove new directory")
+assert (lfs.rmdir (tmpdir), "could not remove new directory")
 assert (lfs.mkdir (tmpdir.."/lfs_tmp_dir") == false, "could create a directory inside a non-existent one")
 -- Trying to get attributes of a non-existent file
 assert (lfs.attributes ("this couldn't be an actual file") == nil, "could get attributes of a non-existent file")
