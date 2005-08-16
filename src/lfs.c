@@ -11,7 +11,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.25 2005/08/16 00:11:15 uid20013 Exp $
+** $Id: lfs.c,v 1.26 2005/08/16 13:47:58 uid20006 Exp $
 */
 
 #include <errno.h>
@@ -277,9 +277,9 @@ static int remove_dir (lua_State *L) {
 */
 static int dir_iter (lua_State *L) {
 	dir_data *d = (dir_data *)lua_touserdata (L, lua_upvalueindex (1));
-	luaL_argcheck (L, !d->closed, 1, "closed directory");
 #ifdef _WIN32
 	struct _finddata_t c_file;
+	luaL_argcheck (L, !d->closed, 1, "closed directory");
 	if (d->hFile == 0L) { /* first entry */
 		if ((d->hFile = _findfirst (d->pattern, &c_file)) == -1L) {
 			lua_pushnil (L);
@@ -302,6 +302,7 @@ static int dir_iter (lua_State *L) {
 	}
 #else
 	struct dirent *entry;
+	luaL_argcheck (L, !d->closed, 1, "closed directory");
 	if ((entry = readdir (d->dir)) != NULL) {
 		lua_pushstring (L, entry->d_name);
 		return 1;
