@@ -44,16 +44,16 @@ local f = io.open(tmpfile, "w")
 f:close()
 
 -- Change access time
-assert (lfs.touch (tmpfile, 11))
+assert (lfs.touch (tmpfile, 86401))
 local new_att = assert (lfs.attributes (tmpfile))
-assert (new_att.access == 11, "could not set access time")
-assert (new_att.modification == 11, "could not set modification time")
+assert (new_att.access == 86401, "could not set access time")
+assert (new_att.modification == 86401, "could not set modification time")
 
 -- Change access and modification time
-assert (lfs.touch (tmpfile, 33, 22))
+assert (lfs.touch (tmpfile, 86403, 86402))
 local new_att = assert (lfs.attributes (tmpfile))
-assert (new_att.access == 33, "could not set access time")
-assert (new_att.modification == 22, "could not set modification time")
+assert (new_att.access == 86403, "could not set access time")
+assert (new_att.modification == 86402, "could not set modification time")
 
 -- Restore access time to current value
 assert (lfs.touch (tmpfile))
