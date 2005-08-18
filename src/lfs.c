@@ -11,7 +11,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.26 2005/08/16 13:47:58 uid20006 Exp $
+** $Id: lfs.c,v 1.27 2005/08/18 01:00:44 tomas Exp $
 */
 
 #include <errno.h>
@@ -277,9 +277,9 @@ static int remove_dir (lua_State *L) {
 */
 static int dir_iter (lua_State *L) {
 	dir_data *d = (dir_data *)lua_touserdata (L, lua_upvalueindex (1));
+	luaL_argcheck (L, !d->closed, 1, "closed directory");
 #ifdef _WIN32
 	struct _finddata_t c_file;
-	luaL_argcheck (L, !d->closed, 1, "closed directory");
 	if (d->hFile == 0L) { /* first entry */
 		if ((d->hFile = _findfirst (d->pattern, &c_file)) == -1L) {
 			lua_pushnil (L);
@@ -302,7 +302,6 @@ static int dir_iter (lua_State *L) {
 	}
 #else
 	struct dirent *entry;
-	luaL_argcheck (L, !d->closed, 1, "closed directory");
 	if ((entry = readdir (d->dir)) != NULL) {
 		lua_pushstring (L, entry->d_name);
 		return 1;
@@ -451,10 +450,92 @@ static int file_utime (lua_State *L) {
 }
 
 
+/* inode protection mode */
+static void push_st_mode (lua_State *L, struct stat *info) {
+	lua_pushstring (L, mode2string (info->st_mode));
+}
+/* device inode resides on */
+static void push_st_dev (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_dev);
+}
+/* inode's number */
+static void push_st_ino (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_ino);
+}
+/* number of hard links to the file */
+static void push_st_nlink (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_nlink);
+}
+/* user-id of owner */
+static void push_st_uid (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_uid);
+}
+/* group-id of owner */
+static void push_st_gid (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_gid);
+}
+/* device type, for special file inode */
+static void push_st_rdev (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_rdev);
+}
+/* time of last access */
+static void push_st_atime (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, info->st_atime);
+}
+/* time of last data modification */
+static void push_st_mtime (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, info->st_mtime);
+}
+/* time of last file status change */
+static void push_st_ctime (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, info->st_ctime);
+}
+/* file size, in bytes */
+static void push_st_size (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_size);
+}
+#ifndef _WIN32
+/* blocks allocated for file */
+static void push_st_blocks (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_blocks);
+}
+/* optimal file system I/O blocksize */
+static void push_st_blksize (lua_State *L, struct stat *info) {
+	lua_pushnumber (L, (lua_Number)info->st_blksize);
+}
+#endif
+
+typedef void (*_push_function) (lua_State *L, struct stat *info);
+
+struct _stat_members {
+	const char *name;
+	_push_function push;
+};
+
+struct _stat_members members[] = {
+	{ "mode",         push_st_mode },
+	{ "dev",          push_st_dev },
+	{ "ino",          push_st_ino },
+	{ "nlink",        push_st_nlink },
+	{ "uid",          push_st_uid },
+	{ "gid",          push_st_gid },
+	{ "rdev",         push_st_rdev },
+	{ "access",       push_st_atime },
+	{ "modification", push_st_mtime },
+	{ "change",       push_st_ctime },
+	{ "size",         push_st_size },
+#ifndef _WIN32
+	{ "blocks",       push_st_blocks },
+	{ "blksize",      push_st_blksize },
+#endif
+	{ NULL, NULL }
+};
+
 /*
 ** Get file information
 */
 static int file_info (lua_State *L) {
+	int i;
 	struct stat info;
 	const char *file = luaL_checkstring (L, 1);
 
@@ -463,62 +544,29 @@ static int file_info (lua_State *L) {
 		lua_pushfstring (L, "cannot obtain information from file `%s'", file);
 		return 2;
 	}
-	lua_newtable (L);
-	/* device inode resides on */
-	lua_pushliteral (L, "dev");
-	lua_pushnumber (L, (lua_Number)info.st_dev);
-	lua_rawset (L, -3);
-	/* inode's number */
-	lua_pushliteral (L, "ino");
-	lua_pushnumber (L, (lua_Number)info.st_ino);
-	lua_rawset (L, -3);
-	/* inode protection mode */
-	lua_pushliteral (L, "mode");
-	lua_pushstring (L, mode2string (info.st_mode));
-	lua_rawset (L, -3);
-	/* number of hard links to the file */
-	lua_pushliteral (L, "nlink");
-	lua_pushnumber (L, (lua_Number)info.st_nlink);
-	lua_rawset (L, -3);
-	/* user-id of owner */
-	lua_pushliteral (L, "uid");
-	lua_pushnumber (L, (lua_Number)info.st_uid);
-	lua_rawset (L, -3);
-	/* group-id of owner */
-	lua_pushliteral (L, "gid");
-	lua_pushnumber (L, (lua_Number)info.st_gid);
-	lua_rawset (L, -3);
-	/* device type, for special file inode */
-	lua_pushliteral (L, "rdev");
-	lua_pushnumber (L, (lua_Number)info.st_rdev);
-	lua_rawset (L, -3);
-	/* time of last access */
-	lua_pushliteral (L, "access");
-	lua_pushnumber (L, info.st_atime);
-	lua_rawset (L, -3);
-	/* time of last data modification */
-	lua_pushliteral (L, "modification");
-	lua_pushnumber (L, info.st_mtime);
-	lua_rawset (L, -3);
-	/* time of last file status change */
-	lua_pushliteral (L, "change");
-	lua_pushnumber (L, info.st_ctime);
-	lua_rawset (L, -3);
-	/* file size, in bytes */
-	lua_pushliteral (L, "size");
-	lua_pushnumber (L, (lua_Number)info.st_size);
-	lua_rawset (L, -3);
+	if (lua_isstring (L, 2)) {
+		int v;
+		const char *member = lua_tostring (L, 2);
+		if (strcmp (member, "mode") == 0) v = 0;
 #ifndef _WIN32
-	/* blocks allocated for file */
-	lua_pushliteral (L, "blocks");
-	lua_pushnumber (L, (lua_Number)info.st_blocks);
-	lua_rawset (L, -3);
-	/* optimal file system I/O blocksize */
-	lua_pushliteral (L, "blksize");
-	lua_pushnumber (L, (lua_Number)info.st_blksize);
-	lua_rawset (L, -3);
+		else if (strcmp (member, "blksize") == 0) v = 12;
 #endif
-
+		else /* look for member */
+			for (v = 1; members[v].name; v++)
+				if (*members[v].name == *member)
+					break;
+		/* push member value and return */
+		members[v].push (L, &info);
+		return 1;
+	} else if (!lua_istable (L, 2))
+		/* creates a table if none is given */
+		lua_newtable (L);
+	/* stores all members in table on top of the stack */
+	for (i = 0; members[i].name; i++) {
+		lua_pushstring (L, members[i].name);
+		members[i].push (L, &info);
+		lua_rawset (L, -3);
+	}
 	return 1;
 }
 
