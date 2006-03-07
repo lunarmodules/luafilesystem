@@ -56,7 +56,7 @@ LINK32=link.exe
 # ADD LINK32 lua50.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386 /out:"../bin/vc6/lfs.dll" /libpath:"../../external-src/lua50/lib/dll"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=cd ../bin/vc6	zip.exe luafilesystem-1.1-win32.zip lfs.dll
+PostBuild_Cmds=cd ../bin/vc6	zip.exe luafilesystem-1.2-win32.zip lfs.dll
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "luafilesystem_dll - Win32 Debug"
