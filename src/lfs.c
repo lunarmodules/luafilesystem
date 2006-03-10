@@ -1,6 +1,6 @@
 /*
 ** LuaFileSystem
-** Copyright Kepler Project 2003-2006 (http://www.keplerproject.org/luafilesystem)
+** Copyright Kepler Project 2004-2006 (http://www.keplerproject.org/luafilesystem)
 **
 ** File system manipulation library.
 ** This library offers these functions:
@@ -14,7 +14,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.29 2006/03/10 22:38:11 carregal Exp $
+** $Id: lfs.c,v 1.30 2006/03/10 23:37:32 carregal Exp $
 */
 
 #include <errno.h>
