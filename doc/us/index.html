@@ -11,9 +11,11 @@
 <div id="container">
 
 <div id="product">
-	<div id="product_logo"><a href="http://www.keplerproject.org">
+	<div id="product_logo">
+        <a href="http://www.keplerproject.org">
 		<img alt="LuaFileSystem" src="luafilesystem.png"/>
-	</a></div>
+	    </a>
+    </div>
 	<div id="product_name"><big><strong>LuaFileSystem</strong></big></div>
 	<div id="product_description">File System Library for the Lua Programming Language</div>
 </div> <!-- id="product" -->
@@ -41,6 +43,12 @@
 			</ul>
 		</li>
 		<li><a href="examples.html">Examples</a></li>
+        <li><a href="http://luaforge.net/projects/luafilesystem/">Project</a>
+            <ul>
+                <li><a href="http://luaforge.net/tracker/?group_id=66">Bug Tracker</a></li>
+                <li><a href="http://luaforge.net/scm/?group_id=66">CVS</a></li>
+            </ul>
+        </li>
 		<li><a href="license.html">License</a></li>
 	</ul>
 </div> <!-- id="navigation" -->
@@ -81,24 +89,31 @@ LuaForge page.</p>
 
 <h2><a name="history"></a>History</h2>
 
-<ul>
-    <li>[xx/xx/2005] Version 1.2 released<br/>
-      <ul>
+<dl class="history">
+    <dt><strong>Version 1.2</strong> [13/Mar/2006]</dt>
+    <dd>
+    <ul>
         <li>added optional argument to
-            <a href="manual.html#attributes"><code>lfs.attributes</code></a>
+        <a href="manual.html#attributes"><code>lfs.attributes</code></a></li>
         <li>added function
-            <a href="manual.html#rmdir"><code>lfs.rmdir</code></a>
-        <li>bug correction on <code>lfs.dir</code>
-      </ul>
-	</li>
-    <li>[30/May/2005] Version 1.1 released<br/>
-        added function <code>lfs.touch</code>.
-    </li>
-    <li>[21/Jan/2005] Version 1.0 released</li>
-    <li>[10/Nov/2004] Version 1.0 beta released</li>
-</ul>
+        <a href="manual.html#rmdir"><code>lfs.rmdir</code></a></li>
+        <li>bug correction on <code>lfs.dir</code></li>
+    </ul>
+    </dd>
 
+    <dt><strong>Version 1.1</strong> [30/May/2005]</dt>
+    <dd>
+    <ul>
+        <li>added function <code>lfs.touch</code>.</li>
+    </ul>
+    </dd>
 
+    <dt><strong>Version 1.0</strong> [21/Jan/2005]</dt>
+    <dd />
+
+    <dt><strong>Version 1.0 Beta</strong> [10/Nov/2004]</dt>
+    <dd />
+</dl>
 
 <h2><a name="credits"></a>Credits</h2>
 
@@ -113,15 +128,17 @@ which holds its copyright.</p>
 <a href="mailto:info-NO-SPAM-THANKS@keplerproject.org">contact us</a>.
 Comments are welcome!</p>
 
+<p>You can also reach other Kepler developers and users on the Kepler Project
+<a href="http://luaforge.net/mail/?group_id=104">mailing list</a>.</p>
+
 </div> <!-- id="content" -->
 
 </div> <!-- id="main" -->
 
 <div id="about">
-	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
-	<p><small>
-	$Id: index.html,v 1.26 2006/03/04 00:33:43 tomas Exp $
-	</small></p>
+	<p><a href="http://validator.w3.org/check?uri=referer">
+    <img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+	<p><small>$Id: index.html,v 1.27 2006/03/10 23:37:48 carregal Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->
