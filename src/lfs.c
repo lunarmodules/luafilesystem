@@ -1,4 +1,7 @@
 /*
+** LuaFileSystem
+** Copyright Kepler Project 2003-2006 (http://www.keplerproject.org/luafilesystem)
+**
 ** File system manipulation library.
 ** This library offers these functions:
 **   lfs.attributes (filepath [, attributename])
@@ -11,7 +14,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.28 2006/03/07 19:07:57 tuler Exp $
+** $Id: lfs.c,v 1.29 2006/03/10 22:38:11 carregal Exp $
 */
 
 #include <errno.h>
@@ -578,7 +581,7 @@ static int file_info (lua_State *L) {
 */
 static void set_info (lua_State *L) {
 	lua_pushliteral (L, "_COPYRIGHT");
-	lua_pushliteral (L, "Copyright (C) 2003-2005 Kepler Project");
+	lua_pushliteral (L, "Copyright (C) 2003-2006 Kepler Project");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_DESCRIPTION");
 	lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
