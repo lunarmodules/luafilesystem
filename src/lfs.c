@@ -14,7 +14,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.30 2006/03/10 23:37:32 carregal Exp $
+** $Id: lfs.c,v 1.31 2006/03/13 00:06:24 tomas Exp $
 */
 
 #include <errno.h>
@@ -209,33 +209,6 @@ static int file_unlock (lua_State *L) {
 	}
 }
 
-
-/*
-static void cgilua_sleep( lua_State *L )
-{
-  unsigned int usec = (unsigned int)luaL_check_number( L, 1 );
-
-#ifndef _WIN32
-  sleep( (unsigned int)ceil( usec/1000.0 ));
-#else
-  Sleep( (DWORD)usec );
-#endif
-}
-
-static void cgilua_filesize( lua_State *L )
-{
-  struct stat info;
-  char *file = luaL_check_string( L, 1 );
-
-  if (stat(file, &info))
-  {
-    lua_pushnil( L );
-    lua_pushstring( L, "Cannot retrieve stat info from file" );
-    return;
-  }
-  lua_pushnumber(L, info.st_size);
-}
-*/
 
 static int make_dir (lua_State *L) {
 	const char *path = luaL_checkstring (L, 1);
