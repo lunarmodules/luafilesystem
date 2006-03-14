@@ -14,7 +14,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.31 2006/03/13 00:06:24 tomas Exp $
+** $Id: lfs.c,v 1.32 2006/03/14 13:39:38 tomas Exp $
 */
 
 #include <errno.h>
@@ -182,7 +182,7 @@ static int file_lock (lua_State *L) {
 		lua_pushboolean (L, 1);
 		return 1;
 	} else {
-		lua_pushboolean (L, 0);
+		lua_pushnil (L);
 		lua_pushfstring (L, "%s", strerror(errno));
 		return 2;
 	}
@@ -203,7 +203,7 @@ static int file_unlock (lua_State *L) {
 		lua_pushboolean (L, 1);
 		return 1;
 	} else {
-		lua_pushboolean (L, 0);
+		lua_pushnil (L);
 		lua_pushfstring (L, "%s", strerror(errno));
 		return 2;
 	}
@@ -221,12 +221,13 @@ static int make_dir (lua_State *L) {
 	fail =  mkdir (path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
 	                     S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
 #endif
-	lua_pushboolean (L, !fail);
 	if (fail) {
+		lua_pushnil (L);
         lua_pushfstring (L, "%s", strerror(errno));
 		return 2;
 	}
 	umask (oldmask);
+	lua_pushboolean (L, 1);
 	return 1;
 }
 
@@ -240,11 +241,12 @@ static int remove_dir (lua_State *L) {
 
 	fail = rmdir (path);
 
-	lua_pushboolean (L, !fail);
 	if (fail) {
+		lua_pushnil (L);
 		lua_pushfstring (L, "%s", strerror(errno));
 		return 2;
 	}
+	lua_pushboolean (L, 1);
 	return 1;
 }
 
