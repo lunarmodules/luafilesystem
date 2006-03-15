@@ -63,11 +63,6 @@ systems offered by the standard Lua distribution.</p>
 <p>LuaFileSystem offers a portable way to access
 the underlying directory structure and file attributes.</p>
 
-<p>LuaFileSystem source is distributed as a pair of C source and header
-files. The distribution provides a <code>Makefile</code> prepared to
-compile the library and install it. The file <code>config</code> should
-be edited to suit the needs of the aimed platform.</p>
-
 <h2><a name="installation"></a>Installation</h2>
 
 <p>LuaFileSystem follows the
@@ -79,7 +74,7 @@ binary properly.
 The compiled binary should be copied to a directory in your
 <code>LUA_CPATH</code>.</p>
 
-<p>Windows users can use the pre-compiled version of LuaFileSystem
+<p>Windows users can use the binary version of LuaFileSystem
 (<code>lfs.dll</code>) available at
 <a href="http://luaforge.net/projects/luafilesystem/files">LuaForge</a>.</p>
 
@@ -102,11 +97,11 @@ LuaFileSystem offers the following functions:
     attribute <code>mode</code> is a string, all the others are numbers: 
         <dl>
         <dt><strong><code>dev</code></strong></dt>
-        <dd>on Unix systems, represents the device that the inode resides on. On Windows systems,
+        <dd>on Unix systems, this represents the device that the inode resides on. On Windows systems,
         represents the drive number of the disk containing the file</dd>
         
         <dt><strong><code>ino</code></strong></dt>
-        <dd>on Unix systems, represents the inode number. On Windows systems this has no meaning</dd>
+        <dd>on Unix systems, this represents the inode number. On Windows systems this has no meaning</dd>
         
         <dt><strong><code>mode</code></strong></dt>
         <dd>string representing the associated protection mode (the values could be
@@ -124,7 +119,7 @@ LuaFileSystem offers the following functions:
 		<dd>group-id of owner (Unix only, always 0 on Windows)</dd>
 
         <dt><strong><code>rdev</code></strong></dt>
-		<dd>on Unix systems, represents the device type, for special file inode.
+		<dd>on Unix systems, represents the device type, for special file inodes.
         On Windows systems represents the same as <code>dev</code></dd>
 
         <dt><strong><code>access</code></strong></dt>
@@ -220,7 +215,7 @@ LuaFileSystem offers the following functions:
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer">
     <img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
-	<p><small>$Id: manual.html,v 1.29 2006/03/14 15:03:34 tomas Exp $</small></p>
+	<p><small>$Id: manual.html,v 1.30 2006/03/15 16:44:04 carregal Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->
