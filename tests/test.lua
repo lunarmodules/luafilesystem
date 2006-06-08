@@ -1,10 +1,11 @@
-#!/usr/local/bin/lua50
+#!/usr/local/bin/lua5.1
 
 local tmp = "/tmp"
 local sep = "/"
 local upper = ".."
 
 require"lfs"
+print (lfs._VERSION)
 
 function attrdir (path)
 	for file in lfs.dir(path) do
