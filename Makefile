@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.26 2005/06/27 17:06:01 tomas Exp $
+# $Id: Makefile,v 1.27 2006/06/08 16:23:25 tomas Exp $
 
 T= lfs
 V= 1.2
@@ -6,7 +6,10 @@ CONFIG= ./config
 
 include $(CONFIG)
 
+ifeq "$(LUA_VERSION_NUM)" "500"
 COMPAT_O= $(COMPAT_DIR)/compat-5.1.o
+endif
+
 SRCS= src/$T.c
 OBJS= src/$T.o $(COMPAT_O)
 
