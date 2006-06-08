@@ -14,7 +14,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.33 2006/06/08 16:16:23 tomas Exp $
+** $Id: lfs.c,v 1.34 2006/06/08 18:06:18 tomas Exp $
 */
 
 #include <errno.h>
@@ -564,7 +564,7 @@ static void set_info (lua_State *L) {
 	lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_VERSION");
-	lua_pushliteral (L, "LuaFileSystem 1.2");
+	lua_pushliteral (L, "LuaFileSystem 1.2.1");
 	lua_settable (L, -3);
 }
 
