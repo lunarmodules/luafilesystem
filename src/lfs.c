@@ -14,7 +14,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.34 2006/06/08 18:06:18 tomas Exp $
+** $Id: lfs.c,v 1.35 2006/12/04 15:28:53 mascarenhas Exp $
 */
 
 #include <errno.h>
@@ -39,10 +39,6 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-#if ! defined (LUA_VERSION_NUM) || LUA_VERSION_NUM < 501
-#include "compat-5.1.h"
-#endif
-
 #include "lfs.h"
 
 /* Define 'strerror' for systems that do not implement it */

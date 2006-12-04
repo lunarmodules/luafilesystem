@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.28 2006/06/08 18:06:18 tomas Exp $
+# $Id: Makefile,v 1.29 2006/12/04 15:28:53 mascarenhas Exp $
 
 T= lfs
 V= 1.2.1
@@ -6,21 +6,13 @@ CONFIG= ./config
 
 include $(CONFIG)
 
-ifeq "$(LUA_VERSION_NUM)" "500"
-COMPAT_O= $(COMPAT_DIR)/compat-5.1.o
-endif
-
 SRCS= src/$T.c
-OBJS= src/$T.o $(COMPAT_O)
-
+OBJS= src/$T.o
 
 lib: src/$(LIBNAME)
 
 src/$(LIBNAME): $(OBJS)
 	export MACOSX_DEPLOYMENT_TARGET="10.3"; $(CC) $(CFLAGS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS)
-
-$(COMPAT_O): $(COMPAT_DIR)/compat-5.1.c
-	$(CC) -c $(CFLAGS) -o $@ $(COMPAT_DIR)/compat-5.1.c
 
 install: src/$(LIBNAME)
 	mkdir -p $(LUA_LIBDIR)
@@ -28,4 +20,4 @@ install: src/$(LIBNAME)
 	cd $(LUA_LIBDIR); ln -f -s $(LIBNAME) $T.so
 
 clean:
-	rm -f src/$(LIBNAME) $(OBJS) $(COMPAT_O)
+	rm -f src/$(LIBNAME) $(OBJS)
