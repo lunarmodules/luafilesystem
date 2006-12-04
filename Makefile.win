@@ -1,22 +1,21 @@
-# $Id: Makefile.win,v 1.1 2006/12/04 15:28:53 mascarenhas Exp $
+# $Id: Makefile.win,v 1.2 2006/12/04 18:24:18 mascarenhas Exp $
 
 T= lfs
 V= 1.2.1
-CONFIG= ./config.win
 
-include $(CONFIG)
+include config.win
 
-SRCS= src/$T.c
-OBJS= src/$T.obj
+SRCS= src\$T.c
+OBJS= src\$T.obj
 
-lib: src/$(LIBNAME)
+lib: src\$(LIBNAME)
 
-src/$(LIBNAME): $(OBJS)
-	link /dll /out:src/$(LIBNAME) $(OBJS) $(LUA_LIB)
+src\$(LIBNAME): $(OBJS)
+	link /dll /def:src\$T.def /out:src\$(LIBNAME) $(OBJS) $(LUA_LIB)
 
-install: src/$(LIBNAME)
-	mkdir -p $(LUA_LIBDIR)
-	copy src/$(LIBNAME) $(LUA_LIBDIR)
+install: src\$(LIBNAME)
+	IF NOT EXIST $(LUA_LIBDIR) mkdir $(LUA_LIBDIR)
+	copy src\$(LIBNAME) $(LUA_LIBDIR)
 
 clean:
-	del src/$(LIBNAME) $(OBJS)
+	del src\$(LIBNAME) $(OBJS)

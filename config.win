@@ -1,17 +1,17 @@
 # Installation directories
 # System's libraries directory (where binary libraries are installed)
-LUA_LIBDIR= c:/lua51/lib
+LUA_LIBDIR= c:\lua51\lib
 # Lua includes directory
-LUA_INC= c:/lua51/include
+LUA_INC= c:\lua51\include
 # Lua library
-LUA_LIB= c:/lua51/bin/lua51.lib
+LUA_LIB= c:\lua51\bin\lua5.1.lib
 
 LIBNAME= $T.dll
 
 # Compilation directives
-WARN= /O2 /Wall
+WARN= /O2
 INCS= /I$(LUA_INC)
 CFLAGS= $(WARN) $(INCS)
 CC= cl
 
-# $Id: config.win,v 1.1 2006/12/04 15:28:53 mascarenhas Exp $
+# $Id: config.win,v 1.2 2006/12/04 18:24:18 mascarenhas Exp $
