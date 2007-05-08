@@ -1,0 +1,43 @@
+Overview
+--------
+
+LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution. LuaFileSystem offers a portable way to access the underlying directory structure and file attributes. LuaFileSystem is free software and uses the same license as Lua 5.1
+
+Status
+------
+
+Current version is 1.2.1. It was developed for Lua 5.1.
+
+Download
+--------
+
+LuaFileSystem source can be downloaded from its Lua Forge page. If you are using LuaBinaries 5.1.2 a Windows binary version of LuaFileSystem can be found at the same LuaForge page.
+
+History
+-------
+
+Version 1.2.1 [08/May/2007]
+* compatible only with Lua 5.1 (Lua 5.0 support was dropped)
+
+Version 1.2 [15/Mar/2006]
+* added optional argument to lfs.attributes
+* added function lfs.rmdir
+* bug correction on lfs.dir
+
+Version 1.1 [30/May/2005]
+* added function lfs.touch.
+
+Version 1.0 [21/Jan/2005]
+Version 1.0 Beta [10/Nov/2004]
+
+Credits
+-------
+
+LuaFileSystem was designed by Roberto Ierusalimschy, André Carregal and Tomás Guisasola as part of the Kepler Project, which holds its copyright.
+
+Contact us
+----------
+
+For more information please contact us on (info @ keplerproject.org). Comments are welcome!
+
+You can also reach other Kepler developers and users on the Kepler Project mailing list.

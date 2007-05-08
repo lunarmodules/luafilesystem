@@ -37,6 +37,7 @@
 		<li><strong>Manual</strong>
 			<ul>
 				<li><a href="manual.html#introduction">Introduction</a></li>
+				<li><a href="manual.html#building">Building</a></li>
 				<li><a href="manual.html#installation">Installation</a></li>
 				<li><a href="manual.html#reference">Reference</a></li>
 			</ul>
@@ -63,16 +64,26 @@ systems offered by the standard Lua distribution.</p>
 <p>LuaFileSystem offers a portable way to access
 the underlying directory structure and file attributes.</p>
 
+<h2><a name="building"></a>Building</h2>
+
+<p>
+LuaFileSystem should be built with Lua 5.1 so the language library
+and header files for the target version must be installed properly.
+</p>
+
+<p>
+LuaFileSystem offers a Makefile and a separate configuration file,
+<code>config</code>,
+which should be edited to suit your installation before runnig
+<code>make</code>.
+The file has some definitions like paths to the external libraries,
+compiler options and the like.
+</p>
+
 <h2><a name="installation"></a>Installation</h2>
 
-<p>LuaFileSystem follows the
-<a href="http://www.keplerproject.org/compat/">package model</a>
-for Lua 5.1, therefore it should be "installed". Refer to
-<a href="http://www.keplerproject.org/compat/manual.html#configuration">
-Compat-5.1 configuration</a> section about how to install the compiled
-binary properly.
-The compiled binary should be copied to a directory in your
-<code>LUA_CPATH</code>.</p>
+<p>The LuaFileSystem compiled binary should be copied to a directory in your
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-package.cpath">C path</a>.</p>
 
 <p>Windows users can use the binary version of LuaFileSystem
 (<code>lfs.dll</code>) available at
@@ -96,7 +107,7 @@ LuaFileSystem offers the following functions:
     The attributes are described as follows;
     attribute <code>mode</code> is a string, all the others are numbers,
     and the time related attributes use the same time reference of
-    <a href="http://www.lua.org/manual/5.0/manual.html#5.7"><code>os.time</code></a>: 
+    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-os.time"><code>os.time</code></a>: 
         <dl>
         <dt><strong><code>dev</code></strong></dt>
         <dd>on Unix systems, this represents the device that the inode resides on. On Windows systems,
@@ -217,7 +228,7 @@ LuaFileSystem offers the following functions:
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer">
     <img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
-	<p><small>$Id: manual.html,v 1.30.2.1 2006/03/15 20:30:53 carregal Exp $</small></p>
+	<p><small>$Id: manual.html,v 1.30.2.2 2007/05/08 21:35:11 carregal Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->
