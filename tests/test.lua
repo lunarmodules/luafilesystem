@@ -34,7 +34,7 @@ assert (lfs.currentdir() == current, "error trying to change directories")
 assert (lfs.chdir ("this couldn't be an actual directory") == nil, "could change to a non-existent directory")
 
 -- Changing creating and removing directories
-local tmpdir = tmp..sep.."lfs_tmp_dir"
+local tmpdir = current..sep.."lfs_tmp_dir"
 local tmpfile = tmpdir..sep.."tmp_file"
 assert (lfs.mkdir (tmpdir), "could not make a new directory")
 local attrib, errmsg = lfs.attributes (tmpdir)
@@ -45,19 +45,20 @@ local f = io.open(tmpfile, "w")
 f:close()
 
 -- Change access time
-assert (lfs.touch (tmpfile, 86401))
+local testdate = os.time({ year = 2007, day = 10, month = 2})
+assert (lfs.touch (tmpfile, testdate))
 local new_att = assert (lfs.attributes (tmpfile))
-assert (new_att.access == 86401, "could not set access time")
-assert (new_att.modification == 86401, "could not set modification time")
+assert (new_att.access == testdate, "could not set access time")
+assert (new_att.modification == testdate, "could not set modification time")
 
 -- Change access and modification time
-assert (lfs.touch (tmpfile, 86403, 86402))
+assert (lfs.touch (tmpfile, testdate + 2, testdate + 1))
 local new_att = assert (lfs.attributes (tmpfile))
-assert (new_att.access == 86403, "could not set access time")
-assert (new_att.modification == 86402, "could not set modification time")
+assert (new_att.access == testdate + 2, "could not set access time")
+assert (new_att.modification == testdate + 1, "could not set modification time")
 
 -- Restore access time to current value
-assert (lfs.touch (tmpfile))
+assert (lfs.touch (tmpfile, attrib.access, attrib.modification))
 new_att = assert (lfs.attributes (tmpfile))
 assert (new_att.access == attrib.access)
 assert (new_att.modification == attrib.modification)
