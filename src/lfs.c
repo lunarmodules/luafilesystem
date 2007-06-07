@@ -1,6 +1,6 @@
 /*
 ** LuaFileSystem
-** Copyright Kepler Project 2004-2006 (http://www.keplerproject.org/luafilesystem)
+** Copyright Kepler Project 2004-2007 (http://www.keplerproject.org/luafilesystem)
 **
 ** File system manipulation library.
 ** This library offers these functions:
@@ -11,10 +11,11 @@
 **   lfs.lock (fh, mode)
 **   lfs.mkdir (path)
 **   lfs.rmdir (path)
+**   lfs.symlinkattributes (filepath [, attributename]) -- thanks to Sam Roberts
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.37 2007/05/15 12:58:35 tomas Exp $
+** $Id: lfs.c,v 1.38 2007/06/07 01:28:08 tomas Exp $
 */
 
 #include <errno.h>
@@ -511,14 +512,14 @@ struct _stat_members members[] = {
 };
 
 /*
-** Get file information
+** Get file or symbolic link information
 */
-static int file_info (lua_State *L) {
+static int _file_info_ (lua_State *L, int (*st)(const char*, struct stat*)) {
 	int i;
 	struct stat info;
 	const char *file = luaL_checkstring (L, 1);
 
-	if (stat(file, &info)) {
+	if (st(file, &info)) {
 		lua_pushnil (L);
 		lua_pushfstring (L, "cannot obtain information from file `%s'", file);
 		return 2;
@@ -551,6 +552,22 @@ static int file_info (lua_State *L) {
 
 
 /*
+** Get file information using stat.
+*/
+static int file_info (lua_State *L) {
+	return _file_info_ (L, stat);
+}
+
+
+/*
+** Get symbolic link information using lstat.
+*/
+static int link_info (lua_State *L) {
+	return _file_info_ (L, lstat);
+}
+
+
+/*
 ** Assumes the table is on top of the stack.
 */
 static void set_info (lua_State *L) {
@@ -561,7 +578,7 @@ static void set_info (lua_State *L) {
 	lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_VERSION");
-	lua_pushliteral (L, "LuaFileSystem 1.2.1");
+	lua_pushliteral (L, "LuaFileSystem 1.3.0");
 	lua_settable (L, -3);
 }
 
@@ -574,6 +591,7 @@ static const struct luaL_reg fslib[] = {
 	{"lock", file_lock},
 	{"mkdir", make_dir},
 	{"rmdir", remove_dir},
+	{"symlinkattributes", link_info},
 	{"touch", file_utime},
 	{"unlock", file_unlock},
 	{NULL, NULL},
