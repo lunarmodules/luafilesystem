@@ -15,7 +15,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.38 2007/06/07 01:28:08 tomas Exp $
+** $Id: lfs.c,v 1.39 2007/06/22 12:44:46 tomas Exp $
 */
 
 #include <errno.h>
@@ -599,7 +599,7 @@ static const struct luaL_reg fslib[] = {
 
 int luaopen_lfs (lua_State *L) {
 	dir_create_meta (L);
-	luaL_openlib (L, "lfs", fslib, 0);
+	luaL_register (L, "lfs", fslib);
 	set_info (L);
 	return 1;
 }
