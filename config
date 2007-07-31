@@ -2,7 +2,7 @@
 # System's libraries directory (where binary libraries are installed)
 LUA_LIBDIR= /usr/local/lib/lua/5.1
 # Lua includes directory
-LUA_INC= /usr/local/include/lua51
+LUA_INC= /usr/local/include
 
 # OS dependent
 LIB_OPTION= -shared #for Linux
@@ -16,4 +16,4 @@ INCS= -I$(LUA_INC)
 CFLAGS= $(WARN) $(INCS)
 CC= gcc
 
-# $Id: config,v 1.19 2007/05/15 12:58:35 tomas Exp $
+# $Id: config,v 1.20 2007/07/31 03:22:55 hisham Exp $
