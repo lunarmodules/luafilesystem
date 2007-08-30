@@ -15,7 +15,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.39 2007/06/22 12:44:46 tomas Exp $
+** $Id: lfs.c,v 1.40 2007/08/30 14:39:45 tomas Exp $
 */
 
 #include <errno.h>
@@ -529,6 +529,7 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, struct stat*)) {
 		const char *member = lua_tostring (L, 2);
 		if (strcmp (member, "mode") == 0) v = 0;
 #ifndef _WIN32
+		else if (strcmp (member, "blocks")  == 0) v = 11;
 		else if (strcmp (member, "blksize") == 0) v = 12;
 #endif
 		else /* look for member */
@@ -562,9 +563,11 @@ static int file_info (lua_State *L) {
 /*
 ** Get symbolic link information using lstat.
 */
+#ifndef _WIN32
 static int link_info (lua_State *L) {
 	return _file_info_ (L, lstat);
 }
+#endif
 
 
 /*
@@ -591,7 +594,9 @@ static const struct luaL_reg fslib[] = {
 	{"lock", file_lock},
 	{"mkdir", make_dir},
 	{"rmdir", remove_dir},
+#ifndef _WIN32
 	{"symlinkattributes", link_info},
+#endif
 	{"touch", file_utime},
 	{"unlock", file_unlock},
 	{NULL, NULL},
