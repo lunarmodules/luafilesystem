@@ -1,9 +1,19 @@
 LuaFileSystem - File System Library for Lua
-Copyright 2003-2007 PUC-Rio
+Copyright 2003-2007 Kepler Project
 http://www.keplerproject.org/luafilesystem
 
-LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution. LuaFileSystem offers a portable way to access the underlying directory structure and file attributes. LuaFileSystem is free software and uses the same license as Lua 5.1 Current version is 1.2.1.
+Description
+-----------
+LuaFileSystem is a Lua library developed to complement the set of functions
+related to file systems offered by the standard Lua distribution.
 
+LuaFileSystem offers a portable way to access the underlying directory structure and file attributes.
+LuaFileSystem is free software and uses the same license as Lua 5.1
+
+Current version is 1.3.0
+
+Unix Installation
+-----------------
 To install on Linux/OSX/BSD, please edit the config file and then call
 
 make
@@ -11,4 +21,10 @@ make install
 
 The last step may require root privileges.
 
+Windows Installation
+--------------------
+To install on Windows, please copy lfs.ddl to your package.cpath directory
+
+Documentation
+-------------
 Please check the documentation at /doc/us/ for more information.
