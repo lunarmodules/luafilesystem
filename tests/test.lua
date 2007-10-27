@@ -73,7 +73,7 @@ if lfs.symlinkattributes then
     -- Checking symbolic link information (does not work in Windows)
     assert (os.execute ("ln -s "..tmpfile.." _a_link_for_test_"))
     assert (lfs.attributes"_a_link_for_test_".mode == "file")
-    assert (lfs.symlinkattributes"_a_link_for_test_" == "link")
+    assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
     assert (os.remove"_a_link_for_test_")
 end
 
