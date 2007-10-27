@@ -1,8 +1,13 @@
 # Installation directories
+
+# Default installation prefix
+PREFIX=/usr/local
+
 # System's libraries directory (where binary libraries are installed)
-LUA_LIBDIR= /usr/local/lib/lua/5.1
+LUA_LIBDIR= $(PREFIX)/lib/lua/5.1
+
 # Lua includes directory
-LUA_INC= /usr/local/include
+LUA_INC= $(PREFIX)/include
 
 # OS dependent
 LIB_OPTION= -shared #for Linux
@@ -16,4 +21,4 @@ INCS= -I$(LUA_INC)
 CFLAGS= $(WARN) $(INCS)
 CC= gcc
 
-# $Id: config,v 1.20 2007/07/31 03:22:55 hisham Exp $
+# $Id: config,v 1.21 2007/10/27 22:42:32 carregal Exp $
