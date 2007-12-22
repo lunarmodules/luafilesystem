@@ -15,7 +15,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.42 2007/10/26 21:01:07 carregal Exp $
+** $Id: lfs.c,v 1.43 2007/12/22 17:19:45 mascarenhas Exp $
 */
 
 #include <errno.h>
@@ -29,6 +29,7 @@
 #include <io.h>
 #include <sys/locking.h>
 #include <sys/utime.h>
+#include <fcntl.h>
 #else
 #include <unistd.h>
 #include <dirent.h>
@@ -67,6 +68,15 @@ typedef struct dir_data {
 #endif
 } dir_data;
 
+
+#ifdef _WIN32
+#define lfs_setmode(L,file,m)   ((void)L, _setmode(_fileno(file), m))
+#else
+#define _O_TEXT               0
+#define _O_BINARY             0
+#define lfs_setmode(L,file,m)   ((void)((void)file,m),  \
+		 luaL_error(L, LUA_QL("setmode") " not supported"), -1)
+#endif
 
 /*
 ** This function changes the working (current) directory
@@ -164,6 +174,36 @@ static int _file_lock (lua_State *L, FILE *fh, const char *mode, const long star
 	return (code != -1);
 }
 
+
+static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
+  static const int mode[] = {_O_TEXT, _O_BINARY};
+  static const char *const modenames[] = {"text", "binary", NULL};
+  int op = luaL_checkoption(L, arg, NULL, modenames);
+  int res = lfs_setmode(L, f, mode[op]);
+  if (res != -1) {
+    int i;
+    lua_pushboolean(L, 1);
+    for (i = 0; modenames[i] != NULL; i++) {
+      if (mode[i] == res) {
+        lua_pushstring(L, modenames[i]);
+        goto exit;
+      }
+    }
+    lua_pushnil(L);
+  exit:
+    return 2;
+  } else {
+    int en = errno;
+    lua_pushnil(L);
+    lua_pushfstring(L, "%s", strerror(en));
+    lua_pushinteger(L, en);
+    return 3;
+  }
+}
+
+static int lfs_f_setmode(lua_State *L) {
+  return lfs_g_setmode(L, check_file(L, 1, "setmode"), 2);
+}
 
 /*
 ** Locks a file.
@@ -592,6 +632,7 @@ static const struct luaL_reg fslib[] = {
 	{"currentdir", get_dir},
 	{"dir", dir_iter_factory},
 	{"lock", file_lock},
+        {"setmode", lfs_f_setmode},
 	{"mkdir", make_dir},
 	{"rmdir", remove_dir},
 #ifndef _WIN32
