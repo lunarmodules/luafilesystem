@@ -1,7 +1,8 @@
 package = "LuaFileSystem"
 version = "cvs-1"
 source = {
-   url = "cvs://:pserver:anonymous:@cvs.luaforge.net:/cvsroot/luafilesystem"
+   url = "cvs://:pserver:anonymous:@cvs.luaforge.net:/cvsroot/luafilesystem",
+   cvs_tag = "HEAD"
 }
 description = {
    summary = "File System Library for the Lua Programming Language",
@@ -18,6 +19,6 @@ dependencies = {
 build = {
    type = "module",
    modules = {
-     lfs = "lfs.c"
+     lfs = "src/lfs.c"
    }
 }

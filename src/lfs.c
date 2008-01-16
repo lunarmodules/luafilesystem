@@ -15,7 +15,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.44 2008/01/16 22:29:26 mascarenhas Exp $
+** $Id: lfs.c,v 1.45 2008/01/16 22:33:24 mascarenhas Exp $
 */
 
 #include <errno.h>
@@ -102,7 +102,7 @@ static int change_dir (lua_State *L) {
 static int get_dir (lua_State *L) {
   char *path;
   if ((path = getcwd(NULL, 0)) == NULL) {
-    lua_pushnil(L)
+    lua_pushnil(L);
     lua_pushstring(L, getcwd_error);
     return 2;
   }
