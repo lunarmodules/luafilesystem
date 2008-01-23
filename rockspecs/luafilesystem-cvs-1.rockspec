@@ -17,8 +17,28 @@ dependencies = {
    "lua >= 5.1"
 }
 build = {
-   type = "module",
-   modules = {
-     lfs = "src/lfs.c"
-   }
+   platforms = {
+     unix = {
+        type = "make",
+       	build_variables = {
+         LIB_OPTION = "$(LIBFLAG)",
+         CFLAGS = "$(CFLAGS) -I$(LUA_INCDIR)",
+       	},
+       	install_variables = {
+         LUA_LIBDIR = "$(LIBDIR)"
+       	}
+     },
+     win32 = {
+        type = "make",
+       	build_variables = {
+         LUA_LIB = "$(LUA_LIBDIR)\\lua5.1.lib",
+         CFLAGS = "$(CFLAGS) /I$(LUA_INCDIR)",
+       	},
+       	install_variables = {
+         LUA_LIBDIR = "$(LIBDIR)",
+         LUA_DIR = "$(LUADIR)",
+	 BIN_DIR = "$(BINDIR)"
+       	}
+     }
+  }
 }
