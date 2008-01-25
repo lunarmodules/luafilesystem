@@ -15,7 +15,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.45 2008/01/16 22:33:24 mascarenhas Exp $
+** $Id: lfs.c,v 1.46 2008/01/25 17:09:56 mascarenhas Exp $
 */
 
 #include <errno.h>
@@ -525,6 +525,9 @@ static void push_st_blksize (lua_State *L, struct stat *info) {
 	lua_pushnumber (L, (lua_Number)info->st_blksize);
 }
 #endif
+static void push_invalid (lua_State *L, struct stat *info) {
+  luaL_error(L, "invalid attribute name");
+}
 
 typedef void (*_push_function) (lua_State *L, struct stat *info);
 
@@ -549,7 +552,7 @@ struct _stat_members members[] = {
 	{ "blocks",       push_st_blocks },
 	{ "blksize",      push_st_blksize },
 #endif
-	{ NULL, NULL }
+	{ NULL, push_invalid }
 };
 
 /*
