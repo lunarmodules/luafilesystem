@@ -14,7 +14,7 @@ Current version is 1.4.0
 
 LuaRocks Installation
 ---------------------
-luarocks install lfs
+luarocks install luafilesystem
 
 Unix Installation
 -----------------
