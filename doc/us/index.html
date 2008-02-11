@@ -71,20 +71,31 @@ the underlying directory structure and file attributes.</p>
 
 <h2><a name="status"></a>Status</h2>
 
-<p>Current version is 1.3.0. It was developed for Lua 5.1.</p>
+<p>Current version is 1.4.0. It was developed for Lua 5.1.</p>
 
 <h2><a name="download"></a>Download</h2>
 
 <p>LuaFileSystem source can be downloaded from its
 <a href="http://luaforge.net/projects/luafilesystem/files">Lua Forge</a>
 page. If you are using
-<a href="http://luabinaries.luaforge.net">LuaBinaries</a> 5.1.2 a Windows binary
-version of LuaFileSystem can be found at the same LuaForge page.</p>
+<a href="http://luabinaries.luaforge.net">LuaBinaries</a> 5.1.3 a Windows binary
+version of LuaFileSystem (compiled with Visual Studio 2005 Express) can be found at the same LuaForge page.</p>
 
 <h2><a name="history"></a>History</h2>
 
 <dl class="history">
-    <dt><strong>Version 1.3.0</strong> [26/Oct/2007]</dt>
+    <dt><strong>Version 1.4.0</strong> [12/Feb/2008]</dt>
+    <dd>
+    <ul>
+	<li><a href="manual.html#attributes"><code>lfs.attributes</code></a>
+	raises an error if attribute does not exist</li>
+	<li>added function
+	<a href="manual.html#setmode"><code>lfs.setmode</code></a>
+        (works only in non Windows systems).</li>
+    </ul>
+    </dd>
+    
+    <dt><strong><a href="http://www.keplerproject.org/luafilesystem/1.3/">Version 1.3.0</a></strong> [26/Oct/2007]</dt>
     <dd>
     <ul>
         <li>added function
@@ -107,14 +118,14 @@ version of LuaFileSystem can be found at the same LuaForge page.</p>
         <a href="manual.html#attributes"><code>lfs.attributes</code></a></li>
         <li>added function
         <a href="manual.html#rmdir"><code>lfs.rmdir</code></a></li>
-        <li>bug correction on <code>lfs.dir</code></li>
+        <li>bug correction on <a href="manual.html#dir"><code>lfs.dir</code></a></li>
     </ul>
     </dd>
 
     <dt><strong><a href="http://www.keplerproject.org/luafilesystem/1.1/">Version 1.1</a></strong> [30/May/2005]</dt>
     <dd>
     <ul>
-        <li>added function <code>lfs.touch</code>.</li>
+        <li>added function <a href="manual.html#touch"><code>lfs.touch</code></a>.</li>
     </ul>
     </dd>
 
@@ -147,7 +158,7 @@ Comments are welcome!</p>
 
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer">Valid XHTML 1.0!</a></p>
-	<p><small>$Id: index.html,v 1.38 2007/12/14 15:28:04 carregal Exp $</small></p>
+	<p><small>$Id: index.html,v 1.39 2008/02/11 22:42:21 carregal Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->

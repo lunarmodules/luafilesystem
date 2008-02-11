@@ -74,7 +74,7 @@ and header files for the target version must be installed properly.
 <p>
 LuaFileSystem offers a Makefile and a separate configuration file,
 <code>config</code>,
-which should be edited to suit your installation before runnig
+which should be edited to suit your installation before running
 <code>make</code>.
 The file has some definitions like paths to the external libraries,
 compiler options and the like.
@@ -82,12 +82,14 @@ compiler options and the like.
 
 <h2><a name="installation"></a>Installation</h2>
 
-<p>The LuaFileSystem compiled binary should be copied to a directory in your
-<a href="http://www.lua.org/manual/5.1/manual.html#pdf-package.cpath">C path</a>.</p>
+<p>The easiest way to install LuaFileSystem is to use LuaRocks:</p>
 
-<p>Windows users can use the binary version of LuaFileSystem
-(<code>lfs.dll</code>) available at
-<a href="http://luaforge.net/projects/luafilesystem/files">LuaForge</a>.</p>
+<pre class="example">
+luarocks install lfs
+</pre>
+
+<p>If you prefer to install LuaFileSystem manually, the compiled binary should be copied to a directory in your
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-package.cpath">C path</a>.</p>
 
 <h2><a name="reference"></a>Reference</h2>
 
@@ -202,6 +204,12 @@ LuaFileSystem offers the following functions:
     <dd>Removes an existing directory. The argument is the name of the directory.<br />
     Returns <code>true</code> if the operation was successful;
     in case of error, it returns <code>nil</code> plus an error string.</dd>
+
+    <dt><a name="setmode"></a><strong><code>lfs.setmode (filepath, mode)</code></strong></dt>
+    <dd>Sets the writing mode for a file. The mode string can be either <code>binary</code> or <code>text</code>.
+    Returns the previous mode string for the file. This function is only available in Windows, so you may want to make sure that
+    <code>lfs.setmode</code> exists before using it.
+    </dd>
     
     <dt><a name="symlinkattributes"></a><strong><code>lfs.symlinkattributes (filepath [, aname])</code></strong></dt>
     <dd>Identical to <a href="#attributes">lfs.attributes</a> except that
@@ -240,7 +248,7 @@ LuaFileSystem offers the following functions:
 
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer">Valid XHTML 1.0!</a></p>
-	<p><small>$Id: manual.html,v 1.38 2007/12/14 15:28:04 carregal Exp $</small></p>
+	<p><small>$Id: manual.html,v 1.39 2008/02/11 22:42:21 carregal Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->

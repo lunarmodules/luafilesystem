@@ -1,6 +1,6 @@
 /*
 ** LuaFileSystem
-** Copyright Kepler Project 2004-2007 (http://www.keplerproject.org/luafilesystem)
+** Copyright Kepler Project 2003 (http://www.keplerproject.org/luafilesystem)
 **
 ** File system manipulation library.
 ** This library offers these functions:
@@ -11,11 +11,12 @@
 **   lfs.lock (fh, mode)
 **   lfs.mkdir (path)
 **   lfs.rmdir (path)
+**   lfs.setmode (filepath, mode)
 **   lfs.symlinkattributes (filepath [, attributename]) -- thanks to Sam Roberts
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.46 2008/01/25 17:09:56 mascarenhas Exp $
+** $Id: lfs.c,v 1.47 2008/02/11 22:42:21 carregal Exp $
 */
 
 #include <errno.h>
@@ -75,7 +76,7 @@ typedef struct dir_data {
 #define _O_TEXT               0
 #define _O_BINARY             0
 #define lfs_setmode(L,file,m)   ((void)((void)file,m),  \
-		 luaL_error(L, LUA_QL("setmode") " not supported"), -1)
+		 luaL_error(L, LUA_QL("setmode") " not supported on non Windows platforms"), -1)
 #endif
 
 /*
@@ -619,13 +620,13 @@ static int link_info (lua_State *L) {
 */
 static void set_info (lua_State *L) {
 	lua_pushliteral (L, "_COPYRIGHT");
-	lua_pushliteral (L, "Copyright (C) 2003-2007 Kepler Project");
+	lua_pushliteral (L, "Copyright (C) 2003 Kepler Project");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_DESCRIPTION");
 	lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_VERSION");
-	lua_pushliteral (L, "LuaFileSystem 1.3.0");
+	lua_pushliteral (L, "LuaFileSystem 1.4.0");
 	lua_settable (L, -3);
 }
 
@@ -636,11 +637,12 @@ static const struct luaL_reg fslib[] = {
 	{"currentdir", get_dir},
 	{"dir", dir_iter_factory},
 	{"lock", file_lock},
-        {"setmode", lfs_f_setmode},
 	{"mkdir", make_dir},
 	{"rmdir", remove_dir},
 #ifndef _WIN32
 	{"symlinkattributes", link_info},
+#else
+    {"setmode", lfs_f_setmode},
 #endif
 	{"touch", file_utime},
 	{"unlock", file_unlock},
