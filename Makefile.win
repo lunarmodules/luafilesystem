@@ -1,4 +1,4 @@
-# $Id: Makefile.win,v 1.9 2008/02/11 22:42:21 carregal Exp $
+# $Id: Makefile.win,v 1.10 2008/02/13 22:08:31 carregal Exp $
 
 T= lfs
 V= 1.4.0
@@ -15,7 +15,7 @@ lib: src\lfs.dll
 
 src\lfs.dll: $(OBJS)
 	link /dll /def:src\$T.def /out:src\lfs.dll $(OBJS) "$(LUA_LIB)"
-	mt -manifest src\lfs.dll.manifest -outputresource:src\lfs.dll;2
+	IF EXIST src\lfs.dll.manifest mt -manifest src\lfs.dll.manifest -outputresource:src\lfs.dll;2
 
 install: src\lfs.dll
 	IF NOT EXIST "$(LUA_LIBDIR)" mkdir "$(LUA_LIBDIR)"
@@ -23,3 +23,4 @@ install: src\lfs.dll
 
 clean:
 	del src\lfs.dll $(OBJS) src\$T.lib src\$T.exp
+	IF EXIST src\lfs.dll.manifest del src\lfs.dll.manifest
