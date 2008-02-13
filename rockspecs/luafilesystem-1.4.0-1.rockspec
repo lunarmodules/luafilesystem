@@ -1,7 +1,7 @@
 package = "LuaFileSystem"
 version = "1.4.0-1"
 source = {
-   url = "http://luaforge.net/frs/download.php/2679/luafilesystem-1.3.0.tar.gz"
+   url = "http://luaforge.net/frs/download.php/3158/luafilesystem-1.4.0.tar.gz"
 }
 description = {
    summary = "File System Library for the Lua Programming Language",
