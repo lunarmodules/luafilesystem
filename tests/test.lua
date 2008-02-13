@@ -77,6 +77,16 @@ if lfs.symlinkattributes then
     assert (os.remove"_a_link_for_test_")
 end
 
+if lfs.setmode then
+    -- Checking text/binary modes (works only in Windows)
+    local f = io.open(tmpfile, "w")
+    local mode = lfs.setmode(f, "binary")
+    assert(mode == "text")
+    mode = lfs.setmode(f, "text")
+    assert(mode == "binary")
+    f:close()
+end
+    
 -- Restore access time to current value
 assert (lfs.touch (tmpfile, attrib.access, attrib.modification))
 new_att = assert (lfs.attributes (tmpfile))
