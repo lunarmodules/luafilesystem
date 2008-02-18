@@ -16,12 +16,13 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.47 2008/02/11 22:42:21 carregal Exp $
+** $Id: lfs.c,v 1.48 2008/02/18 03:13:50 mascarenhas Exp $
 */
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <time.h>
 #include <sys/stat.h>
 
@@ -176,7 +177,7 @@ static int _file_lock (lua_State *L, FILE *fh, const char *mode, const long star
 	return (code != -1);
 }
 
-
+#ifdef _WIN32
 static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
   static const int mode[] = {_O_TEXT, _O_BINARY};
   static const char *const modenames[] = {"text", "binary", NULL};
@@ -206,6 +207,7 @@ static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
 static int lfs_f_setmode(lua_State *L) {
   return lfs_g_setmode(L, check_file(L, 1, "setmode"), 2);
 }
+#endif
 
 /*
 ** Locks a file.
@@ -528,6 +530,7 @@ static void push_st_blksize (lua_State *L, struct stat *info) {
 #endif
 static void push_invalid (lua_State *L, struct stat *info) {
   luaL_error(L, "invalid attribute name");
+  info->st_blksize = 0; /* never reached */
 }
 
 typedef void (*_push_function) (lua_State *L, struct stat *info);
@@ -642,7 +645,7 @@ static const struct luaL_reg fslib[] = {
 #ifndef _WIN32
 	{"symlinkattributes", link_info},
 #else
-    {"setmode", lfs_f_setmode},
+	{"setmode", lfs_f_setmode},
 #endif
 	{"touch", file_utime},
 	{"unlock", file_unlock},
