@@ -11,7 +11,7 @@ LIBNAME= $T.dll
 # Compilation directives
 WARN= /O2
 INCS= /I$(LUA_INC)
-CFLAGS= $(WARN) $(INCS)
+CFLAGS= /MD $(WARN) $(INCS)
 CC= cl
 
-# $Id: config.win,v 1.4 2007/05/18 19:52:59 carregal Exp $
+# $Id: config.win,v 1.5 2008/02/19 22:07:42 carregal Exp $
