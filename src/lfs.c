@@ -16,7 +16,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.48 2008/02/18 03:13:50 mascarenhas Exp $
+** $Id: lfs.c,v 1.49 2008/02/19 20:08:23 mascarenhas Exp $
 */
 
 #include <errno.h>
@@ -530,7 +530,9 @@ static void push_st_blksize (lua_State *L, struct stat *info) {
 #endif
 static void push_invalid (lua_State *L, struct stat *info) {
   luaL_error(L, "invalid attribute name");
+#ifndef _WIN32
   info->st_blksize = 0; /* never reached */
+#endif
 }
 
 typedef void (*_push_function) (lua_State *L, struct stat *info);
