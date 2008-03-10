@@ -80,10 +80,10 @@ end
 if lfs.setmode then
     -- Checking text/binary modes (works only in Windows)
     local f = io.open(tmpfile, "w")
-    local mode = lfs.setmode(f, "binary")
-    assert(mode == "text")
-    mode = lfs.setmode(f, "text")
-    assert(mode == "binary")
+    local result, mode = lfs.setmode(f, "binary")
+    assert(result and mode == "text")
+    result, mode = lfs.setmode(f, "text")
+    assert(result and mode == "binary")
     f:close()
 end
     
