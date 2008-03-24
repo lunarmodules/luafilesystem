@@ -176,8 +176,8 @@ LuaFileSystem offers the following functions:
     <dt><a name="dir"></a><strong><code>lfs.dir (path)</code></strong></dt>
     <dd>
     Lua iterator over the entries of a given directory.
-    Each time the iterator is called it returns a string with an entry of the
-    directory; <code>nil</code> is returned when there is no more entries.
+    Each time the iterator is called it returns a directory entry's name as a string, or
+    <code>nil</code> if there are no more entries.
     Raises an error if <code>path</code> is not a directory.
     </dd>
     
@@ -248,7 +248,7 @@ LuaFileSystem offers the following functions:
 
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer">Valid XHTML 1.0!</a></p>
-	<p><small>$Id: manual.html,v 1.41 2008/02/14 18:26:19 carregal Exp $</small></p>
+	<p><small>$Id: manual.html,v 1.42 2008/03/24 18:17:59 carregal Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->
