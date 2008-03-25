@@ -22,7 +22,7 @@ build = {
         type = "make",
        	build_variables = {
          LIB_OPTION = "$(LIBFLAG)",
-         CFLAGS = "$(CFLAGS) -I$(LUA_INCDIR)",
+         CFLAGS = "$(CFLAGS) -I$(LUA_INCDIR) $(STAT64)",
        	},
        	install_variables = {
          LUA_LIBDIR = "$(LIBDIR)"

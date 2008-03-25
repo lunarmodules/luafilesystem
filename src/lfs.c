@@ -16,7 +16,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.50 2008/03/25 16:58:29 mascarenhas Exp $
+** $Id: lfs.c,v 1.51 2008/03/25 18:20:29 mascarenhas Exp $
 */
 
 #define _LARGEFILE64_SOURCE
@@ -82,8 +82,15 @@ typedef struct dir_data {
 #define _O_BINARY             0
 #define lfs_setmode(L,file,m)   ((void)((void)file,m),  \
 		 luaL_error(L, LUA_QL("setmode") " not supported on this platform"), -1)
+#ifdef HAVE_STAT64
 #define STAT_STRUCT struct stat64
 #define STAT_FUNC stat64
+#define LSTAT_FUNC lstat64
+#else
+#define STAT_STRUCT struct stat
+#define STAT_FUNC stat
+#define LSTAT_FUNC lstat
+#endif
 #endif
 
 /*
@@ -627,7 +634,7 @@ static int file_info (lua_State *L) {
 */
 #ifndef _WIN32
 static int link_info (lua_State *L) {
-	return _file_info_ (L, lstat64);
+	return _file_info_ (L, LSTAT_FUNC);
 }
 #else
 static int link_info (lua_State *L) {
