@@ -16,8 +16,10 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.49 2008/02/19 20:08:23 mascarenhas Exp $
+** $Id: lfs.c,v 1.50 2008/03/25 16:58:29 mascarenhas Exp $
 */
+
+#define _LARGEFILE64_SOURCE
 
 #include <errno.h>
 #include <stdio.h>
@@ -73,11 +75,15 @@ typedef struct dir_data {
 
 #ifdef _WIN32
 #define lfs_setmode(L,file,m)   ((void)L, _setmode(_fileno(file), m))
+#define STAT_STRUCT struct _stat64
+#define STAT_FUNC _stat64
 #else
 #define _O_TEXT               0
 #define _O_BINARY             0
 #define lfs_setmode(L,file,m)   ((void)((void)file,m),  \
-		 luaL_error(L, LUA_QL("setmode") " not supported on non Windows platforms"), -1)
+		 luaL_error(L, LUA_QL("setmode") " not supported on this platform"), -1)
+#define STAT_STRUCT struct stat64
+#define STAT_FUNC stat64
 #endif
 
 /*
@@ -203,11 +209,17 @@ static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
     return 3;
   }
 }
+#else
+static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
+  lua_pushboolean(L, 0);
+  lua_pushliteral(L, "setmode not supported on this platform");
+  return 2;
+}
+#endif
 
 static int lfs_f_setmode(lua_State *L) {
   return lfs_g_setmode(L, check_file(L, 1, "setmode"), 2);
 }
-#endif
 
 /*
 ** Locks a file.
@@ -475,67 +487,67 @@ static int file_utime (lua_State *L) {
 
 
 /* inode protection mode */
-static void push_st_mode (lua_State *L, struct stat *info) {
+static void push_st_mode (lua_State *L, STAT_STRUCT *info) {
 	lua_pushstring (L, mode2string (info->st_mode));
 }
 /* device inode resides on */
-static void push_st_dev (lua_State *L, struct stat *info) {
+static void push_st_dev (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_dev);
 }
 /* inode's number */
-static void push_st_ino (lua_State *L, struct stat *info) {
+static void push_st_ino (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_ino);
 }
 /* number of hard links to the file */
-static void push_st_nlink (lua_State *L, struct stat *info) {
+static void push_st_nlink (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_nlink);
 }
 /* user-id of owner */
-static void push_st_uid (lua_State *L, struct stat *info) {
+static void push_st_uid (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_uid);
 }
 /* group-id of owner */
-static void push_st_gid (lua_State *L, struct stat *info) {
+static void push_st_gid (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_gid);
 }
 /* device type, for special file inode */
-static void push_st_rdev (lua_State *L, struct stat *info) {
+static void push_st_rdev (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_rdev);
 }
 /* time of last access */
-static void push_st_atime (lua_State *L, struct stat *info) {
+static void push_st_atime (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, info->st_atime);
 }
 /* time of last data modification */
-static void push_st_mtime (lua_State *L, struct stat *info) {
+static void push_st_mtime (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, info->st_mtime);
 }
 /* time of last file status change */
-static void push_st_ctime (lua_State *L, struct stat *info) {
+static void push_st_ctime (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, info->st_ctime);
 }
 /* file size, in bytes */
-static void push_st_size (lua_State *L, struct stat *info) {
+static void push_st_size (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_size);
 }
 #ifndef _WIN32
 /* blocks allocated for file */
-static void push_st_blocks (lua_State *L, struct stat *info) {
+static void push_st_blocks (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_blocks);
 }
 /* optimal file system I/O blocksize */
-static void push_st_blksize (lua_State *L, struct stat *info) {
+static void push_st_blksize (lua_State *L, STAT_STRUCT *info) {
 	lua_pushnumber (L, (lua_Number)info->st_blksize);
 }
 #endif
-static void push_invalid (lua_State *L, struct stat *info) {
+static void push_invalid (lua_State *L, STAT_STRUCT *info) {
   luaL_error(L, "invalid attribute name");
 #ifndef _WIN32
   info->st_blksize = 0; /* never reached */
 #endif
 }
 
-typedef void (*_push_function) (lua_State *L, struct stat *info);
+typedef void (*_push_function) (lua_State *L, STAT_STRUCT *info);
 
 struct _stat_members {
 	const char *name;
@@ -564,9 +576,9 @@ struct _stat_members members[] = {
 /*
 ** Get file or symbolic link information
 */
-static int _file_info_ (lua_State *L, int (*st)(const char*, struct stat*)) {
+static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
 	int i;
-	struct stat info;
+	STAT_STRUCT info;
 	const char *file = luaL_checkstring (L, 1);
 
 	if (st(file, &info)) {
@@ -606,7 +618,7 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, struct stat*)) {
 ** Get file information using stat.
 */
 static int file_info (lua_State *L) {
-	return _file_info_ (L, stat);
+	return _file_info_ (L, STAT_FUNC);
 }
 
 
@@ -615,7 +627,13 @@ static int file_info (lua_State *L) {
 */
 #ifndef _WIN32
 static int link_info (lua_State *L) {
-	return _file_info_ (L, lstat);
+	return _file_info_ (L, lstat64);
+}
+#else
+static int link_info (lua_State *L) {
+  lua_pushboolean(L, 0);
+  lua_pushliteral(L, "symlinkattributes not supported on this platform");
+  return 2;
 }
 #endif
 
@@ -644,11 +662,8 @@ static const struct luaL_reg fslib[] = {
 	{"lock", file_lock},
 	{"mkdir", make_dir},
 	{"rmdir", remove_dir},
-#ifndef _WIN32
 	{"symlinkattributes", link_info},
-#else
 	{"setmode", lfs_f_setmode},
-#endif
 	{"touch", file_utime},
 	{"unlock", file_unlock},
 	{NULL, NULL},
