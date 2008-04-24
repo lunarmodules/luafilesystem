@@ -16,7 +16,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.51 2008/03/25 18:20:29 mascarenhas Exp $
+** $Id: lfs.c,v 1.52 2008/04/24 17:27:18 mascarenhas Exp $
 */
 
 #define _LARGEFILE64_SOURCE
@@ -75,8 +75,8 @@ typedef struct dir_data {
 
 #ifdef _WIN32
 #define lfs_setmode(L,file,m)   ((void)L, _setmode(_fileno(file), m))
-#define STAT_STRUCT struct _stat64
-#define STAT_FUNC _stat64
+#define STAT_STRUCT struct _stati64
+#define STAT_FUNC _stati64
 #else
 #define _O_TEXT               0
 #define _O_BINARY             0
