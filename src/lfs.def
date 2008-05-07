@@ -1,5 +1,5 @@
 LIBRARY lfs.dll
 DESCRIPTION "LuaFileSystem"
-VERSION 1.4.0
+VERSION 1.4.1
 EXPORTS
 luaopen_lfs

@@ -16,7 +16,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.52 2008/04/24 17:27:18 mascarenhas Exp $
+** $Id: lfs.c,v 1.53 2008/05/07 19:06:37 carregal Exp $
 */
 
 #define _LARGEFILE64_SOURCE
@@ -656,7 +656,7 @@ static void set_info (lua_State *L) {
 	lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_VERSION");
-	lua_pushliteral (L, "LuaFileSystem 1.4.0");
+	lua_pushliteral (L, "LuaFileSystem 1.4.1");
 	lua_settable (L, -3);
 }
 

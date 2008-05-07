@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.33 2008/03/25 18:24:17 mascarenhas Exp $
+# $Id: Makefile,v 1.34 2008/05/07 19:06:37 carregal Exp $
 
 T= lfs
-V= 1.4.0
+
 CONFIG= ./config
 
 include $(CONFIG)

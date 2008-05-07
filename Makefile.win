@@ -1,7 +1,6 @@
-# $Id: Makefile.win,v 1.10 2008/02/13 22:08:31 carregal Exp $
+# $Id: Makefile.win,v 1.11 2008/05/07 19:06:37 carregal Exp $
 
 T= lfs
-V= 1.4.0
 
 include config.win
 

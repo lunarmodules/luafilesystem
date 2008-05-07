@@ -10,7 +10,11 @@ related to file systems offered by the standard Lua distribution.
 LuaFileSystem offers a portable way to access the underlying directory structure and file attributes.
 LuaFileSystem is free software and uses the same license as Lua 5.1
 
-Current version is 1.4.0
+Version 1.4.1 [07/May/2008] changes
+        * documentation review
+        * fixed Windows compilation issues
+        * fixed bug in the Windows tests (patch by Shmuel Zeigerman)
+        * fixed bug [#2185] lfs.attributes(filename, 'size') overflow on files > 2 Gb
 
 LuaRocks Installation
 ---------------------

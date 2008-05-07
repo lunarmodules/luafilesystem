@@ -71,7 +71,7 @@ the underlying directory structure and file attributes.</p>
 
 <h2><a name="status"></a>Status</h2>
 
-<p>Current version is 1.4.0. It was developed for Lua 5.1.</p>
+<p>Current version is 1.4.1. It was developed for Lua 5.1.</p>
 
 <h2><a name="download"></a>Download</h2>
 
@@ -84,6 +84,18 @@ version of LuaFileSystem (compiled with Visual Studio 2005 Express) can be found
 <h2><a name="history"></a>History</h2>
 
 <dl class="history">
+    <dt><strong>Version 1.4.1</strong> [07/May/2008]</dt>
+	<dd>
+	<ul>
+	<li>documentation review</li>
+	<li>fixed Windows compilation issues</li>
+	<li>fixed bug in the Windows tests (patch by Shmuel Zeigerman)</li>
+	<li>fixed bug [<a href="http://luaforge.net/tracker/?func=detail&amp;group_id=66&amp;aid=2185&amp;atid=356">#2185</a>]
+		<code>lfs.attributes(filename, 'size')</code> overflow on files > 2 Gb
+	</li>
+	</ul>
+	</dd>
+	
     <dt><strong>Version 1.4.0</strong> [13/Feb/2008]</dt>
     <dd>
     <ul>
@@ -158,7 +170,7 @@ Comments are welcome!</p>
 
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer">Valid XHTML 1.0!</a></p>
-	<p><small>$Id: index.html,v 1.41 2008/02/18 17:20:16 carregal Exp $</small></p>
+	<p><small>$Id: index.html,v 1.42 2008/05/07 19:06:37 carregal Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->
