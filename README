@@ -10,7 +10,7 @@ related to file systems offered by the standard Lua distribution.
 LuaFileSystem offers a portable way to access the underlying directory structure and file attributes.
 LuaFileSystem is free software and uses the same license as Lua 5.1
 
-Version 1.4.1 [07/May/2008] changes
+Version 1.4.1 [07/May/2008] changes:
         * documentation review
         * fixed Windows compilation issues
         * fixed bug in the Windows tests (patch by Shmuel Zeigerman)
@@ -31,7 +31,7 @@ The last step may require root privileges.
 
 Windows Installation
 --------------------
-To install on Windows, please copy lfs.ddl to your package.cpath directory
+To install on Windows, please copy lfs.dll to your package.cpath directory
 
 Documentation
 -------------
