@@ -80,6 +80,9 @@ The file has some definitions like paths to the external libraries,
 compiler options and the like.
 </p>
 
+<p>On Windows, the C runtime used to compile LuaFileSystem must be the same
+runtime that Lua uses, or some LuaFileSystem functions will not work.</p>
+
 <h2><a name="installation"></a>Installation</h2>
 
 <p>The easiest way to install LuaFileSystem is to use LuaRocks:</p>
@@ -248,7 +251,7 @@ LuaFileSystem offers the following functions:
 
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer">Valid XHTML 1.0!</a></p>
-	<p><small>$Id: manual.html,v 1.42 2008/03/24 18:17:59 carregal Exp $</small></p>
+	<p><small>$Id: manual.html,v 1.43 2008/05/08 18:45:15 carregal Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->
