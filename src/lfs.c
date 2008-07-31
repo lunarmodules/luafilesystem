@@ -16,10 +16,16 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.53 2008/05/07 19:06:37 carregal Exp $
+** $Id: lfs.c,v 1.54 2008/07/31 19:34:22 carregal Exp $
 */
 
-#define _LARGEFILE64_SOURCE
+#ifndef _WIN32
+#ifndef _AIX
+#define _FILE_OFFSET_BITS 64 /* Linux, Solaris and HP-UX */
+#else
+#define _LARGE_FILES 1 /* AIX */
+#endif
+#endif
 
 #include <errno.h>
 #include <stdio.h>
@@ -82,15 +88,9 @@ typedef struct dir_data {
 #define _O_BINARY             0
 #define lfs_setmode(L,file,m)   ((void)((void)file,m),  \
 		 luaL_error(L, LUA_QL("setmode") " not supported on this platform"), -1)
-#ifdef HAVE_STAT64
-#define STAT_STRUCT struct stat64
-#define STAT_FUNC stat64
-#define LSTAT_FUNC lstat64
-#else
 #define STAT_STRUCT struct stat
 #define STAT_FUNC stat
 #define LSTAT_FUNC lstat
-#endif
 #endif
 
 /*
