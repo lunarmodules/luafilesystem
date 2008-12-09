@@ -1,10 +1,9 @@
 package = "LuaFileSystem"
 
-version = "cvs-2"
+version = "1.4.2-1"
 
 source = {
-   url = "cvs://:pserver:anonymous:@cvs.luaforge.net:/cvsroot/luafilesystem",
-   cvs_tag = "HEAD"
+   url = "http://luaforge.net/frs/download.php/3345/luafilesystem-1.4.1.tar.gz",
 }
 
 description = {
