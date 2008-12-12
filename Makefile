@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.34 2008/05/07 19:06:37 carregal Exp $
+# $Id: Makefile,v 1.35 2008/12/12 13:26:37 carregal Exp $
 
 T= lfs
 
@@ -12,7 +12,7 @@ OBJS= src/$T.o
 lib: src/lfs.so
 
 src/lfs.so: $(OBJS)
-	export MACOSX_DEPLOYMENT_TARGET="10.3"; $(CC) $(CFLAGS) $(LIB_OPTION) -o src/lfs.so $(OBJS)
+	MACOS_DEPLOYMENT_TARGET="10.3"; export MACOSX_DEPLOYMENT_TARGET; $(CC) $(CFLAGS) $(LIB_OPTION) -o src/lfs.so $(OBJS)
 
 install:
 	mkdir -p $(LUA_LIBDIR)
