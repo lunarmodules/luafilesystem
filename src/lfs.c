@@ -16,7 +16,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.54 2008/07/31 19:34:22 carregal Exp $
+** $Id: lfs.c,v 1.55 2008/12/15 16:13:55 mascarenhas Exp $
 */
 
 #ifndef _WIN32
@@ -26,6 +26,8 @@
 #define _LARGE_FILES 1 /* AIX */
 #endif
 #endif
+
+#define _LARGEFILE64_SOURCE
 
 #include <errno.h>
 #include <stdio.h>
@@ -38,7 +40,11 @@
 #include <direct.h>
 #include <io.h>
 #include <sys/locking.h>
-#include <sys/utime.h>
+#ifdef __BORLANDC__
+ #include <utime.h>
+#else
+ #include <sys/utime.h>
+#endif
 #include <fcntl.h>
 #else
 #include <unistd.h>
@@ -80,8 +86,13 @@ typedef struct dir_data {
 
 
 #ifdef _WIN32
-#define lfs_setmode(L,file,m)   ((void)L, _setmode(_fileno(file), m))
-#define STAT_STRUCT struct _stati64
+ #ifdef __BORLANDC__
+  #define lfs_setmode(L,file,m)   ((void)L, setmode(_fileno(file), m))
+  #define STAT_STRUCT struct stati64
+ #else
+  #define lfs_setmode(L,file,m)   ((void)L, _setmode(_fileno(file), m))
+  #define STAT_STRUCT struct _stati64
+ #endif
 #define STAT_FUNC _stati64
 #else
 #define _O_TEXT               0
@@ -173,7 +184,11 @@ static int _file_lock (lua_State *L, FILE *fh, const char *mode, const long star
 		len = ftell (fh);
 	}
 	fseek (fh, start, SEEK_SET);
+#ifdef __BORLANDC__
+	code = locking (fileno(fh), lkmode, len);
+#else
 	code = _locking (fileno(fh), lkmode, len);
+#endif
 #else
 	struct flock f;
 	switch (*mode) {
