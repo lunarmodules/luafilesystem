@@ -16,7 +16,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.55 2008/12/15 16:13:55 mascarenhas Exp $
+** $Id: lfs.c,v 1.56 2009/02/03 22:05:48 carregal Exp $
 */
 
 #ifndef _WIN32
@@ -671,7 +671,7 @@ static void set_info (lua_State *L) {
 	lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_VERSION");
-	lua_pushliteral (L, "LuaFileSystem 1.4.1");
+	lua_pushliteral (L, "LuaFileSystem 1.4.2");
 	lua_settable (L, -3);
 }
 
