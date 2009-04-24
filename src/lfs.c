@@ -9,6 +9,7 @@
 **   lfs.currentdir ()
 **   lfs.dir (path)
 **   lfs.lock (fh, mode)
+**   lfs.lock_dir (path)
 **   lfs.mkdir (path)
 **   lfs.rmdir (path)
 **   lfs.setmode (filepath, mode)
@@ -16,7 +17,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.58 2009/04/24 22:11:12 mascarenhas Exp $
+** $Id: lfs.c,v 1.59 2009/04/24 22:24:07 mascarenhas Exp $
 */
 
 #ifndef _WIN32
@@ -222,11 +223,15 @@ static int lfs_lock_dir(lua_State *L) {
     lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
   }
   strcpy(ln, path); strcat(ln, lockfile);
-  while((fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_NEW, 
+  if((fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_NEW, 
 	  	FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, NULL)) == INVALID_HANDLE_VALUE) {
   	int en = GetLastError();
-  	if(en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION) continue;
-	free(ln); lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
+  	free(ln); lua_pushnil(L);
+  	if(en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
+  		lua_pushstring(L, "File exists");
+  	else
+		lua_pushstring(L, strerror(en));
+	return 2;
   }
   free(ln);
   lock = (lfs_Lock*)lua_newuserdata(L, sizeof(lfs_Lock));
