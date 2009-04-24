@@ -16,7 +16,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.57 2009/03/25 19:14:17 mascarenhas Exp $
+** $Id: lfs.c,v 1.58 2009/04/24 22:11:12 mascarenhas Exp $
 */
 
 #ifndef _WIN32
@@ -38,6 +38,7 @@
 
 #ifdef _WIN32
 #include <direct.h>
+#include <windows.h>
 #include <io.h>
 #include <sys/locking.h>
 #ifdef __BORLANDC__
@@ -85,10 +86,6 @@ typedef struct dir_data {
 } dir_data;
 
 #define LOCK_METATABLE "lock metatable"
-typedef struct lfs_Lock {
-  int fd;
-  char *ln;
-} lfs_Lock;
 
 #ifdef _WIN32
  #ifdef __BORLANDC__
@@ -211,13 +208,43 @@ static int _file_lock (lua_State *L, FILE *fh, const char *mode, const long star
 }
 
 #ifdef _WIN32
+typedef struct lfs_Lock {
+  HANDLE fd;
+} lfs_Lock;
 static int lfs_lock_dir(lua_State *L) {
-  luaL_error(L, "not implemented for Windows");
+  size_t pathl; HANDLE fd;
+  lfs_Lock *lock;
+  char *ln;
+  const char *lockfile = "/lockfile.lfs";
+  const char *path = luaL_checklstring(L, 1, &pathl);
+  ln = (char*)malloc(pathl + strlen(lockfile) + 1);
+  if(!ln) { 
+    lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
+  }
+  strcpy(ln, path); strcat(ln, lockfile);
+  while((fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_NEW, 
+	  	FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, NULL)) == INVALID_HANDLE_VALUE) {
+  	int en = GetLastError();
+  	if(en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION) continue;
+	free(ln); lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
+  }
+  free(ln);
+  lock = (lfs_Lock*)lua_newuserdata(L, sizeof(lfs_Lock));
+  lock->fd = fd;
+  luaL_getmetatable (L, LOCK_METATABLE);
+  lua_setmetatable (L, -2);
+  return 1;
 }
 static int lfs_unlock_dir(lua_State *L) {
-  luaL_error(L, "not implemented for Windows");
+  lfs_Lock *lock = luaL_checkudata(L, 1, LOCK_METATABLE);
+  CloseHandle(lock->fd);
+  return 0;
 }
 #else
+typedef struct lfs_Lock {
+  int fd;
+  char *ln;
+} lfs_Lock;
 static int lfs_lock_dir(lua_State *L) {
   struct stat statbuf;
   lfs_Lock *lock;
@@ -244,8 +271,8 @@ static int lfs_lock_dir(lua_State *L) {
     if(errno == EEXIST) {
       if(lstat(ln, &statbuf) == -1) goto fail;
       if(time(NULL) - statbuf.st_mtimespec.tv_sec > expires) {
-	unlink(ln);
-	continue;
+		unlink(ln);
+		continue;
       }
     }
     fail:
