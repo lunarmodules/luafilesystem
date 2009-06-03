@@ -186,11 +186,12 @@ LuaFileSystem offers the following functions:
     <dd>Returns a string with the current working directory or <code>nil</code>
     plus an error string.</dd>
     
-    <dt><a name="dir"></a><strong><code>lfs.dir (path)</code></strong></dt>
+    <dt><a name="dir"></a><strong><code>iter, dir_obj = lfs.dir (path)</code></strong></dt>
     <dd>
     Lua iterator over the entries of a given directory.
-    Each time the iterator is called it returns a directory entry's name as a string, or
-    <code>nil</code> if there are no more entries.
+    Each time the iterator is called with <code>dir_obj</code> it returns a directory entry's name as a string, or
+    <code>nil</code> if there are no more entries. You can also iterate by calling <code>dir_obj:next()</code>, and
+    explicitly close the directory before the iteration finished with <code>dir_obj:close()</code>.
     Raises an error if <code>path</code> is not a directory.
     </dd>
     
@@ -261,7 +262,7 @@ LuaFileSystem offers the following functions:
 
 <div id="about">
 	<p><a href="http://validator.w3.org/check?uri=referer">Valid XHTML 1.0!</a></p>
-	<p><small>$Id: manual.html,v 1.44 2009/04/24 22:24:06 mascarenhas Exp $</small></p>
+	<p><small>$Id: manual.html,v 1.45 2009/06/03 20:53:55 mascarenhas Exp $</small></p>
 </div> <!-- id="about" -->
 
 </div> <!-- id="container" -->
