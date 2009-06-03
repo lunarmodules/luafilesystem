@@ -110,4 +110,21 @@ for i = 1, 4000 do
 		count = count + 1
 	end
 end
+
+-- Stressing directory iterator, explicit version
+count = 0
+for i = 1, 4000 do
+  local iter, dir = lfs.dir(tmp)
+  local file = dir:next()
+  while file do
+    count = count + 1
+    file = dir:next()
+  end
+  assert(not pcall(dir.next, dir))
+end
+
+-- directory explicit close
+local iter, dir = lfs.dir(tmp)
+dir:close()
+assert(not pcall(dir.next, dir))
 print"Ok!"
