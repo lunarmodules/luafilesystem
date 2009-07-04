@@ -17,7 +17,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.60 2009/06/03 20:49:18 mascarenhas Exp $
+** $Id: lfs.c,v 1.61 2009/07/04 02:10:16 mascarenhas Exp $
 */
 
 #ifndef _WIN32
@@ -247,55 +247,36 @@ static int lfs_unlock_dir(lua_State *L) {
 }
 #else
 typedef struct lfs_Lock {
-  int fd;
   char *ln;
 } lfs_Lock;
 static int lfs_lock_dir(lua_State *L) {
-  struct stat statbuf;
   lfs_Lock *lock;
-  size_t pathl; int fd;
-  char *tmpln, *ln;
-  const char *template = "/lockfile.XXXXXX";
+  size_t pathl;
+  char *ln;
   const char *lockfile = "/lockfile.lfs";
   const char *path = luaL_checklstring(L, 1, &pathl);
-  time_t expires = (time_t)luaL_optint(L, 2, INT_MAX);
-  tmpln = (char*)malloc(pathl + strlen(template) + 1);
-  if(!tmpln) { lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2; }
-  strcpy(tmpln, path); strcat(tmpln, template);
-  fd = mkstemp(tmpln);
-  if(fd == -1) {
-    free(tmpln); lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
-  }
+  lock = (lfs_Lock*)lua_newuserdata(L, sizeof(lfs_Lock));
   ln = (char*)malloc(pathl + strlen(lockfile) + 1);
   if(!ln) { 
-    unlink(tmpln); free(tmpln); close(fd); lua_pushnil(L); 
-    lua_pushstring(L, strerror(errno)); return 2;
+    lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
   }
   strcpy(ln, path); strcat(ln, lockfile);
-  while(symlink(tmpln, ln) == -1) {
-    if(errno == EEXIST) {
-      if(lstat(ln, &statbuf) == -1) goto fail;
-      if(time(NULL) - statbuf.st_mtimespec.tv_sec > expires) {
-		unlink(ln);
-		continue;
-      }
-    }
-    fail:
-      unlink(tmpln); free(tmpln); free(ln); close(fd);
-      lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
+  if(symlink("lock", ln) == -1) {
+    free(ln); lua_pushnil(L); 
+    lua_pushstring(L, strerror(errno)); return 2;
   }
-  unlink(tmpln); free(tmpln);
-  lock = (lfs_Lock*)lua_newuserdata(L, sizeof(lfs_Lock));
-  lock->fd = fd; lock->ln = ln;
+  lock->ln = ln;
   luaL_getmetatable (L, LOCK_METATABLE);
   lua_setmetatable (L, -2);
   return 1;
 }
 static int lfs_unlock_dir(lua_State *L) {
   lfs_Lock *lock = luaL_checkudata(L, 1, LOCK_METATABLE);
-  unlink(lock->ln);
-  close(lock->fd);
-  free(lock->ln);
+  if(lock->ln) {
+    unlink(lock->ln);
+    free(lock->ln);
+    lock->ln = NULL;
+  }
   return 0;
 }
 #endif
