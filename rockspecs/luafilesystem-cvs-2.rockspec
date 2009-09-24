@@ -3,8 +3,7 @@ package = "LuaFileSystem"
 version = "cvs-2"
 
 source = {
-   url = "cvs://:pserver:anonymous:@cvs.luaforge.net:/cvsroot/luafilesystem",
-   cvs_tag = "HEAD"
+   url = "git://github.com/keplerproject/luafilesystem.git",
 }
 
 description = {
