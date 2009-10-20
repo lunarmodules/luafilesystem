@@ -71,19 +71,21 @@ the underlying directory structure and file attributes.</p>
 
 <h2><a name="status"></a>Status</h2>
 
-<p>Current version is 1.4.2. It was developed for Lua 5.1.</p>
+<p>Current version is 1.5.0. It was developed for Lua 5.1.</p>
 
 <h2><a name="download"></a>Download</h2>
 
 <p>LuaFileSystem source can be downloaded from its
-<a href="http://luaforge.net/projects/luafilesystem/files">Lua Forge</a>
-page. If you are using
-<a href="http://luabinaries.luaforge.net">LuaBinaries</a> a Windows binary
-version of LuaFileSystem (compiled with Visual Studio 2005 Express) can be found at the same LuaForge page.</p>
+<a href="http://github.com/keplerproject/luafilesystem">Github</a>
+page.</p>
 
 <h2><a name="history"></a>History</h2>
 
 <dl class="history">
+	<dt><strong>Version 1.5.0</strong> [20/Oct/2009]</dt>
+	<li>Added explicit next and close methods to second return value of lfs.dir 
+(the directory object), for explicit iteration or explicit closing.</li>
+	<li>Added directory locking via lfs.lock_dir function (see the <a href="manual.html">manual</a>).</li>
 	<dt><strong>Version 1.4.2</strong> [03/Feb/2009]</dt>
 	<dd>
 		<ul>
