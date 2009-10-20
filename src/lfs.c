@@ -765,13 +765,13 @@ static int link_info (lua_State *L) {
 */
 static void set_info (lua_State *L) {
 	lua_pushliteral (L, "_COPYRIGHT");
-	lua_pushliteral (L, "Copyright (C) 2003 Kepler Project");
+	lua_pushliteral (L, "Copyright (C) 2003-2009 Kepler Project");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_DESCRIPTION");
 	lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
 	lua_settable (L, -3);
 	lua_pushliteral (L, "_VERSION");
-	lua_pushliteral (L, "LuaFileSystem 1.4.2");
+	lua_pushliteral (L, "LuaFileSystem 1.5.0");
 	lua_settable (L, -3);
 }
 
