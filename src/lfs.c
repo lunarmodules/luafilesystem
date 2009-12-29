@@ -367,10 +367,8 @@ static int make_dir (lua_State *L) {
 	const char *path = luaL_checkstring (L, 1);
 	int fail;
 #ifdef _WIN32
-	int oldmask = umask (0);
 	fail = _mkdir (path);
 #else
-	mode_t oldmask = umask( (mode_t)0 );
 	fail =  mkdir (path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
 	                     S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
 #endif
@@ -379,7 +377,6 @@ static int make_dir (lua_State *L) {
         lua_pushfstring (L, "%s", strerror(errno));
 		return 2;
 	}
-	umask (oldmask);
 	lua_pushboolean (L, 1);
 	return 1;
 }
