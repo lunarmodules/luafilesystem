@@ -75,12 +75,11 @@
 #endif
 
 #define DIR_METATABLE "directory metatable"
-#define MAX_DIR_LENGTH 1023
 typedef struct dir_data {
 	int  closed;
 #ifdef _WIN32
 	long hFile;
-	char pattern[MAX_DIR_LENGTH+1];
+	char pattern[MAX_PATH+1];
 #else
 	DIR *dir;
 #endif
@@ -410,12 +409,13 @@ static int dir_iter (lua_State *L) {
 	struct dirent *entry;
 #endif
 	dir_data *d = (dir_data *)luaL_checkudata (L, 1, DIR_METATABLE);
-	luaL_argcheck (L, !d->closed, 1, "closed directory");
+	luaL_argcheck (L, d->closed == 0, 1, "closed directory");
 #ifdef _WIN32
 	if (d->hFile == 0L) { /* first entry */
 		if ((d->hFile = _findfirst (d->pattern, &c_file)) == -1L) {
 			lua_pushnil (L);
 			lua_pushstring (L, strerror (errno));
+			d->closed = 1;
 			return 2;
 		} else {
 			lua_pushstring (L, c_file.name);
@@ -454,14 +454,13 @@ static int dir_close (lua_State *L) {
 #ifdef _WIN32
 	if (!d->closed && d->hFile) {
 		_findclose (d->hFile);
-		d->closed = 1;
 	}
 #else
 	if (!d->closed && d->dir) {
 		closedir (d->dir);
-		d->closed = 1;
 	}
 #endif
+	d->closed = 1;
 	return 0;
 }
 
@@ -479,10 +478,10 @@ static int dir_iter_factory (lua_State *L) {
 	d->hFile = 0L;
 	luaL_getmetatable (L, DIR_METATABLE);
 	lua_setmetatable (L, -2);
-	if (strlen(path) > MAX_DIR_LENGTH)
-		luaL_error (L, "path too long: %s", path);
+	if (strlen(path) > MAX_PATH-2)
+	  luaL_error (L, "path too long: %s", path);
 	else
-		sprintf (d->pattern, "%s/*", path);
+	  sprintf (d->pattern, "%s/*", path);
 #else
 	luaL_getmetatable (L, DIR_METATABLE);
 	lua_setmetatable (L, -2);
