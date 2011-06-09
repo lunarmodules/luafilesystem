@@ -534,19 +534,18 @@ static int dir_iter_factory (lua_State *L) {
 */
 static int dir_create_meta (lua_State *L) {
 	luaL_newmetatable (L, DIR_METATABLE);
-	/* set its __gc field */
-	lua_pushstring (L, "__index");
+
+        /* Method table */
 	lua_newtable(L);
-	lua_pushstring (L, "next");
 	lua_pushcfunction (L, dir_iter);
-	lua_settable(L, -3);
-	lua_pushstring (L, "close");
+	lua_setfield(L, -2, "next");
 	lua_pushcfunction (L, dir_close);
-	lua_settable(L, -3);
-	lua_settable (L, -3);
-	lua_pushstring (L, "__gc");
+	lua_setfield(L, -2, "close");
+
+        /* Metamethods */
+	lua_setfield(L, -2, "__index");
 	lua_pushcfunction (L, dir_close);
-	lua_settable (L, -3);
+	lua_setfield (L, -2, "__gc");
 	return 1;
 }
 
@@ -555,10 +554,13 @@ static int dir_create_meta (lua_State *L) {
 */
 static int lock_create_meta (lua_State *L) {
 	luaL_newmetatable (L, LOCK_METATABLE);
-	/* set its __gc field */
+
+        /* Method table */
 	lua_newtable(L);
 	lua_pushcfunction(L, lfs_unlock_dir);
 	lua_setfield(L, -2, "free");
+
+        /* Metamethods */
 	lua_setfield(L, -2, "__index");
 	lua_pushcfunction(L, lfs_unlock_dir);
 	lua_setfield(L, -2, "__gc");
