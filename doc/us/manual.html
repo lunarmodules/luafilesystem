@@ -206,6 +206,13 @@ LuaFileSystem offers the following functions:
     Returns <code>true</code> if the operation was successful; in
     case of error, it returns <code>nil</code> plus an error string.
     </dd>
+
+    <dt><a name="link"></a><strong><code>lfs.link (old, new[, symlink])</code></strong></dt>
+    <dd>Creates a link. The first argument is the object to link to
+    and the second is the name of the link. If the optional third
+    argument is true, the link will by a symbolic link (by default, a
+    hard link is created).
+    </dd>
     
     <dt><a name="mkdir"></a><strong><code>lfs.mkdir (dirname)</code></strong></dt>
     <dd>Creates a new directory. The argument is the name of the new

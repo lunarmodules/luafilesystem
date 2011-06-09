@@ -107,6 +107,29 @@ typedef struct dir_data {
 #endif
 
 /*
+** Utility functions
+*/
+static int pusherror(lua_State *L, const char *info)
+{
+	lua_pushnil(L);
+	if (info==NULL)
+		lua_pushstring(L, strerror(errno));
+	else
+		lua_pushfstring(L, "%s: %s", info, strerror(errno));
+	lua_pushinteger(L, errno);
+	return 3;
+}
+
+static int pushresult(lua_State *L, int i, const char *info)
+{
+	if (i==-1)
+		return pusherror(L, info);
+	lua_pushinteger(L, i);
+	return 1;
+}
+
+
+/*
 ** This function changes the working (current) directory
 */
 static int change_dir (lua_State *L) {
@@ -351,6 +374,25 @@ static int file_unlock (lua_State *L) {
 		lua_pushfstring (L, "%s", strerror(errno));
 		return 2;
 	}
+}
+
+
+/*
+** Creates a link.
+** @param #1 Object to link to.
+** @param #2 Name of link.
+** @param #3 True if link is symbolic (optional).
+*/
+static int make_link(lua_State *L)
+{
+#ifndef _WIN32
+	const char *oldpath = luaL_checkstring(L, 1);
+	const char *newpath = luaL_checkstring(L, 2);
+	return pushresult(L,
+		(lua_toboolean(L,3) ? symlink : link)(oldpath, newpath), NULL);
+#else
+        pusherror(L, "make_link is not supported on Windows");
+#endif
 }
 
 
@@ -763,6 +805,7 @@ static const struct luaL_Reg fslib[] = {
 	{"chdir", change_dir},
 	{"currentdir", get_dir},
 	{"dir", dir_iter_factory},
+        {"link", make_link},
 	{"lock", file_lock},
 	{"mkdir", make_dir},
 	{"rmdir", remove_dir},
