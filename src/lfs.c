@@ -96,15 +96,38 @@ typedef struct dir_data {
   #define STAT_STRUCT struct _stati64
  #endif
 #define STAT_FUNC _stati64
+#define LSTAT_FUNC STAT_FUNC
 #else
 #define _O_TEXT               0
 #define _O_BINARY             0
-#define lfs_setmode(L,file,m)   ((void)((void)file,m),  \
-		 luaL_error(L, LUA_QL("setmode") " not supported on this platform"), -1)
+#define lfs_setmode(L,file,m)   0
 #define STAT_STRUCT struct stat
 #define STAT_FUNC stat
 #define LSTAT_FUNC lstat
 #endif
+
+/*
+** Utility functions
+*/
+static int pusherror(lua_State *L, const char *info)
+{
+	lua_pushnil(L);
+	if (info==NULL)
+		lua_pushstring(L, strerror(errno));
+	else
+		lua_pushfstring(L, "%s: %s", info, strerror(errno));
+	lua_pushinteger(L, errno);
+	return 3;
+}
+
+static int pushresult(lua_State *L, int i, const char *info)
+{
+	if (i==-1)
+		return pusherror(L, info);
+	lua_pushinteger(L, i);
+	return 1;
+}
+
 
 /*
 ** This function changes the working (current) directory
@@ -280,10 +303,9 @@ static int lfs_unlock_dir(lua_State *L) {
 }
 #endif
 
-#ifdef _WIN32
 static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
-  static const int mode[] = {_O_TEXT, _O_BINARY};
-  static const char *const modenames[] = {"text", "binary", NULL};
+  static const int mode[] = {_O_BINARY, _O_TEXT};
+  static const char *const modenames[] = {"binary", "text", NULL};
   int op = luaL_checkoption(L, arg, NULL, modenames);
   int res = lfs_setmode(L, f, mode[op]);
   if (res != -1) {
@@ -306,13 +328,6 @@ static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
     return 3;
   }
 }
-#else
-static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
-  lua_pushboolean(L, 0);
-  lua_pushliteral(L, "setmode not supported on this platform");
-  return 2;
-}
-#endif
 
 static int lfs_f_setmode(lua_State *L) {
   return lfs_g_setmode(L, check_file(L, 1, "setmode"), 2);
@@ -362,6 +377,29 @@ static int file_unlock (lua_State *L) {
 }
 
 
+/*
+** Creates a link.
+** @param #1 Object to link to.
+** @param #2 Name of link.
+** @param #3 True if link is symbolic (optional).
+*/
+static int make_link(lua_State *L)
+{
+#ifndef _WIN32
+	const char *oldpath = luaL_checkstring(L, 1);
+	const char *newpath = luaL_checkstring(L, 2);
+	return pushresult(L,
+		(lua_toboolean(L,3) ? symlink : link)(oldpath, newpath), NULL);
+#else
+        pusherror(L, "make_link is not supported on Windows");
+#endif
+}
+
+
+/*
+** Creates a directory.
+** @param #1 Directory path.
+*/
 static int make_dir (lua_State *L) {
 	const char *path = luaL_checkstring (L, 1);
 	int fail;
@@ -473,21 +511,19 @@ static int dir_iter_factory (lua_State *L) {
 	dir_data *d;
 	lua_pushcfunction (L, dir_iter);
 	d = (dir_data *) lua_newuserdata (L, sizeof(dir_data));
+	luaL_getmetatable (L, DIR_METATABLE);
+	lua_setmetatable (L, -2);
 	d->closed = 0;
 #ifdef _WIN32
 	d->hFile = 0L;
-	luaL_getmetatable (L, DIR_METATABLE);
-	lua_setmetatable (L, -2);
 	if (strlen(path) > MAX_PATH-2)
 	  luaL_error (L, "path too long: %s", path);
 	else
 	  sprintf (d->pattern, "%s/*", path);
 #else
-	luaL_getmetatable (L, DIR_METATABLE);
-	lua_setmetatable (L, -2);
 	d->dir = opendir (path);
 	if (d->dir == NULL)
-		luaL_error (L, "cannot open %s: %s", path, strerror (errno));
+          luaL_error (L, "cannot open %s: %s", path, strerror (errno));
 #endif
 	return 2;
 }
@@ -498,19 +534,18 @@ static int dir_iter_factory (lua_State *L) {
 */
 static int dir_create_meta (lua_State *L) {
 	luaL_newmetatable (L, DIR_METATABLE);
-	/* set its __gc field */
-	lua_pushstring (L, "__index");
+
+        /* Method table */
 	lua_newtable(L);
-	lua_pushstring (L, "next");
 	lua_pushcfunction (L, dir_iter);
-	lua_settable(L, -3);
-	lua_pushstring (L, "close");
+	lua_setfield(L, -2, "next");
 	lua_pushcfunction (L, dir_close);
-	lua_settable(L, -3);
-	lua_settable (L, -3);
-	lua_pushstring (L, "__gc");
+	lua_setfield(L, -2, "close");
+
+        /* Metamethods */
+	lua_setfield(L, -2, "__index");
 	lua_pushcfunction (L, dir_close);
-	lua_settable (L, -3);
+	lua_setfield (L, -2, "__gc");
 	return 1;
 }
 
@@ -519,10 +554,13 @@ static int dir_create_meta (lua_State *L) {
 */
 static int lock_create_meta (lua_State *L) {
 	luaL_newmetatable (L, LOCK_METATABLE);
-	/* set its __gc field */
+
+        /* Method table */
 	lua_newtable(L);
 	lua_pushcfunction(L, lfs_unlock_dir);
 	lua_setfield(L, -2, "free");
+
+        /* Metamethods */
 	lua_setfield(L, -2, "__index");
 	lua_pushcfunction(L, lfs_unlock_dir);
 	lua_setfield(L, -2, "__gc");
@@ -743,17 +781,9 @@ static int file_info (lua_State *L) {
 /*
 ** Get symbolic link information using lstat.
 */
-#ifndef _WIN32
 static int link_info (lua_State *L) {
 	return _file_info_ (L, LSTAT_FUNC);
 }
-#else
-static int link_info (lua_State *L) {
-  lua_pushboolean(L, 0);
-  lua_pushliteral(L, "symlinkattributes not supported on this platform");
-  return 2;
-}
-#endif
 
 
 /*
@@ -777,6 +807,7 @@ static const struct luaL_Reg fslib[] = {
 	{"chdir", change_dir},
 	{"currentdir", get_dir},
 	{"dir", dir_iter_factory},
+        {"link", make_link},
 	{"lock", file_lock},
 	{"mkdir", make_dir},
 	{"rmdir", remove_dir},
