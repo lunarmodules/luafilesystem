@@ -465,21 +465,19 @@ static int dir_iter_factory (lua_State *L) {
 	dir_data *d;
 	lua_pushcfunction (L, dir_iter);
 	d = (dir_data *) lua_newuserdata (L, sizeof(dir_data));
+	luaL_getmetatable (L, DIR_METATABLE);
+	lua_setmetatable (L, -2);
 	d->closed = 0;
 #ifdef _WIN32
 	d->hFile = 0L;
-	luaL_getmetatable (L, DIR_METATABLE);
-	lua_setmetatable (L, -2);
 	if (strlen(path) > MAX_PATH-2)
 	  luaL_error (L, "path too long: %s", path);
 	else
 	  sprintf (d->pattern, "%s/*", path);
 #else
-	luaL_getmetatable (L, DIR_METATABLE);
-	lua_setmetatable (L, -2);
 	d->dir = opendir (path);
 	if (d->dir == NULL)
-		luaL_error (L, "cannot open %s: %s", path, strerror (errno));
+          luaL_error (L, "cannot open %s: %s", path, strerror (errno));
 #endif
 	return 2;
 }
