@@ -1,4 +1,4 @@
-#!/usr/local/bin/lua5.1
+#!/usr/bin/env lua5.1
 
 local tmp = "/tmp"
 local sep = "/"
