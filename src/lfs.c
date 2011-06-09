@@ -96,6 +96,7 @@ typedef struct dir_data {
   #define STAT_STRUCT struct _stati64
  #endif
 #define STAT_FUNC _stati64
+#define LSTAT_FUNC STAT_FUNC
 #else
 #define _O_TEXT               0
 #define _O_BINARY             0
@@ -743,17 +744,9 @@ static int file_info (lua_State *L) {
 /*
 ** Get symbolic link information using lstat.
 */
-#ifndef _WIN32
 static int link_info (lua_State *L) {
 	return _file_info_ (L, LSTAT_FUNC);
 }
-#else
-static int link_info (lua_State *L) {
-  lua_pushboolean(L, 0);
-  lua_pushliteral(L, "symlinkattributes not supported on this platform");
-  return 2;
-}
-#endif
 
 
 /*

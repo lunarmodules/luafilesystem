@@ -69,13 +69,11 @@ local new_att = assert (lfs.attributes (tmpfile))
 assert (new_att.access == testdate2, "could not set access time")
 assert (new_att.modification == testdate1, "could not set modification time")
 
-local res, err = lfs.symlinkattributes(tmpfile)
-if err ~= "symlinkattributes not supported on this platform" then
-    -- Checking symbolic link information (does not work in Windows)
-    assert (os.execute ("ln -s "..tmpfile.." _a_link_for_test_"))
-    assert (lfs.attributes"_a_link_for_test_".mode == "file")
-    assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
-    assert (os.remove"_a_link_for_test_")
+-- Checking symbolic link information (does not work in Windows)
+if (os.execute ("ln -s "..tmpfile.." _a_link_for_test_")) then
+  assert (lfs.attributes"_a_link_for_test_".mode == "file")
+  assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
+  assert (os.remove"_a_link_for_test_")
 end
 
 if lfs.setmode then

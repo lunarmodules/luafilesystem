@@ -228,8 +228,8 @@ LuaFileSystem offers the following functions:
     <dt><a name="symlinkattributes"></a><strong><code>lfs.symlinkattributes (filepath [, aname])</code></strong></dt>
     <dd>Identical to <a href="#attributes">lfs.attributes</a> except that
     it obtains information about the link itself (not the file it refers to).
-    This function is not available in Windows so you may want to make sure that
-    <code>lfs.symlinkattributes</code> exists before using it.
+    On Windows this function does not yet support links, and is identical to
+    <code>lfs.attributes</code>.
     </dd>
 
     <dt><a name="touch"></a><strong><code>lfs.touch (filepath [, atime [, mtime]])</code></strong></dt>
