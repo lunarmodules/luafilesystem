@@ -1,7 +1,7 @@
 #!/usr/bin/env lua5.1
 
 local tmp = "/tmp"
-local sep = "/"
+local sep = string.match (package.config, "[^\n]+")
 local upper = ".."
 
 require"lfs"
