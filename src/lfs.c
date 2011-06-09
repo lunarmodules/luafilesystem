@@ -354,6 +354,10 @@ static int file_unlock (lua_State *L) {
 }
 
 
+/*
+** Creates a directory.
+** @param #1 Directory path.
+*/
 static int make_dir (lua_State *L) {
 	const char *path = luaL_checkstring (L, 1);
 	int fail;
