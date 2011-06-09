@@ -76,15 +76,13 @@ if (os.execute ("ln -s "..tmpfile.." _a_link_for_test_")) then
   assert (os.remove"_a_link_for_test_")
 end
 
-if lfs.setmode then
-    -- Checking text/binary modes (works only in Windows)
-    local f = io.open(tmpfile, "w")
-    local result, mode = lfs.setmode(f, "binary")
-    assert((result and mode == "text") or (not result and mode == "setmode not supported on this platform"))
-    result, mode = lfs.setmode(f, "text")
-    assert((result and mode == "binary") or (not result and mode == "setmode not supported on this platform"))
-    f:close()
-end
+-- Checking text/binary modes (only has an effect in Windows)
+local f = io.open(tmpfile, "w")
+local result, mode = lfs.setmode(f, "binary")
+assert(result) -- on non-Windows platforms, mode is always returned as "binary"
+result, mode = lfs.setmode(f, "text")
+assert(result and mode == "binary")
+f:close()
     
 -- Restore access time to current value
 assert (lfs.touch (tmpfile, attrib.access, attrib.modification))

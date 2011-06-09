@@ -221,8 +221,8 @@ LuaFileSystem offers the following functions:
 
     <dt><a name="setmode"></a><strong><code>lfs.setmode (file, mode)</code></strong></dt>
     <dd>Sets the writing mode for a file. The mode string can be either <code>binary</code> or <code>text</code>.
-    Returns the previous mode string for the file. This function is only available in Windows, so you may want to make sure that
-    <code>lfs.setmode</code> exists before using it.
+    Returns the previous mode string for the file. On non-Windows platforms, where the two modes are identical,
+    setting the mode has no effect, and the mode is always returned as <code>binary</code>.
     </dd>
     
     <dt><a name="symlinkattributes"></a><strong><code>lfs.symlinkattributes (filepath [, aname])</code></strong></dt>

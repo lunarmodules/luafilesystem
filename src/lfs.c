@@ -100,8 +100,7 @@ typedef struct dir_data {
 #else
 #define _O_TEXT               0
 #define _O_BINARY             0
-#define lfs_setmode(L,file,m)   ((void)((void)file,m),  \
-		 luaL_error(L, LUA_QL("setmode") " not supported on this platform"), -1)
+#define lfs_setmode(L,file,m)   0
 #define STAT_STRUCT struct stat
 #define STAT_FUNC stat
 #define LSTAT_FUNC lstat
@@ -281,10 +280,9 @@ static int lfs_unlock_dir(lua_State *L) {
 }
 #endif
 
-#ifdef _WIN32
 static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
-  static const int mode[] = {_O_TEXT, _O_BINARY};
-  static const char *const modenames[] = {"text", "binary", NULL};
+  static const int mode[] = {_O_BINARY, _O_TEXT};
+  static const char *const modenames[] = {"binary", "text", NULL};
   int op = luaL_checkoption(L, arg, NULL, modenames);
   int res = lfs_setmode(L, f, mode[op]);
   if (res != -1) {
@@ -307,13 +305,6 @@ static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
     return 3;
   }
 }
-#else
-static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
-  lua_pushboolean(L, 0);
-  lua_pushliteral(L, "setmode not supported on this platform");
-  return 2;
-}
-#endif
 
 static int lfs_f_setmode(lua_State *L) {
   return lfs_g_setmode(L, check_file(L, 1, "setmode"), 2);
