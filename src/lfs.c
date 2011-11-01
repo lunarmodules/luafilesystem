@@ -46,6 +46,8 @@
  #include <utime.h>
 #else
  #include <sys/utime.h>
+ #define utime _utime
+ #define utimbuf _utimbuf
 #endif
 #include <fcntl.h>
 #else
@@ -98,9 +100,11 @@ typedef struct dir_data {
 #define STAT_FUNC _stati64
 #define LSTAT_FUNC STAT_FUNC
 #else
+#ifndef _O_TEXT
 #define _O_TEXT               0
 #define _O_BINARY             0
-#define lfs_setmode(L,file,m)   0
+#endif
+#define lfs_setmode(L,file,m)   ((void)file, (void)m, 0)
 #define STAT_STRUCT struct stat
 #define STAT_FUNC stat
 #define LSTAT_FUNC lstat
@@ -119,15 +123,6 @@ static int pusherror(lua_State *L, const char *info)
 	lua_pushinteger(L, errno);
 	return 3;
 }
-
-static int pushresult(lua_State *L, int i, const char *info)
-{
-	if (i==-1)
-		return pusherror(L, info);
-	lua_pushinteger(L, i);
-	return 1;
-}
-
 
 /*
 ** This function changes the working (current) directory
@@ -388,10 +383,13 @@ static int make_link(lua_State *L)
 #ifndef _WIN32
 	const char *oldpath = luaL_checkstring(L, 1);
 	const char *newpath = luaL_checkstring(L, 2);
-	return pushresult(L,
-		(lua_toboolean(L,3) ? symlink : link)(oldpath, newpath), NULL);
+	int res = (lua_toboolean(L,3) ? symlink : link)(oldpath, newpath);
+	if(res == -1)
+		return pusherror(L, NULL);
+	lua_pushinteger(L, res);
+	return 1;
 #else
-        pusherror(L, "make_link is not supported on Windows");
+        return pusherror(L, "make_link is not supported on Windows");
 #endif
 }
 
@@ -629,7 +627,7 @@ static int file_utime (lua_State *L) {
 		buf = NULL;
 	else {
 		utb.actime = (time_t)luaL_optnumber (L, 2, 0);
-		utb.modtime = (time_t)luaL_optnumber (L, 3, utb.actime);
+		utb.modtime = (time_t)luaL_optnumber (L, 3, (lua_Number)utb.actime);
 		buf = &utb;
 	}
 	if (utime (file, buf)) {
@@ -672,15 +670,15 @@ static void push_st_rdev (lua_State *L, STAT_STRUCT *info) {
 }
 /* time of last access */
 static void push_st_atime (lua_State *L, STAT_STRUCT *info) {
-	lua_pushnumber (L, info->st_atime);
+	lua_pushnumber (L, (lua_Number)info->st_atime);
 }
 /* time of last data modification */
 static void push_st_mtime (lua_State *L, STAT_STRUCT *info) {
-	lua_pushnumber (L, info->st_mtime);
+	lua_pushnumber (L, (lua_Number)info->st_mtime);
 }
 /* time of last file status change */
 static void push_st_ctime (lua_State *L, STAT_STRUCT *info) {
-	lua_pushnumber (L, info->st_ctime);
+	lua_pushnumber (L, (lua_Number)info->st_ctime);
 }
 /* file size, in bytes */
 static void push_st_size (lua_State *L, STAT_STRUCT *info) {
