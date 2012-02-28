@@ -819,6 +819,15 @@ static const struct luaL_Reg fslib[] = {
 	{NULL, NULL},
 };
 
+#if LUA_VERSION_NUM > 501
+static void luaL_register (lua_State *L, const char *libname, const luaL_Reg *l)
+{
+	luaL_newlib (L, l);
+	lua_pushvalue (L, -1);
+	lua_setglobal (L, libname);
+}
+#endif
+
 int luaopen_lfs (lua_State *L) {
 	dir_create_meta (L);
 	lock_create_meta (L);
