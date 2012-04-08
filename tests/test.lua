@@ -4,7 +4,7 @@ local tmp = "/tmp"
 local sep = string.match (package.config, "[^\n]+")
 local upper = ".."
 
-require"lfs"
+local lfs = require"lfs"
 print (lfs._VERSION)
 
 function attrdir (path)

@@ -61,6 +61,16 @@
 #include "lualib.h"
 #include "lfs.h"
 
+/*
+ * ** compatibility with Lua 5.2
+ * */
+#if (LUA_VERSION_NUM == 502)
+#undef luaL_register
+#define luaL_register(L,n,f) \
+	        { if ((n) == NULL) luaL_setfuncs(L,f,0); else luaL_newlib(L,f); }
+
+#endif
+
 /* Define 'strerror' for systems that do not implement it */
 #ifdef NO_STRERROR
 #define strerror(_)	"System unable to describe the error"
@@ -150,16 +160,19 @@ static int change_dir (lua_State *L) {
 ** If unable to get the current directory, it returns nil
 **  and a string describing the error
 */
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 static int get_dir (lua_State *L) {
-  char *path;
-  if ((path = getcwd(NULL, 0)) == NULL) {
+  char path[PATH_MAX];
+  if (getcwd((char *)path, PATH_MAX) == NULL) {
     lua_pushnil(L);
     lua_pushstring(L, getcwd_error);
     return 2;
   }
   else {
     lua_pushstring(L, path);
-    free(path);
     return 1;
   }
 }
@@ -703,6 +716,46 @@ static void push_invalid (lua_State *L, STAT_STRUCT *info) {
 #endif
 }
 
+ /*
+** Convert the inode protection mode to a permission list.
+*/
+
+#ifdef _WIN32
+static const char *perm2string (unsigned short mode) {
+  static char perms[10] = "---------\0";
+  int i;
+  for (i=0;i<9;i++) perms[i]='-';
+  if (mode  & _S_IREAD)
+   { perms[0] = 'r'; perms[3] = 'r'; perms[6] = 'r'; }
+  if (mode  & _S_IWRITE)
+   { perms[1] = 'w'; perms[4] = 'w'; perms[7] = 'w'; }
+  if (mode  & _S_IEXEC)
+   { perms[2] = 'x'; perms[5] = 'x'; perms[8] = 'x'; }
+  return perms;
+}
+#else
+static const char *perm2string (mode_t mode) {
+  static char perms[10] = "---------\0";
+  int i;
+  for (i=0;i<9;i++) perms[i]='-';
+  if (mode & S_IRUSR) perms[0] = 'r';
+  if (mode & S_IWUSR) perms[1] = 'w';
+  if (mode & S_IXUSR) perms[2] = 'x';
+  if (mode & S_IRGRP) perms[3] = 'r';
+  if (mode & S_IWGRP) perms[4] = 'w';
+  if (mode & S_IXGRP) perms[5] = 'x';
+  if (mode & S_IROTH) perms[6] = 'r';
+  if (mode & S_IWOTH) perms[7] = 'w';
+  if (mode & S_IXOTH) perms[8] = 'x';
+  return perms;
+}
+#endif
+
+/* permssions string */
+static void push_st_perm (lua_State *L, STAT_STRUCT *info) {
+    lua_pushstring (L, perm2string (info->st_mode));
+}
+
 typedef void (*_push_function) (lua_State *L, STAT_STRUCT *info);
 
 struct _stat_members {
@@ -722,6 +775,7 @@ struct _stat_members members[] = {
 	{ "modification", push_st_mtime },
 	{ "change",       push_st_ctime },
 	{ "size",         push_st_size },
+ 	{ "permissions",  push_st_perm },
 #ifndef _WIN32
 	{ "blocks",       push_st_blocks },
 	{ "blksize",      push_st_blksize },
