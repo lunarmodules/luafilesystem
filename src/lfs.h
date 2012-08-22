@@ -14,4 +14,7 @@
 #endif
 
 
-int luaopen_lfs (lua_State *L);
+#ifndef LUAMOD_API
+#define LUAMOD_API
+#endif
+LUAMOD_API int luaopen_lfs (lua_State *L);
