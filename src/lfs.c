@@ -485,7 +485,7 @@ static int dir_iter (lua_State *L) {
 			return 1;
 		}
 	} else { /* next entry */
-		if (_findnext (d->hFile, &c_file) == -1L) {
+		if (_findnext (d->hFile, &c_file) == -1) {
 			/* no more entries => close directory */
 			_findclose (d->hFile);
 			d->closed = 1;
