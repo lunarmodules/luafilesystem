@@ -144,7 +144,11 @@ static int pushresult(lua_State *L, int i, const char *info)
 */
 static int change_dir (lua_State *L) {
 	const char *path = luaL_checkstring(L, 1);
+#ifdef _WIN32
+	if (_chdir(path)) {
+#else
 	if (chdir(path)) {
+#endif
 		lua_pushnil (L);
 		lua_pushfstring (L,"Unable to change working directory to '%s'\n%s\n",
 				path, chdir_error);
@@ -166,7 +170,11 @@ static int change_dir (lua_State *L) {
 
 static int get_dir (lua_State *L) {
   char path[PATH_MAX];
+#ifdef _WIN32
+  if (_getcwd((char *)path, PATH_MAX) == NULL) {
+#else
   if (getcwd((char *)path, PATH_MAX) == NULL) {
+#endif
     lua_pushnil(L);
     lua_pushstring(L, getcwd_error);
     return 2;
@@ -225,7 +233,7 @@ static int _file_lock (lua_State *L, FILE *fh, const char *mode, const long star
 #ifdef __BORLANDC__
 	code = locking (fileno(fh), lkmode, len);
 #else
-	code = _locking (fileno(fh), lkmode, len);
+	code = _locking (_fileno(fh), lkmode, len);
 #endif
 #else
 	struct flock f;
@@ -439,7 +447,11 @@ static int remove_dir (lua_State *L) {
 	const char *path = luaL_checkstring (L, 1);
 	int fail;
 
+#ifdef _WIN32
+	fail = _rmdir (path);
+#else
 	fail = rmdir (path);
+#endif
 
 	if (fail) {
 		lua_pushnil (L);
@@ -636,7 +648,11 @@ static const char *mode2string (mode_t mode) {
 */
 static int file_utime (lua_State *L) {
 	const char *file = luaL_checkstring (L, 1);
+#ifdef _WIN32
+	struct _utimbuf utb, *buf;
+#else
 	struct utimbuf utb, *buf;
+#endif
 
 	if (lua_gettop (L) == 1) /* set to current date/time */
 		buf = NULL;
@@ -645,7 +661,11 @@ static int file_utime (lua_State *L) {
 		utb.modtime = (time_t)luaL_optnumber (L, 3, utb.actime);
 		buf = &utb;
 	}
+#ifdef _WIN32
+	if (_utime (file, buf)) {
+#else
 	if (utime (file, buf)) {
+#endif
 		lua_pushnil (L);
 		lua_pushfstring (L, "%s", strerror (errno));
 		return 2;
