@@ -82,6 +82,12 @@
 #define getcwd_error	"Function 'getcwd' not provided by system"
 #else
 #define getcwd_error	strerror(errno)
+  #ifdef _WIN32
+    #define LFS_MAXPATHLEN MAX_PATH // MAX_PATH seems to be 260. Seems kind of small. Is there a better one?
+  #else
+    #include <sys/param.h> // for MAXPATHLEN
+    #define LFS_MAXPATHLEN MAXPATHLEN
+  #endif
 #endif
 
 #define DIR_METATABLE "directory metatable"
@@ -160,13 +166,11 @@ static int change_dir (lua_State *L) {
 ** If unable to get the current directory, it returns nil
 **  and a string describing the error
 */
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
-
 static int get_dir (lua_State *L) {
-  char path[PATH_MAX];
-  if (getcwd((char *)path, PATH_MAX) == NULL) {
+  char *path;
+  // Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead.
+  char buf[LFS_MAXPATHLEN]; 
+  if ((path = getcwd(buf, LFS_MAXPATHLEN)) == NULL) {
     lua_pushnil(L);
     lua_pushstring(L, getcwd_error);
     return 2;
