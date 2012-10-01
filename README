@@ -22,6 +22,9 @@ Please check the documentation at doc/us/ for more information.
 History
 -------
 
+Version 1.6.1 [01/Oct/2012]
+	* fix build for Lua 5.2
+
 Version 1.6.0 [26/Sep/2012]
         * getcwd fix for Android
         * support for Lua 5.2
