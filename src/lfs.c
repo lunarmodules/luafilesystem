@@ -56,6 +56,7 @@
 #include <utime.h>
 #endif
 
+#define LUA_COMPAT_ALL
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
@@ -876,15 +877,6 @@ static const struct luaL_Reg fslib[] = {
         {"lock_dir", lfs_lock_dir},
         {NULL, NULL},
 };
-
-#if LUA_VERSION_NUM > 501
-static void luaL_register (lua_State *L, const char *libname, const luaL_Reg *l)
-{
-        luaL_newlib (L, l);
-        lua_pushvalue (L, -1);
-        lua_setglobal (L, libname);
-}
-#endif
 
 int luaopen_lfs (lua_State *L) {
         dir_create_meta (L);
