@@ -56,20 +56,14 @@
 #include <utime.h>
 #endif
 
-#define LUA_COMPAT_ALL
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 #include "lfs.h"
 
-/*
- * ** compatibility with Lua 5.2
- * */
-#if (LUA_VERSION_NUM == 502)
-#undef luaL_register
-#define luaL_register(L,n,f) \
-                { if ((n) == NULL) luaL_setfuncs(L,f,0); else luaL_newlib(L,f); }
-
+#if LUA_VERSION_NUM < 502
+#  define luaL_newlib(L,l) (lua_newtable(L), luaL_register(L,NULL,l))
 #endif
 
 /* Define 'strerror' for systems that do not implement it */
@@ -881,7 +875,7 @@ static const struct luaL_Reg fslib[] = {
 int luaopen_lfs (lua_State *L) {
         dir_create_meta (L);
         lock_create_meta (L);
-        luaL_register (L, "lfs", fslib);
+        luaL_newlib (L, fslib);
         set_info (L);
         return 1;
 }
