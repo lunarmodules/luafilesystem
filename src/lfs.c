@@ -62,6 +62,8 @@
 
 #include "lfs.h"
 
+#define LFS_VERSION "1.6.2"
+
 #if LUA_VERSION_NUM < 502
 #  define luaL_newlib(L,l) (lua_newtable(L), luaL_register(L,NULL,l))
 #endif
@@ -850,7 +852,7 @@ static void set_info (lua_State *L) {
         lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
         lua_settable (L, -3);
         lua_pushliteral (L, "_VERSION");
-        lua_pushliteral (L, "LuaFileSystem 1.6.0");
+        lua_pushliteral (L, "LuaFileSystem "LFS_VERSION);
         lua_settable (L, -3);
 }
 
