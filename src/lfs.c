@@ -81,9 +81,11 @@
 #else
 #define getcwd_error    strerror(errno)
   #ifdef _WIN32
-    #define LFS_MAXPATHLEN MAX_PATH // MAX_PATH seems to be 260. Seems kind of small. Is there a better one?
+	 /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
+    #define LFS_MAXPATHLEN MAX_PATH
   #else
-    #include <sys/param.h> // for MAXPATHLEN
+	/* For MAXPATHLEN: */
+    #include <sys/param.h>
     #define LFS_MAXPATHLEN MAXPATHLEN
   #endif
 #endif
@@ -114,7 +116,7 @@ typedef struct dir_data {
 #else
 #define _O_TEXT               0
 #define _O_BINARY             0
-#define lfs_setmode(L,file,m)   0
+#define lfs_setmode(L,file,m)   ((void)L, (void)file, (void)m, 0)
 #define STAT_STRUCT struct stat
 #define STAT_FUNC stat
 #define LSTAT_FUNC lstat
@@ -166,7 +168,7 @@ static int change_dir (lua_State *L) {
 */
 static int get_dir (lua_State *L) {
   char *path;
-  // Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead.
+  /* Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead. */
   char buf[LFS_MAXPATHLEN];
   if ((path = getcwd(buf, LFS_MAXPATHLEN)) == NULL) {
     lua_pushnil(L);
