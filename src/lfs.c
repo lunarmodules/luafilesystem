@@ -119,7 +119,7 @@ typedef struct dir_data {
 #else
 #define _O_TEXT               0
 #define _O_BINARY             0
-#define lfs_setmode(L,file,m)   0
+#define lfs_setmode(L,file,m)   ((void)L, (void)file, (void)m, 0)
 #define STAT_STRUCT struct stat
 #define STAT_FUNC stat
 #define LSTAT_FUNC lstat
