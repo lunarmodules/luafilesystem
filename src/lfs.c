@@ -56,20 +56,17 @@
 #include <utime.h>
 #endif
 
-#define LUA_COMPAT_ALL
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 #include "lfs.h"
 
-/*
- * ** compatibility with Lua 5.2
- * */
-#if (LUA_VERSION_NUM == 502)
-#undef luaL_register
-#define luaL_register(L,n,f) \
-                { if ((n) == NULL) luaL_setfuncs(L,f,0); else luaL_newlib(L,f); }
+#define LFS_VERSION "1.6.2"
+#define LFS_LIBNAME "lfs"
 
+#if LUA_VERSION_NUM < 502
+#  define luaL_newlib(L,l) (lua_newtable(L), luaL_register(L,NULL,l))
 #endif
 
 /* Define 'strerror' for systems that do not implement it */
@@ -856,7 +853,7 @@ static void set_info (lua_State *L) {
         lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
         lua_settable (L, -3);
         lua_pushliteral (L, "_VERSION");
-        lua_pushliteral (L, "LuaFileSystem 1.6.0");
+        lua_pushliteral (L, "LuaFileSystem "LFS_VERSION);
         lua_settable (L, -3);
 }
 
@@ -881,7 +878,9 @@ static const struct luaL_Reg fslib[] = {
 int luaopen_lfs (lua_State *L) {
         dir_create_meta (L);
         lock_create_meta (L);
-        luaL_register (L, "lfs", fslib);
+        luaL_newlib (L, fslib);
+        lua_pushvalue(L, -1);
+        lua_setglobal(L, LFS_LIBNAME);
         set_info (L);
         return 1;
 }
