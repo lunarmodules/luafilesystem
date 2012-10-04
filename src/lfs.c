@@ -63,6 +63,7 @@
 #include "lfs.h"
 
 #define LFS_VERSION "1.6.2"
+#define LFS_LIBNAME "lfs"
 
 #if LUA_VERSION_NUM < 502
 #  define luaL_newlib(L,l) (lua_newtable(L), luaL_register(L,NULL,l))
@@ -878,6 +879,8 @@ int luaopen_lfs (lua_State *L) {
         dir_create_meta (L);
         lock_create_meta (L);
         luaL_newlib (L, fslib);
+        lua_pushvalue(L, -1);
+        lua_setglobal(L, LFS_LIBNAME);
         set_info (L);
         return 1;
 }
