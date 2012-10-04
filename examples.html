@@ -48,7 +48,7 @@
         <li><a href="http://luaforge.net/projects/luafilesystem/">Project</a>
             <ul>
                 <li><a href="https://github.com/keplerproject/luafilesystem/issues">Bug Tracker</a></li>
-                <li><a href="https://github.com/keplerproject/luafilesystem">Git</a></li>
+                <li><a href="https://github.com/keplerproject/luafilesystem">CVS</a></li>
             </ul>
         </li>
 		<li><a href="license.html">License</a></li>
@@ -65,7 +65,7 @@
 attributes for each file inside it.</p>
 
 <pre class="example">
-require"lfs"
+local lfs = require"lfs"
 
 function attrdir (path)
     for file in lfs.dir(path) do
