@@ -94,7 +94,7 @@
 typedef struct dir_data {
         int  closed;
 #ifdef _WIN32
-        long hFile;
+        intptr_t hFile;
         char pattern[MAX_PATH+1];
 #else
         DIR *dir;
