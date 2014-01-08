@@ -281,7 +281,10 @@ static int lfs_lock_dir(lua_State *L) {
 }
 static int lfs_unlock_dir(lua_State *L) {
   lfs_Lock *lock = luaL_checkudata(L, 1, LOCK_METATABLE);
-  CloseHandle(lock->fd);
+  if(lock->fd != INVALID_HANDLE_VALUE) {    
+    CloseHandle(lock->fd);
+    lock->fd=INVALID_HANDLE_VALUE;
+  }
   return 0;
 }
 #else
