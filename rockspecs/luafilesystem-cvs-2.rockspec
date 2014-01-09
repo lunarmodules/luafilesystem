@@ -3,7 +3,8 @@ package = "LuaFileSystem"
 version = "cvs-2"
 
 source = {
-   url = "git://github.com/keplerproject/luafilesystem.git",
+   url = "https://github.com/keplerproject/luafilesystem/archive/master.zip",
+   dir = "luafilesystem-master",
 }
 
 description = {
@@ -17,10 +18,11 @@ description = {
 }
 
 dependencies = {
-   "lua >= 5.1"
+   "lua >= 5.1, < 5.3"
 }
 
 build = {
-   type = "module",
-   modules = { lfs = "src/lfs.c" }
+   type = "builtin",
+   modules = { lfs = "src/lfs.c" },
+   copy_directories = { "doc", "tests" }
 }
