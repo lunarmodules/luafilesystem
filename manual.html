@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<title>LuaFileSystem</title>
-    <link rel="stylesheet" href="http://www.keplerproject.org/doc.css" type="text/css"/>
+    <link rel="stylesheet" href="doc.css" type="text/css"/>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 
@@ -227,8 +227,10 @@ LuaFileSystem offers the following functions:
     in case of error, it returns <code>nil</code> plus an error string.</dd>
 
     <dt><a name="setmode"></a><strong><code>lfs.setmode (file, mode)</code></strong></dt>
-    <dd>Sets the writing mode for a file. The mode string can be either <code>binary</code> or <code>text</code>.
-    Returns the previous mode string for the file. On non-Windows platforms, where the two modes are identical,
+    <dd>Sets the writing mode for a file. The mode string can be either <code>"binary"</code> or <code>"text"</code>.
+    Returns <code>true</code> followed the previous mode string for the file, or
+    <code>nil</code> followed by an error string in case of errors.
+    On non-Windows platforms, where the two modes are identical,
     setting the mode has no effect, and the mode is always returned as <code>binary</code>.
     </dd>
     
