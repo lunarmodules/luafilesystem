@@ -120,6 +120,13 @@ assert (new_att.modification == attrib.modification)
 io.write(".")
 io.flush()
 
+-- Check consistency of lfs.attributes values
+local attr = lfs.attributes (tmpfile)
+for key, value in pairs(attr) do
+  assert (value == lfs.attributes (tmpfile, key),
+          "lfs.attributes values not consistent")
+end
+
 -- Remove new file and directory
 assert (os.remove (tmpfile), "could not remove new file")
 assert (lfs.rmdir (tmpdir), "could not remove new directory")

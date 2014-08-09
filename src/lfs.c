@@ -716,12 +716,6 @@ static void push_st_blksize (lua_State *L, STAT_STRUCT *info) {
         lua_pushnumber (L, (lua_Number)info->st_blksize);
 }
 #endif
-static void push_invalid (lua_State *L, STAT_STRUCT *info) {
-  luaL_error(L, "invalid attribute name");
-#ifndef _WIN32
-  info->st_blksize = 0; /* never reached */
-#endif
-}
 
  /*
 ** Convert the inode protection mode to a permission list.
@@ -787,14 +781,13 @@ struct _stat_members members[] = {
         { "blocks",       push_st_blocks },
         { "blksize",      push_st_blksize },
 #endif
-        { NULL, push_invalid }
+        { NULL, NULL }
 };
 
 /*
 ** Get file or symbolic link information
 */
 static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
-        int i;
         STAT_STRUCT info;
         const char *file = luaL_checkstring (L, 1);
 
@@ -804,25 +797,23 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
                 return 2;
         }
         if (lua_isstring (L, 2)) {
-                int v;
                 const char *member = lua_tostring (L, 2);
-                if (strcmp (member, "mode") == 0) v = 0;
-#ifndef _WIN32
-                else if (strcmp (member, "blocks")  == 0) v = 11;
-                else if (strcmp (member, "blksize") == 0) v = 12;
-#endif
-                else /* look for member */
-                        for (v = 1; members[v].name; v++)
-                                if (*members[v].name == *member)
-                                        break;
-                /* push member value and return */
-                members[v].push (L, &info);
-                return 1;
-        } else if (!lua_istable (L, 2))
-                /* creates a table if none is given */
+                for (int i = 0; members[i].name; i++) {
+                        if (strcmp(members[i].name, member) == 0) {
+                                /* push member value and return */
+                                members[i].push (L, &info);
+                                return 1;
+                        }
+                }
+                /* member not found */
+                return luaL_error(L, "invalid attribute name");
+        }
+        /* creates a table if none is given */
+        if (!lua_istable (L, 2)) {
                 lua_newtable (L);
+        }
         /* stores all members in table on top of the stack */
-        for (i = 0; members[i].name; i++) {
+        for (int i = 0; members[i].name; i++) {
                 lua_pushstring (L, members[i].name);
                 members[i].push (L, &info);
                 lua_rawset (L, -3);
