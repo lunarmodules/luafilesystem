@@ -438,6 +438,7 @@ static int make_dir (lua_State *L) {
         return 1;
 }
 
+
 /*
 ** Removes a directory.
 ** @param #1 Directory path.
@@ -456,6 +457,7 @@ static int remove_dir (lua_State *L) {
         lua_pushboolean (L, 1);
         return 1;
 }
+
 
 /*
 ** Directory iterator
@@ -568,6 +570,7 @@ static int dir_create_meta (lua_State *L) {
         lua_setfield (L, -2, "__gc");
         return 1;
 }
+
 
 /*
 ** Creates lock metatable.
@@ -790,6 +793,7 @@ struct _stat_members members[] = {
 static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
         STAT_STRUCT info;
         const char *file = luaL_checkstring (L, 1);
+        int i;
 
         if (st(file, &info)) {
                 lua_pushnil (L);
@@ -798,7 +802,7 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
         }
         if (lua_isstring (L, 2)) {
                 const char *member = lua_tostring (L, 2);
-                for (int i = 0; members[i].name; i++) {
+                for (i = 0; members[i].name; i++) {
                         if (strcmp(members[i].name, member) == 0) {
                                 /* push member value and return */
                                 members[i].push (L, &info);
@@ -813,7 +817,7 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
                 lua_newtable (L);
         }
         /* stores all members in table on top of the stack */
-        for (int i = 0; members[i].name; i++) {
+        for (i = 0; members[i].name; i++) {
                 lua_pushstring (L, members[i].name);
                 members[i].push (L, &info);
                 lua_rawset (L, -3);
