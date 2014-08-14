@@ -24,7 +24,7 @@ script:
   - sudo lua test.lua
 
 after_success:
-  - coveralls -b .. -r ..
+  - coveralls -b .. -r .. -E usr
 
 notifications:
   email:
