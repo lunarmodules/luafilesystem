@@ -20,6 +20,7 @@
 ** $Id: lfs.c,v 1.61 2009/07/04 02:10:16 mascarenhas Exp $
 */
 
+#ifndef LFS_DO_NOT_USE_LARGE_FILE
 #ifndef _WIN32
 #ifndef _AIX
 #define _FILE_OFFSET_BITS 64 /* Linux, Solaris and HP-UX */
@@ -27,8 +28,11 @@
 #define _LARGE_FILES 1 /* AIX */
 #endif
 #endif
+#endif
 
+#ifndef LFS_DO_NOT_USE_LARGE_FILE
 #define _LARGEFILE64_SOURCE
+#endif
 
 #include <errno.h>
 #include <stdio.h>
