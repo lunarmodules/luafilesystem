@@ -6,6 +6,7 @@ env:
   matrix:
     - LUA=lua5.1
     - LUA=lua5.2
+    - LUA=lua5.3
     - LUA=luajit
 
 branches:
@@ -17,7 +18,7 @@ before_install:
   - sudo pip install cpp-coveralls
 
 install:
-  - sudo luarocks make rockspecs/luafilesystem-cvs-2.rockspec CFLAGS="-O2 -fPIC -ftest-coverage -fprofile-arcs" LIBFLAG="-shared --coverage"
+  - sudo luarocks make rockspecs/luafilesystem-cvs-3.rockspec CFLAGS="-O2 -fPIC -ftest-coverage -fprofile-arcs" LIBFLAG="-shared --coverage"
 
 script: 
   - cd tests

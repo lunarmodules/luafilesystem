@@ -65,6 +65,14 @@
 #define LFS_VERSION "1.6.2"
 #define LFS_LIBNAME "lfs"
 
+#if LUA_VERSION_NUM >= 503 /* Lua 5.3 */
+
+#ifndef luaL_optlong
+#define luaL_optlong luaL_optinteger
+#endif
+
+#endif
+
 #if LUA_VERSION_NUM < 502
 #  define luaL_newlib(L,l) (lua_newtable(L), luaL_register(L,NULL,l))
 #endif
