@@ -738,7 +738,7 @@ static void push_st_blksize (lua_State *L, STAT_STRUCT *info) {
 
 #ifdef _WIN32
 static const char *perm2string (unsigned short mode) {
-  static char perms[10] = "---------"; //removed explicit \0 (it would be the second, since "" adds one already and perms[10] is only 10 big.
+  static char perms[10] = "---------";
   int i;
   for (i=0;i<9;i++) perms[i]='-';
   if (mode  & _S_IREAD)
@@ -751,7 +751,7 @@ static const char *perm2string (unsigned short mode) {
 }
 #else
 static const char *perm2string (mode_t mode) {
-  static char perms[10] = "---------\0";
+  static char perms[10] = "---------";
   int i;
   for (i=0;i<9;i++) perms[i]='-';
   if (mode & S_IRUSR) perms[0] = 'r';
