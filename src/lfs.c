@@ -375,8 +375,8 @@ static int lfs_f_setmode(lua_State *L) {
 static int file_lock (lua_State *L) {
         FILE *fh = check_file (L, 1, "lock");
         const char *mode = luaL_checkstring (L, 2);
-        const long start = luaL_optlong (L, 3, 0);
-        long len = luaL_optlong (L, 4, 0);
+        const long start = (long) luaL_optinteger (L, 3, 0);
+        long len = (long) luaL_optinteger (L, 4, 0);
         if (_file_lock (L, fh, mode, start, len, "lock")) {
                 lua_pushboolean (L, 1);
                 return 1;
@@ -396,8 +396,8 @@ static int file_lock (lua_State *L) {
 */
 static int file_unlock (lua_State *L) {
         FILE *fh = check_file (L, 1, "unlock");
-        const long start = luaL_optlong (L, 2, 0);
-        long len = luaL_optlong (L, 3, 0);
+        const long start = (long) luaL_optinteger (L, 2, 0);
+        long len = (long) luaL_optinteger (L, 3, 0);
         if (_file_lock (L, fh, "u", start, len, "unlock")) {
                 lua_pushboolean (L, 1);
                 return 1;
@@ -664,7 +664,7 @@ static int file_utime (lua_State *L) {
                 buf = NULL;
         else {
                 utb.actime = (time_t)luaL_optnumber (L, 2, 0);
-                utb.modtime = (time_t)luaL_optnumber (L, 3, utb.actime);
+                utb.modtime = (time_t) luaL_optinteger (L, 3, utb.actime);
                 buf = &utb;
         }
         if (utime (file, buf)) {
@@ -683,52 +683,52 @@ static void push_st_mode (lua_State *L, STAT_STRUCT *info) {
 }
 /* device inode resides on */
 static void push_st_dev (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_dev);
+        lua_pushinteger (L, (lua_Integer) info->st_dev);
 }
 /* inode's number */
 static void push_st_ino (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_ino);
+        lua_pushinteger (L, (lua_Integer) info->st_ino);
 }
 /* number of hard links to the file */
 static void push_st_nlink (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_nlink);
+        lua_pushinteger (L, (lua_Integer)info->st_nlink);
 }
 /* user-id of owner */
 static void push_st_uid (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_uid);
+        lua_pushinteger (L, (lua_Integer)info->st_uid);
 }
 /* group-id of owner */
 static void push_st_gid (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_gid);
+        lua_pushinteger (L, (lua_Integer)info->st_gid);
 }
 /* device type, for special file inode */
 static void push_st_rdev (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_rdev);
+        lua_pushinteger (L, (lua_Integer) info->st_rdev);
 }
 /* time of last access */
 static void push_st_atime (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, info->st_atime);
+        lua_pushinteger (L, (lua_Integer) info->st_atime);
 }
 /* time of last data modification */
 static void push_st_mtime (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, info->st_mtime);
+        lua_pushinteger (L, (lua_Integer) info->st_mtime);
 }
 /* time of last file status change */
 static void push_st_ctime (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, info->st_ctime);
+        lua_pushinteger (L, (lua_Integer) info->st_ctime);
 }
 /* file size, in bytes */
 static void push_st_size (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_size);
+        lua_pushinteger (L, (lua_Integer)info->st_size);
 }
 #ifndef _WIN32
 /* blocks allocated for file */
 static void push_st_blocks (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_blocks);
+        lua_pushinteger (L, (lua_Integer)info->st_blocks);
 }
 /* optimal file system I/O blocksize */
 static void push_st_blksize (lua_State *L, STAT_STRUCT *info) {
-        lua_pushnumber (L, (lua_Number)info->st_blksize);
+        lua_pushinteger (L, (lua_Integer)info->st_blksize);
 }
 #endif
 
@@ -738,7 +738,7 @@ static void push_st_blksize (lua_State *L, STAT_STRUCT *info) {
 
 #ifdef _WIN32
 static const char *perm2string (unsigned short mode) {
-  static char perms[10] = "---------\0";
+  static char perms[10] = "---------"; //removed explicit \0 (it would be the second, since "" adds one already and perms[10] is only 10 big.
   int i;
   for (i=0;i<9;i++) perms[i]='-';
   if (mode  & _S_IREAD)
