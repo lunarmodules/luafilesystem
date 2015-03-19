@@ -21,5 +21,12 @@
 #define fileno(f) (_fileno(f))
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int luaopen_lfs (lua_State *L);
+
+#ifdef __cplusplus
+}
+#endif
