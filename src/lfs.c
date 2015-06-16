@@ -12,6 +12,7 @@
 **   lfs.lock_dir (path)
 **   lfs.mkdir (path)
 **   lfs.rmdir (path)
+**   lfs.mkdirs (path)
 **   lfs.setmode (filepath, mode)
 **   lfs.symlinkattributes (filepath [, attributename]) -- thanks to Sam Roberts
 **   lfs.touch (filepath [, atime [, mtime]])
@@ -93,10 +94,10 @@
 #else
 #define getcwd_error    strerror(errno)
   #ifdef _WIN32
-	 /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
+     /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
     #define LFS_MAXPATHLEN MAX_PATH
   #else
-	/* For MAXPATHLEN: */
+    /* For MAXPATHLEN: */
     #include <sys/param.h>
     #define LFS_MAXPATHLEN MAXPATHLEN
   #endif
@@ -435,7 +436,6 @@ static int make_link(lua_State *L)
 #endif
 }
 
-
 /*
 ** Creates a directory.
 ** @param #1 Directory path.
@@ -458,6 +458,63 @@ static int make_dir (lua_State *L) {
         return 1;
 }
 
+
+/*
+** Creates more directory, like mkdir -p /dir1/dir2/../dirn.
+** @param #1 Directory path.
+*/
+static int make_dirs (lua_State *L) {
+        const char *path = luaL_checkstring (L, 1);
+        int fail;
+#ifdef _WIN32
+        return pusherror(L, "make_dirs is not supported on Windows");
+#else
+        char tmp[256];
+        char *p = NULL;
+        int len;
+        struct stat st;
+        int s;
+
+        snprintf(tmp, sizeof(tmp), "%s", path);
+        len = strlen(tmp);
+
+        if( tmp[len -1] == '/') tmp[len -1] = 0;
+
+        for( p = tmp + 1; *p; p++) {
+            if( *p == '/' ) {
+                *p = 0;
+
+                s = stat(tmp, &st);
+                if (s < 0) {
+                    fail = mkdir (tmp, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
+                                       S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
+                    if(fail) {
+                        lua_pushnil (L);
+                        lua_pushfstring (L, "%s", strerror(errno));
+                        return 2;
+                    }
+                } else {
+                    if(!S_ISDIR(st.st_mode)) {
+                        lua_pushnil (L);
+                        lua_pushfstring (L, "%s %s %s", "The path", tmp, "is exists, but not directory");
+                        return 2;
+                    }
+                }
+
+                *p = '/';
+            }
+        }
+        fail =  mkdir (tmp, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
+                             S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
+#endif
+        if (fail) {
+                lua_pushnil (L);
+        lua_pushfstring (L, "%s", strerror(errno));
+                return 2;
+        }
+        lua_pushboolean (L, 1);
+        return 1;
+}
 
 /*
 ** Removes a directory.
@@ -887,6 +944,7 @@ static const struct luaL_Reg fslib[] = {
         {"lock", file_lock},
         {"mkdir", make_dir},
         {"rmdir", remove_dir},
+        {"mkdirs", make_dirs},
         {"symlinkattributes", link_info},
         {"setmode", lfs_f_setmode},
         {"touch", file_utime},
