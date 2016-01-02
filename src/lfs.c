@@ -123,7 +123,7 @@ typedef struct dir_data {
   #define lfs_setmode(L,file,m)   ((void)L, _setmode(_fileno(file), m))
   #define STAT_STRUCT struct _stati64
  #endif
-#define STAT_FUNC _stati64
+#define STAT_FUNC _wstati64
 #define LSTAT_FUNC STAT_FUNC
 #else
 #define _O_TEXT               0
@@ -156,6 +156,18 @@ static int pushresult(lua_State *L, int i, const char *info)
         return 1;
 }
 
+#ifdef _WIN32
+int win_utf8_to_unicode(const char *szUtf8, LPWSTR szUnicode, int nLenWchar)
+{
+	return MultiByteToWideChar(CP_UTF8, 0, szUtf8, -1, szUnicode, nLenWchar);
+}
+
+int win_unicode_to_utf8(LPCWSTR szUnicode, int nLenWchar, char *szUtf8, int nLen)
+{
+	return WideCharToMultiByte(CP_UTF8, 0, szUnicode, nLenWchar, szUtf8, nLen, NULL, NULL);
+}
+//	WCHAR szBuffer[4024] = L"";
+#endif
 
 /*
 ** This function changes the working (current) directory
@@ -484,7 +496,7 @@ static int remove_dir (lua_State *L) {
 */
 static int dir_iter (lua_State *L) {
 #ifdef _WIN32
-        struct _finddata_t c_file;
+        struct _wfinddata_t c_file;
 #else
         struct dirent *entry;
 #endif
@@ -492,23 +504,29 @@ static int dir_iter (lua_State *L) {
         luaL_argcheck (L, d->closed == 0, 1, "closed directory");
 #ifdef _WIN32
         if (d->hFile == 0L) { /* first entry */
-                if ((d->hFile = _findfirst (d->pattern, &c_file)) == -1L) {
+			WCHAR szPattern[256];
+			win_utf8_to_unicode(d->pattern, (char *)szPattern, 256);
+			if ((d->hFile = _wfindfirst(szPattern, &c_file)) == -1L) {
                         lua_pushnil (L);
                         lua_pushstring (L, strerror (errno));
                         d->closed = 1;
                         return 2;
                 } else {
-                        lua_pushstring (L, c_file.name);
+						char szName[512];
+						win_unicode_to_utf8(c_file.name, -1, szName, 512);
+						lua_pushstring(L, szName);
                         return 1;
                 }
         } else { /* next entry */
-                if (_findnext (d->hFile, &c_file) == -1L) {
+                if (_wfindnext (d->hFile, &c_file) == -1L) {
                         /* no more entries => close directory */
                         _findclose (d->hFile);
                         d->closed = 1;
                         return 0;
                 } else {
-                        lua_pushstring (L, c_file.name);
+						char szName[512];
+						win_unicode_to_utf8(c_file.name, -1, szName, 512);
+						lua_pushstring(L, szName);
                         return 1;
                 }
         }
@@ -814,8 +832,13 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
         STAT_STRUCT info;
         const char *file = luaL_checkstring (L, 1);
         int i;
-
-        if (st(file, &info)) {
+#ifdef _WIN32
+		WCHAR szFile[260];
+		win_utf8_to_unicode(file, szFile, 260);
+		if (st(szFile, &info)) {
+#else
+		if (st(file, &info)) {
+#endif
                 lua_pushnil (L);
                 lua_pushfstring (L, "cannot obtain information from file `%s'", file);
                 return 2;
