@@ -22,7 +22,7 @@ install:
 
 script:
   - cd tests
-  - sudo lua test.lua
+  - lua test.lua
 
 after_success:
   - coveralls -b .. -r .. -i ./src --dump c.report.json
