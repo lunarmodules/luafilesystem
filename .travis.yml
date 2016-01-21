@@ -2,7 +2,7 @@ language: c
 
 env:
   global:
-    - LUAROCKS=2.2.0-rc1
+    - LUAROCKS=2.3.0
   matrix:
     - LUA=lua5.1
     - LUA=lua5.2
@@ -20,7 +20,7 @@ before_install:
 install:
   - sudo luarocks make rockspecs/luafilesystem-cvs-3.rockspec CFLAGS="-O2 -fPIC -ftest-coverage -fprofile-arcs" LIBFLAG="-shared --coverage"
 
-script: 
+script:
   - cd tests
   - sudo lua test.lua
 

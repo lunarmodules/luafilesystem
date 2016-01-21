@@ -1,4 +1,4 @@
-if [ -z "$PLATFORM" ]; then
+if [ -z "${PLATFORM:-}" ]; then
   PLATFORM=$TRAVIS_OS_NAME;
 fi
 
