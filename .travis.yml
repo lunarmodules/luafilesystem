@@ -13,7 +13,7 @@ env:
 
 before_install:
   - bash .travis/setenv_lua.sh
-  - pip install cpp-coveralls
+  - pip install --user cpp-coveralls
   - luarocks install Lua-cURL         --server=https://luarocks.org/dev
   - luarocks install luacov-coveralls --server=https://luarocks.org/dev
 
