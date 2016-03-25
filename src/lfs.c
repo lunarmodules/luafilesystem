@@ -431,7 +431,8 @@ static int make_link(lua_State *L)
         return pushresult(L,
                 (lua_toboolean(L,3) ? symlink : link)(oldpath, newpath), NULL);
 #else
-        return pusherror(L, "make_link is not supported on Windows");
+        errno = ENOSYS; /* = "Function not implemented" */
+        return pushresult(L, -1, "make_link is not supported on Windows");
 #endif
 }
 
