@@ -360,11 +360,7 @@ static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
     lua_pushnil(L);
     return 2;
   } else {
-    int en = errno;
-    lua_pushnil(L);
-    lua_pushfstring(L, "%s", strerror(en));
-    lua_pushinteger(L, en);
-    return 3;
+    return pusherror(L, NULL);
   }
 }
 
