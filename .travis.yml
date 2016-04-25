@@ -25,11 +25,10 @@ install:
   - luarocks make rockspecs/luafilesystem-cvs-3.rockspec CFLAGS="-O2 -fPIC -ftest-coverage -fprofile-arcs" LIBFLAG="-shared --coverage"
 
 script:
-  - cd tests
-  - lua -lluacov test.lua
+  - lua -lluacov tests/test.lua
 
 after_success:
-  - coveralls -b .. -r .. -i ./src --dump c.report.json
+  - coveralls -b . -i src --dump c.report.json
   - luacov-coveralls -j c.report.json -v
 
 notifications:
