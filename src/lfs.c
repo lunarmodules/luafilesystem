@@ -354,11 +354,10 @@ static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
     for (i = 0; modenames[i] != NULL; i++) {
       if (mode[i] == res) {
         lua_pushstring(L, modenames[i]);
-        goto exit;
+        return 2;
       }
     }
     lua_pushnil(L);
-  exit:
     return 2;
   } else {
     int en = errno;
