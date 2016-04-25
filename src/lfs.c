@@ -117,10 +117,10 @@ typedef struct dir_data {
 
 #ifdef _WIN32
  #ifdef __BORLANDC__
-  #define lfs_setmode(L,file,m)   ((void)L, setmode(_fileno(file), m))
+  #define lfs_setmode(file, m)   (setmode(_fileno(file), m))
   #define STAT_STRUCT struct stati64
  #else
-  #define lfs_setmode(L,file,m)   ((void)L, _setmode(_fileno(file), m))
+  #define lfs_setmode(file, m)   (_setmode(_fileno(file), m))
   #define STAT_STRUCT struct _stati64
  #endif
 #define STAT_FUNC _stati64
@@ -128,7 +128,7 @@ typedef struct dir_data {
 #else
 #define _O_TEXT               0
 #define _O_BINARY             0
-#define lfs_setmode(L,file,m)   ((void)L, (void)file, (void)m, 0)
+#define lfs_setmode(file, m)   ((void)file, (void)m, 0)
 #define STAT_STRUCT struct stat
 #define STAT_FUNC stat
 #define LSTAT_FUNC lstat
@@ -347,7 +347,7 @@ static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
   static const int mode[] = {_O_BINARY, _O_TEXT};
   static const char *const modenames[] = {"binary", "text", NULL};
   int op = luaL_checkoption(L, arg, NULL, modenames);
-  int res = lfs_setmode(L, f, mode[op]);
+  int res = lfs_setmode(f, mode[op]);
   if (res != -1) {
     int i;
     lua_pushboolean(L, 1);
