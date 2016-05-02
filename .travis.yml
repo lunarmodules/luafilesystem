@@ -3,18 +3,16 @@ language: c
 sudo: false
 
 env:
-  global:
-    - LUAROCKS=2.3.0
-  matrix:
-    - LUA=lua5.1
-    - LUA=lua5.2
-    - LUA=lua5.3
-    - LUA=luajit
+  - LUA="lua 5.1"
+  - LUA="lua 5.2"
+  - LUA="lua 5.3"
+  - LUA="luajit 2.0"
 
 before_install:
-  - source .travis/setenv_lua.sh
-  - pip install --user cpp-coveralls
-  - luarocks install Lua-cURL         --server=https://luarocks.org/dev
+  - pip install --user cpp-coveralls hererocks
+  - hererocks env --$LUA --luarocks latest
+  - export PATH="$PWD/env/bin:$PATH"
+  - luarocks install Lua-cURL --server=https://luarocks.org/dev
   - luarocks install lua-path 
   - luarocks install lua-cjson 
   - luarocks install luacov
