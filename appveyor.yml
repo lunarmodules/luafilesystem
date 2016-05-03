@@ -7,44 +7,23 @@ version: 0.0.1.{build}-test
 shallow_clone: true
 
 environment:
-  LUAROCKS_VER: 2.3.0
   matrix:
-  - LUA_VER: 5.1.5
-  - LUA_VER: 5.2.4
-    NOCOMPAT: true
-  - LUA_VER: 5.3.2  # Lua 5.3.2 with compatibility flags disabled.
-    NOCOMPAT: true
-  - LJ_VER: 2.0.4
-  - LJ_VER: 2.1
-
-matrix:
-  allow_failures:
-    - configuration: MinGW
-      platform: x64
+  - LUA: "lua 5.1"
+  - LUA: "lua 5.2 --compat none"
+  - LUA: "lua 5.3 --compat none"
+  - LUA: "luajit 2.0"
+  - LUA: "luajit 2.1"
 
 # Abuse this section so we can have a matrix with different Compiler versions
 configuration:
-  - 2015
-  - MinGW
-
-platform:
-  - x86
-  - x64
-
-cache:
-  - c:\lua -> appveyor.yml
-  - c:\external -> appveyor.yml
-
-# Skip unsupported combinations (ie, VS2008 for x64 is not supported)
-init:
-- if "%platform%" EQU "x64" ( for %%a in (2008 2010 MinGW) do ( if "%Configuration%"=="%%a" (echo "Skipping unsupported configuration" && exit /b 1 ) ) )
-
+  - mingw
+  - vs_32
+  - vs_64
 
 install:
-# Make compiler command line tools available
-- call .appveyor\set_compiler_env.bat
-# Setup Lua development/build environment
-- call .appveyor\install.bat
+  - set PATH=%CD%\env\bin;C:\Python27\Scripts;C:\MinGW\bin;%PATH%
+  - pip install hererocks
+  - hererocks env --%LUA% --target %configuration% --luarocks latest
 
 before_build:
 # @todo
@@ -57,8 +36,7 @@ before_test:
 
 test_script:
 - echo "Testing..."
-- cd %APPVEYOR_BUILD_FOLDER%\tests
-- lua test.lua
+- lua tests/test.lua
 
 after_test:
 # @todo
