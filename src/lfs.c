@@ -4,7 +4,7 @@
 **
 ** File system manipulation library.
 ** This library offers these functions:
-**   lfs.attributes (filepath [, attributename])
+**   lfs.attributes (filepath [, attributename | attributetable])
 **   lfs.chdir (path)
 **   lfs.currentdir ()
 **   lfs.dir (path)
