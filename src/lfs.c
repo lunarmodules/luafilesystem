@@ -646,26 +646,24 @@ static const char *mode2string (mode_t mode) {
 
 
 /*
-** Set access time and modification values for file
+** Set access time and modification values for a file.
+** @param #1 File path.
+** @param #2 Access time in seconds, current time is used if missing.
+** @param #3 Modification time in seconds, access time is used if missing.
 */
 static int file_utime (lua_State *L) {
-        const char *file = luaL_checkstring (L, 1);
-        struct utimbuf utb, *buf;
+  const char *file = luaL_checkstring(L, 1);
+  struct utimbuf utb, *buf;
 
-        if (lua_gettop (L) == 1) /* set to current date/time */
-                buf = NULL;
-        else {
-                utb.actime = (time_t)luaL_optnumber (L, 2, 0);
-                utb.modtime = (time_t) luaL_optinteger (L, 3, utb.actime);
-                buf = &utb;
-        }
-        if (utime (file, buf)) {
-                lua_pushnil (L);
-                lua_pushfstring (L, "%s", strerror (errno));
-                return 2;
-        }
-        lua_pushboolean (L, 1);
-        return 1;
+  if (lua_gettop (L) == 1) /* set to current date/time */
+    buf = NULL;
+  else {
+    utb.actime = (time_t) luaL_optnumber(L, 2, 0);
+    utb.modtime = (time_t) luaL_optinteger(L, 3, utb.actime);
+    buf = &utb;
+  }
+
+  return pushresult(L, utime(file, buf), NULL);
 }
 
 
