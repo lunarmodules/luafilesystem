@@ -454,18 +454,8 @@ static int make_dir (lua_State *L) {
 ** @param #1 Directory path.
 */
 static int remove_dir (lua_State *L) {
-        const char *path = luaL_checkstring (L, 1);
-        int fail;
-
-        fail = rmdir (path);
-
-        if (fail) {
-                lua_pushnil (L);
-                lua_pushfstring (L, "%s", strerror(errno));
-                return 2;
-        }
-        lua_pushboolean (L, 1);
-        return 1;
+  const char *path = luaL_checkstring(L, 1);
+  return pushresult(L, rmdir(path), NULL);
 }
 
 
