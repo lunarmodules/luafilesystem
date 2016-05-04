@@ -147,12 +147,13 @@ static int pusherror(lua_State *L, const char *info)
         return 3;
 }
 
-static int pushresult(lua_State *L, int i, const char *info)
-{
-        if (i==-1)
-                return pusherror(L, info);
-        lua_pushinteger(L, i);
-        return 1;
+static int pushresult(lua_State *L, int res, const char *info) {
+  if (res == -1) {
+    return pusherror(L, info);
+  } else {
+    lua_pushboolean(L, 1);
+    return 1;
+  }
 }
 
 
