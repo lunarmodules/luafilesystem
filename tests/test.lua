@@ -88,7 +88,9 @@ io.write(".")
 io.flush()
 
 -- Checking link (does not work on Windows)
-if lfs.link (tmpfile, "_a_link_for_test_", true) then
+local link_ok = lfs.link (tmpfile, "_a_link_for_test_", true)
+if link_ok then
+  assert (link_ok == true, "successful lfs.link did not return true")
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
   assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
@@ -136,7 +138,10 @@ io.write(".")
 io.flush()
 
 -- Trying to get attributes of a non-existent file
-assert (lfs.attributes ("this couldn't be an actual file") == nil, "could get attributes of a non-existent file")
+local attr_ok, err, errno = lfs.attributes("this couldn't be an actual file")
+assert(attr_ok == nil, "could get attributes of a non-existent file")
+assert(type(err) == "string", "failed lfs.attributes did not return an error message")
+assert(type(errno) == "number", "failed lfs.attributes did not return error code")
 assert (type(lfs.attributes (upper)) == "table", "couldn't get attributes of upper directory")
 
 io.write(".")

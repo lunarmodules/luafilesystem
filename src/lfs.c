@@ -133,6 +133,13 @@ typedef struct dir_data {
 #define LSTAT_FUNC lstat
 #endif
 
+#ifdef _WIN32
+  #define lfs_mkdir _mkdir
+#else
+  #define lfs_mkdir(path) (mkdir((path), \
+    S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH))
+#endif
+
 /*
 ** Utility functions
 */
@@ -147,12 +154,13 @@ static int pusherror(lua_State *L, const char *info)
         return 3;
 }
 
-static int pushresult(lua_State *L, int i, const char *info)
-{
-        if (i==-1)
-                return pusherror(L, info);
-        lua_pushinteger(L, i);
-        return 1;
+static int pushresult(lua_State *L, int res, const char *info) {
+  if (res == -1) {
+    return pusherror(L, info);
+  } else {
+    lua_pushboolean(L, 1);
+    return 1;
+  }
 }
 
 
@@ -436,21 +444,8 @@ static int make_link(lua_State *L)
 ** @param #1 Directory path.
 */
 static int make_dir (lua_State *L) {
-        const char *path = luaL_checkstring (L, 1);
-        int fail;
-#ifdef _WIN32
-        fail = _mkdir (path);
-#else
-        fail =  mkdir (path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
-                             S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
-#endif
-        if (fail) {
-                lua_pushnil (L);
-        lua_pushfstring (L, "%s", strerror(errno));
-                return 2;
-        }
-        lua_pushboolean (L, 1);
-        return 1;
+  const char *path = luaL_checkstring(L, 1);
+  return pushresult(L, lfs_mkdir(path), NULL);
 }
 
 
@@ -459,18 +454,8 @@ static int make_dir (lua_State *L) {
 ** @param #1 Directory path.
 */
 static int remove_dir (lua_State *L) {
-        const char *path = luaL_checkstring (L, 1);
-        int fail;
-
-        fail = rmdir (path);
-
-        if (fail) {
-                lua_pushnil (L);
-                lua_pushfstring (L, "%s", strerror(errno));
-                return 2;
-        }
-        lua_pushboolean (L, 1);
-        return 1;
+  const char *path = luaL_checkstring(L, 1);
+  return pushresult(L, rmdir(path), NULL);
 }
 
 
@@ -657,26 +642,24 @@ static const char *mode2string (mode_t mode) {
 
 
 /*
-** Set access time and modification values for file
+** Set access time and modification values for a file.
+** @param #1 File path.
+** @param #2 Access time in seconds, current time is used if missing.
+** @param #3 Modification time in seconds, access time is used if missing.
 */
 static int file_utime (lua_State *L) {
-        const char *file = luaL_checkstring (L, 1);
-        struct utimbuf utb, *buf;
+  const char *file = luaL_checkstring(L, 1);
+  struct utimbuf utb, *buf;
 
-        if (lua_gettop (L) == 1) /* set to current date/time */
-                buf = NULL;
-        else {
-                utb.actime = (time_t)luaL_optnumber (L, 2, 0);
-                utb.modtime = (time_t) luaL_optinteger (L, 3, utb.actime);
-                buf = &utb;
-        }
-        if (utime (file, buf)) {
-                lua_pushnil (L);
-                lua_pushfstring (L, "%s", strerror (errno));
-                return 2;
-        }
-        lua_pushboolean (L, 1);
-        return 1;
+  if (lua_gettop (L) == 1) /* set to current date/time */
+    buf = NULL;
+  else {
+    utb.actime = (time_t) luaL_optnumber(L, 2, 0);
+    utb.modtime = (time_t) luaL_optinteger(L, 3, utb.actime);
+    buf = &utb;
+  }
+
+  return pushresult(L, utime(file, buf), NULL);
 }
 
 
@@ -811,9 +794,10 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
         int i;
 
         if (st(file, &info)) {
-                lua_pushnil (L);
-                lua_pushfstring (L, "cannot obtain information from file `%s'", file);
-                return 2;
+                lua_pushnil(L);
+                lua_pushfstring(L, "cannot obtain information from file '%s': %s", file, strerror(errno));
+                lua_pushinteger(L, errno);
+                return 3;
         }
         if (lua_isstring (L, 2)) {
                 const char *member = lua_tostring (L, 2);
@@ -825,7 +809,7 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
                         }
                 }
                 /* member not found */
-                return luaL_error(L, "invalid attribute name");
+                return luaL_error(L, "invalid attribute name '%s'", member);
         }
         /* creates a table if none is given */
         if (!lua_istable (L, 2)) {
