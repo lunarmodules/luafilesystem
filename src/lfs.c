@@ -1,6 +1,6 @@
 /*
 ** LuaFileSystem
-** Copyright Kepler Project 2003 (http://www.keplerproject.org/luafilesystem)
+** Copyright Kepler Project 2003 - 2016 (http://keplerproject.github.io/luafilesystem)
 **
 ** File system manipulation library.
 ** This library offers these functions:
@@ -8,16 +8,15 @@
 **   lfs.chdir (path)
 **   lfs.currentdir ()
 **   lfs.dir (path)
+**   lfs.link (old, new[, symlink])
 **   lfs.lock (fh, mode)
 **   lfs.lock_dir (path)
 **   lfs.mkdir (path)
 **   lfs.rmdir (path)
 **   lfs.setmode (filepath, mode)
-**   lfs.symlinkattributes (filepath [, attributename]) -- thanks to Sam Roberts
+**   lfs.symlinkattributes (filepath [, attributename])
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
-**
-** $Id: lfs.c,v 1.61 2009/07/04 02:10:16 mascarenhas Exp $
 */
 
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
