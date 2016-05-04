@@ -794,9 +794,10 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
         int i;
 
         if (st(file, &info)) {
-                lua_pushnil (L);
-                lua_pushfstring (L, "cannot obtain information from file `%s'", file);
-                return 2;
+                lua_pushnil(L);
+                lua_pushfstring(L, "cannot obtain information from file '%s': %s", file, strerror(errno));
+                lua_pushinteger(L, errno);
+                return 3;
         }
         if (lua_isstring (L, 2)) {
                 const char *member = lua_tostring (L, 2);
