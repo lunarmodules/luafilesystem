@@ -133,6 +133,13 @@ typedef struct dir_data {
 #define LSTAT_FUNC lstat
 #endif
 
+#ifdef _WIN32
+  #define lfs_mkdir _mkdir
+#else
+  #define lfs_mkdir(path) (mkdir((path), \
+    S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH))
+#endif
+
 /*
 ** Utility functions
 */
@@ -437,21 +444,8 @@ static int make_link(lua_State *L)
 ** @param #1 Directory path.
 */
 static int make_dir (lua_State *L) {
-        const char *path = luaL_checkstring (L, 1);
-        int fail;
-#ifdef _WIN32
-        fail = _mkdir (path);
-#else
-        fail =  mkdir (path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
-                             S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
-#endif
-        if (fail) {
-                lua_pushnil (L);
-        lua_pushfstring (L, "%s", strerror(errno));
-                return 2;
-        }
-        lua_pushboolean (L, 1);
-        return 1;
+  const char *path = luaL_checkstring(L, 1);
+  return pushresult(L, lfs_mkdir(path), NULL);
 }
 
 
