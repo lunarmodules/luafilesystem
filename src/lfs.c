@@ -861,15 +861,12 @@ static int link_info (lua_State *L) {
 ** Assumes the table is on top of the stack.
 */
 static void set_info (lua_State *L) {
-        lua_pushliteral (L, "_COPYRIGHT");
-        lua_pushliteral (L, "Copyright (C) 2003-2012 Kepler Project");
-        lua_settable (L, -3);
-        lua_pushliteral (L, "_DESCRIPTION");
-        lua_pushliteral (L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
-        lua_settable (L, -3);
-        lua_pushliteral (L, "_VERSION");
-        lua_pushliteral (L, "LuaFileSystem " LFS_VERSION);
-        lua_settable (L, -3);
+  lua_pushliteral(L, "Copyright (C) 2003-2016 Kepler Project");
+  lua_setfield(L, -2, "_COPYRIGHT");
+  lua_pushliteral(L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
+  lua_setfield(L, -2, "_DESCRIPTION");
+  lua_pushliteral(L, "LuaFileSystem " LFS_VERSION);
+  lua_setfield(L, -2, "_VERSION");
 }
 
 
