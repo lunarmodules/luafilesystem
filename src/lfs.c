@@ -825,7 +825,7 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
                         }
                 }
                 /* member not found */
-                return luaL_error(L, "invalid attribute name");
+                return luaL_error(L, "invalid attribute name '%s'", member);
         }
         /* creates a table if none is given */
         if (!lua_istable (L, 2)) {
