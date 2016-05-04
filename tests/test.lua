@@ -88,7 +88,9 @@ io.write(".")
 io.flush()
 
 -- Checking link (does not work on Windows)
-if lfs.link (tmpfile, "_a_link_for_test_", true) then
+local link_ok = lfs.link (tmpfile, "_a_link_for_test_", true)
+if link_ok then
+  assert (link_ok == true, "successful lfs.link did not return true")
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
   assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
