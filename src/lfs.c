@@ -811,8 +811,8 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
         int i;
 
         if (st(file, &info)) {
-                lua_pushnil (L);
-                lua_pushfstring (L, "cannot obtain information from file `%s'", file);
+                lua_pushnil(L);
+                lua_pushfstring(L, "cannot obtain information from file '%s': %s", file, strerror(errno));
                 return 2;
         }
         if (lua_isstring (L, 2)) {
