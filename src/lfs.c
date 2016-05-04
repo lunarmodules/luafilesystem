@@ -133,6 +133,13 @@ typedef struct dir_data {
 #define LSTAT_FUNC lstat
 #endif
 
+#ifdef _WIN32
+  #define lfs_mkdir _mkdir
+#else
+  #define lfs_mkdir(path) (mkdir((path), \
+    S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH))
+#endif
+
 /*
 ** Utility functions
 */
@@ -147,12 +154,13 @@ static int pusherror(lua_State *L, const char *info)
         return 3;
 }
 
-static int pushresult(lua_State *L, int i, const char *info)
-{
-        if (i==-1)
-                return pusherror(L, info);
-        lua_pushinteger(L, i);
-        return 1;
+static int pushresult(lua_State *L, int res, const char *info) {
+  if (res == -1) {
+    return pusherror(L, info);
+  } else {
+    lua_pushboolean(L, 1);
+    return 1;
+  }
 }
 
 
@@ -417,16 +425,20 @@ static int file_unlock (lua_State *L) {
 ** @param #2 Name of link.
 ** @param #3 True if link is symbolic (optional).
 */
-static int make_link(lua_State *L)
-{
+static int make_link (lua_State *L) {
 #ifndef _WIN32
-        const char *oldpath = luaL_checkstring(L, 1);
-        const char *newpath = luaL_checkstring(L, 2);
-        return pushresult(L,
-                (lua_toboolean(L,3) ? symlink : link)(oldpath, newpath), NULL);
+  const char *oldpath = luaL_checkstring(L, 1);
+  const char *newpath = luaL_checkstring(L, 2);
+  int res = (lua_toboolean(L,3) ? symlink : link)(oldpath, newpath);
+  if (res == -1) {
+    return pusherror(L, NULL);
+  } else {
+    lua_pushinteger(L, 0);
+    return 1;
+  }
 #else
-        errno = ENOSYS; /* = "Function not implemented" */
-        return pushresult(L, -1, "make_link is not supported on Windows");
+  errno = ENOSYS; /* = "Function not implemented" */
+  return pushresult(L, -1, "make_link is not supported on Windows");
 #endif
 }
 
@@ -436,21 +448,8 @@ static int make_link(lua_State *L)
 ** @param #1 Directory path.
 */
 static int make_dir (lua_State *L) {
-        const char *path = luaL_checkstring (L, 1);
-        int fail;
-#ifdef _WIN32
-        fail = _mkdir (path);
-#else
-        fail =  mkdir (path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
-                             S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH );
-#endif
-        if (fail) {
-                lua_pushnil (L);
-        lua_pushfstring (L, "%s", strerror(errno));
-                return 2;
-        }
-        lua_pushboolean (L, 1);
-        return 1;
+  const char *path = luaL_checkstring(L, 1);
+  return pushresult(L, lfs_mkdir(path), NULL);
 }
 
 
