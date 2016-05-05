@@ -429,13 +429,7 @@ static int make_link (lua_State *L) {
 #ifndef _WIN32
   const char *oldpath = luaL_checkstring(L, 1);
   const char *newpath = luaL_checkstring(L, 2);
-  int res = (lua_toboolean(L,3) ? symlink : link)(oldpath, newpath);
-  if (res == -1) {
-    return pusherror(L, NULL);
-  } else {
-    lua_pushinteger(L, 0);
-    return 1;
-  }
+  return pushresult(L, (lua_toboolean(L, 3) ? symlink : link)(oldpath, newpath), NULL);
 #else
   errno = ENOSYS; /* = "Function not implemented" */
   return pushresult(L, -1, "make_link is not supported on Windows");
