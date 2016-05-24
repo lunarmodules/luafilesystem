@@ -5,23 +5,25 @@
 
 /* Define 'chdir' for systems that do not implement it */
 #ifdef NO_CHDIR
-#define chdir(p)	(-1)
-#define chdir_error	"Function 'chdir' not provided by system"
+  #define chdir(p)	(-1)
+  #define chdir_error	"Function 'chdir' not provided by system"
 #else
-#define chdir_error	strerror(errno)
-
+  #define chdir_error	strerror(errno)
 #endif
 
 #ifdef _WIN32
-#define chdir(p) (_chdir(p))
-#define getcwd(d, s) (_getcwd(d, s))
-#define rmdir(p) (_rmdir(p))
-#define lfsexp __declspec(dllexport)
-#ifndef fileno
-#define fileno(f) (_fileno(f))
-#endif
+  #define chdir(p) (_chdir(p))
+  #define getcwd(d, s) (_getcwd(d, s))
+  #define rmdir(p) (_rmdir(p))
+  
+  #define lfs_export __declspec (dllexport)
+  
+  #ifndef fileno
+    #define fileno(f) (_fileno(f))
+  #endif
+
 #else
-#define lfsexp
+  #define lfsexp
 #endif
 
 #ifdef __cplusplus
