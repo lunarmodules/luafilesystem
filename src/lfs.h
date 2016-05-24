@@ -16,16 +16,19 @@
 #define chdir(p) (_chdir(p))
 #define getcwd(d, s) (_getcwd(d, s))
 #define rmdir(p) (_rmdir(p))
+#define lfsexp __declspec(dllexport)
 #ifndef fileno
 #define fileno(f) (_fileno(f))
 #endif
+#else
+#define lfsexp
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int luaopen_lfs (lua_State *L);
+lfsexp int luaopen_lfs (lua_State *L);
 
 #ifdef __cplusplus
 }
