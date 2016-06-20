@@ -850,10 +850,72 @@ static int file_info (lua_State *L) {
 
 
 /*
+** Push the symlink target to the top of the stack.
+** Assumes the file name is at position 1 of the stack.
+** Returns 1 if successful (with the target on top of the stack),
+** 0 on failure (with stack unchanged, and errno set).
+*/
+static int push_link_target(lua_State *L) {
+#ifdef _WIN32
+        errno = ENOSYS;
+        return 0;
+#else
+        const char *file = luaL_checkstring(L, 1);
+        char *target;
+        int size, tsize;
+        if (lua_type(L, -1) == LUA_TTABLE) {
+                /* when symlinkattributes collects the whole table,
+                   get the size from it */
+                int size_type = lua_getfield(L, -1, "size");
+                if (size_type != LUA_TNUMBER) {
+                        lua_pop(L, 1);
+                        errno = EINVAL;
+                        return 0;
+                }
+                size = lua_tointeger(L, -1);
+                lua_pop(L, 1);
+        } else {
+                /* when we are just getting 'target', we need to run
+                   lstat ourselves to get the size */
+                STAT_STRUCT info;
+                if (LSTAT_FUNC(file, &info)) {
+                        return 0;
+                }
+                size = info.st_size;
+        }
+        target = (char*) malloc(size + 1);
+        if (!target) {
+                return 0;
+        }
+        tsize = readlink(file, target, size);
+        if (tsize != size) {
+                free(target);
+                return 0;
+        }
+        target[tsize] = '\0';
+        lua_pushlstring(L, target, tsize);
+        free(target);
+        return 1;
+#endif
+}
+
+/*
 ** Get symbolic link information using lstat.
 */
 static int link_info (lua_State *L) {
-        return _file_info_ (L, LSTAT_FUNC);
+        int ret;
+        if (lua_isstring (L, 2) && (strcmp(lua_tostring(L, 2), "target") == 0)) {
+                int ok = push_link_target(L);
+                return ok ? 1 : pusherror(L, "could not obtain link target");
+        }
+        ret = _file_info_ (L, LSTAT_FUNC);
+        if (ret == 1 && lua_type(L, -1) == LUA_TTABLE) {
+                int ok = push_link_target(L);
+                if (ok) {
+                        lua_setfield(L, -2, "target");
+                }
+        }
+        return ret;
 }
 
 

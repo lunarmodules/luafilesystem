@@ -91,6 +91,8 @@ io.flush()
 if lfs.link (tmpfile, "_a_link_for_test_", true) then
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
+  assert (lfs.symlinkattributes"_a_link_for_test_".target == tmpfile)
+  assert (lfs.symlinkattributes("_a_link_for_test_", "target") == tmpfile)
   assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
   assert (lfs.attributes (tmpfile, "nlink") == 2)
   assert (os.remove"_a_link_for_test_")
