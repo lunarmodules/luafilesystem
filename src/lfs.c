@@ -866,7 +866,8 @@ static int push_link_target(lua_State *L) {
         if (lua_type(L, -1) == LUA_TTABLE) {
                 /* when symlinkattributes collects the whole table,
                    get the size from it */
-                int size_type = lua_getfield(L, -1, "size");
+                lua_getfield(L, -1, "size");
+                int size_type = lua_type(L, -1);
                 if (size_type != LUA_TNUMBER) {
                         lua_pop(L, 1);
                         errno = EINVAL;
