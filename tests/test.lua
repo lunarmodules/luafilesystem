@@ -107,6 +107,9 @@ assert(result) -- on non-Windows platforms, mode is always returned as "binary"
 result, mode = lfs.setmode(f, "text")
 assert(result and mode == "binary")
 f:close()
+local ok, err = pcall(lfs.setmode, f, "binary")
+assert(not ok, "could setmode on closed file")
+assert(err:find("closed file"), "bad error message for setmode on closed file")
 
 io.write(".")
 io.flush()
