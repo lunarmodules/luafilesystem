@@ -132,6 +132,17 @@ for key, value in pairs(attr) do
           "lfs.attributes values not consistent")
 end
 
+-- Check that lfs.attributes accepts a table as second argument
+local attr2 = {}
+lfs.attributes(tmpfile, attr2)
+for key, value in pairs(attr2) do
+  assert (value == lfs.attributes (tmpfile, key),
+          "lfs.attributes values with table argument not consistent")
+end
+
+-- Check that extra arguments are ignored
+lfs.attributes(tmpfile, attr2, nil)
+
 -- Remove new file and directory
 assert (os.remove (tmpfile), "could not remove new file")
 assert (lfs.rmdir (tmpdir), "could not remove new directory")
