@@ -545,6 +545,9 @@ static int dir_close (lua_State *L) {
 */
 static int dir_iter_factory (lua_State *L) {
         const char *path = luaL_checkstring (L, 1);
+#ifdef _WIN32
+        const char *pattern = luaL_optstring(L, 2, "*");
+#endif
         dir_data *d;
         lua_pushcfunction (L, dir_iter);
         d = (dir_data *) lua_newuserdata (L, sizeof(dir_data));
@@ -556,7 +559,7 @@ static int dir_iter_factory (lua_State *L) {
         if (strlen(path) > MAX_PATH-2)
           luaL_error (L, "path too long: %s", path);
         else
-          sprintf (d->pattern, "%s/*", path);
+          sprintf (d->pattern, "%s/%s", path, pattern);
 #else
         d->dir = opendir (path);
         if (d->dir == NULL)
