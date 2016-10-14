@@ -178,18 +178,29 @@ static int change_dir (lua_State *L) {
 **  and a string describing the error
 */
 static int get_dir (lua_State *L) {
-  char *path;
-  /* Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead. */
-  char buf[LFS_MAXPATHLEN];
-  if ((path = getcwd(buf, LFS_MAXPATHLEN)) == NULL) {
-    lua_pushnil(L);
-    lua_pushstring(L, getcwd_error);
-    return 2;
-  }
-  else {
-    lua_pushstring(L, path);
-    return 1;
-  }
+    char *path = NULL;
+    /* Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead. */
+    size_t size = LFS_MAXPATHLEN; /* initial buffer size */
+    int result;
+    while (1) {
+        path = realloc(path, size);
+        if (!path) /* failed to allocate */
+            return pusherror(L, "get_dir realloc() failed");
+        if (getcwd(path, size) != NULL) {
+            /* success, push the path to the Lua stack */
+            lua_pushstring(L, path);
+            result = 1;
+            break;
+        }
+        if (errno != ERANGE) { /* unexpected error */
+            result = pusherror(L, "get_dir getcwd() failed");
+            break;
+        }
+        /* ERANGE = insufficient buffer capacity, double size and retry */
+        size *= 2;
+    }
+    free(path);
+    return result;
 }
 
 /*
