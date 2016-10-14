@@ -41,22 +41,26 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
-#include <direct.h>
-#include <windows.h>
-#include <io.h>
-#include <sys/locking.h>
-#ifdef __BORLANDC__
- #include <utime.h>
+  #include <direct.h>
+  #include <windows.h>
+  #include <io.h>
+  #include <sys/locking.h>
+  #ifdef __BORLANDC__
+    #include <utime.h>
+  #else
+    #include <sys/utime.h>
+  #endif
+  #include <fcntl.h>
+  /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
+  #define LFS_MAXPATHLEN MAX_PATH
 #else
- #include <sys/utime.h>
-#endif
-#include <fcntl.h>
-#else
-#include <unistd.h>
-#include <dirent.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <utime.h>
+  #include <unistd.h>
+  #include <dirent.h>
+  #include <fcntl.h>
+  #include <sys/types.h>
+  #include <utime.h>
+  #include <sys/param.h> /* for MAXPATHLEN */
+  #define LFS_MAXPATHLEN MAXPATHLEN
 #endif
 
 #include <lua.h>
@@ -83,22 +87,6 @@
 /* Define 'strerror' for systems that do not implement it */
 #ifdef NO_STRERROR
 #define strerror(_)     "System unable to describe the error"
-#endif
-
-/* Define 'getcwd' for systems that do not implement it */
-#ifdef NO_GETCWD
-#define getcwd(p,s)     NULL
-#define getcwd_error    "Function 'getcwd' not provided by system"
-#else
-#define getcwd_error    strerror(errno)
-  #ifdef _WIN32
-	 /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
-    #define LFS_MAXPATHLEN MAX_PATH
-  #else
-	/* For MAXPATHLEN: */
-    #include <sys/param.h>
-    #define LFS_MAXPATHLEN MAXPATHLEN
-  #endif
 #endif
 
 #define DIR_METATABLE "directory metatable"
@@ -178,18 +166,35 @@ static int change_dir (lua_State *L) {
 **  and a string describing the error
 */
 static int get_dir (lua_State *L) {
-  char *path;
-  /* Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead. */
-  char buf[LFS_MAXPATHLEN];
-  if ((path = getcwd(buf, LFS_MAXPATHLEN)) == NULL) {
+#ifdef NO_GETCWD
     lua_pushnil(L);
-    lua_pushstring(L, getcwd_error);
+    lua_pushstring(L, "Function 'getcwd' not provided by system");
     return 2;
-  }
-  else {
-    lua_pushstring(L, path);
-    return 1;
-  }
+#else
+    char *path = NULL;
+    /* Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead. */
+    size_t size = LFS_MAXPATHLEN; /* initial buffer size */
+    int result;
+    while (1) {
+        path = realloc(path, size);
+        if (!path) /* failed to allocate */
+            return pusherror(L, "get_dir realloc() failed");
+        if (getcwd(path, size) != NULL) {
+            /* success, push the path to the Lua stack */
+            lua_pushstring(L, path);
+            result = 1;
+            break;
+        }
+        if (errno != ERANGE) { /* unexpected error */
+            result = pusherror(L, "get_dir getcwd() failed");
+            break;
+        }
+        /* ERANGE = insufficient buffer capacity, double size and retry */
+        size *= 2;
+    }
+    free(path);
+    return result;
+#endif
 }
 
 /*
