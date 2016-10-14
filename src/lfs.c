@@ -87,10 +87,8 @@
 
 /* Define 'getcwd' for systems that do not implement it */
 #ifdef NO_GETCWD
-#define getcwd(p,s)     NULL
-#define getcwd_error    "Function 'getcwd' not provided by system"
+  #define getcwd_error  "Function 'getcwd' not provided by system"
 #else
-#define getcwd_error    strerror(errno)
   #ifdef _WIN32
 	 /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
     #define LFS_MAXPATHLEN MAX_PATH
@@ -178,6 +176,11 @@ static int change_dir (lua_State *L) {
 **  and a string describing the error
 */
 static int get_dir (lua_State *L) {
+#ifdef NO_GETCWD
+    lua_pushnil(L);
+    lua_pushstring(L, getcwd_error);
+    return 2;
+#else
     char *path = NULL;
     /* Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead. */
     size_t size = LFS_MAXPATHLEN; /* initial buffer size */
@@ -201,6 +204,7 @@ static int get_dir (lua_State *L) {
     }
     free(path);
     return result;
+#endif
 }
 
 /*
