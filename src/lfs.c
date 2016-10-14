@@ -41,22 +41,26 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
-#include <direct.h>
-#include <windows.h>
-#include <io.h>
-#include <sys/locking.h>
-#ifdef __BORLANDC__
- #include <utime.h>
+  #include <direct.h>
+  #include <windows.h>
+  #include <io.h>
+  #include <sys/locking.h>
+  #ifdef __BORLANDC__
+    #include <utime.h>
+  #else
+    #include <sys/utime.h>
+  #endif
+  #include <fcntl.h>
+  /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
+  #define LFS_MAXPATHLEN MAX_PATH
 #else
- #include <sys/utime.h>
-#endif
-#include <fcntl.h>
-#else
-#include <unistd.h>
-#include <dirent.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <utime.h>
+  #include <unistd.h>
+  #include <dirent.h>
+  #include <fcntl.h>
+  #include <sys/types.h>
+  #include <utime.h>
+  #include <sys/param.h> /* for MAXPATHLEN */
+  #define LFS_MAXPATHLEN MAXPATHLEN
 #endif
 
 #include <lua.h>
@@ -83,20 +87,6 @@
 /* Define 'strerror' for systems that do not implement it */
 #ifdef NO_STRERROR
 #define strerror(_)     "System unable to describe the error"
-#endif
-
-/* Define 'getcwd' for systems that do not implement it */
-#ifdef NO_GETCWD
-  #define getcwd_error  "Function 'getcwd' not provided by system"
-#else
-  #ifdef _WIN32
-	 /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
-    #define LFS_MAXPATHLEN MAX_PATH
-  #else
-	/* For MAXPATHLEN: */
-    #include <sys/param.h>
-    #define LFS_MAXPATHLEN MAXPATHLEN
-  #endif
 #endif
 
 #define DIR_METATABLE "directory metatable"
@@ -178,7 +168,7 @@ static int change_dir (lua_State *L) {
 static int get_dir (lua_State *L) {
 #ifdef NO_GETCWD
     lua_pushnil(L);
-    lua_pushstring(L, getcwd_error);
+    lua_pushstring(L, "Function 'getcwd' not provided by system");
     return 2;
 #else
     char *path = NULL;
