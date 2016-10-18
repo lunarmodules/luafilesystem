@@ -65,6 +65,20 @@ f:close()
 io.write(".")
 io.flush()
 
+-- Check that realpath can resolve the parent of tmpdir (= "current")
+assert(lfs.realpath(tmpdir..sep.."..") == current)
+
+-- Non-existent paths will error on POSIX (errno 2), but not on Windows!
+local ok, err = lfs.realpath("C:\\foo\\..\\bar")
+if not ok then
+        assert(err:match("No such file or directory"))
+else
+        assert(ok == "C:\\bar")
+end
+
+io.write(".")
+io.flush()
+
 -- Change access time
 local testdate = os.time({ year = 2007, day = 10, month = 2, hour=0})
 assert (lfs.touch (tmpfile, testdate))
@@ -95,6 +109,7 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
   assert (lfs.symlinkattributes("_a_link_for_test_", "target") == tmpfile)
   assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
   assert (lfs.attributes (tmpfile, "nlink") == 2)
+  assert (lfs.realpath"_a_link_for_test_" == tmpfile)
   assert (os.remove"_a_link_for_test_")
   assert (os.remove"_a_hard_link_for_test_")
 end
