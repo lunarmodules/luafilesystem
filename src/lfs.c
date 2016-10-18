@@ -909,6 +909,35 @@ static int link_info (lua_State *L) {
         return ret;
 }
 
+/*
+** Retrieve canonicalized absolute pathname using realpath()
+** Upon success the function returns the resolved path, otherwise the return
+** values are `nil`, an error message (string) and the error number.
+**
+** Note that the Windows implementation differs from the POSIX function,
+** for example it doesn't test if the resolved path is actually reachable.
+** E.g. "C:\foo\..\bar" will happily resolve to "C:\bar",
+** even if neither C:\foo nor C:\bar exist.
+*/
+static int get_realpath (lua_State *L) {
+        const char *path = luaL_checkstring (L, 1);
+        char *resolved;
+#ifdef _WIN32
+        resolved = _fullpath(NULL, path, 0);
+#else
+        resolved = realpath(path, NULL);
+#endif
+        if (resolved) {
+                lua_pushstring(L, resolved);
+                free(resolved);
+                return 1;
+        }
+        /* an error occured */
+        lua_pushnil(L);
+        lua_pushfstring(L, "lfs.realpath('%s') failed: %s", path, strerror(errno));
+        lua_pushinteger(L, errno);
+        return 3;
+}
 
 /*
 ** Assumes the table is on top of the stack.
@@ -931,6 +960,7 @@ static const struct luaL_Reg fslib[] = {
         {"link", make_link},
         {"lock", file_lock},
         {"mkdir", make_dir},
+        {"realpath", get_realpath},
         {"rmdir", remove_dir},
         {"symlinkattributes", link_info},
         {"setmode", lfs_f_setmode},
