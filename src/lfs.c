@@ -12,6 +12,7 @@
 **   lfs.lock (fh, mode)
 **   lfs.lock_dir (path)
 **   lfs.mkdir (path)
+**   lfs.realpath (path)
 **   lfs.rmdir (path)
 **   lfs.setmode (filepath, mode)
 **   lfs.symlinkattributes (filepath [, attributename])
