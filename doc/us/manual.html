@@ -177,7 +177,7 @@ LuaFileSystem offers the following functions:
     Returns <code>true</code> in case of success or <code>nil</code> plus an
     error string.</dd>
 
-    <dt><a name="chdir"></a><strong><code>lfs.lock_dir(path, [seconds_stale])</code></strong></dt>
+    <dt><a name="lock_dir"></a><strong><code>lfs.lock_dir(path, [seconds_stale])</code></strong></dt>
     <dd>Creates a lockfile (called lockfile.lfs) in <code>path</code> if it does not
   exist and returns the lock. If the lock already exists checks if
   it's stale, using the second parameter (default for the second
@@ -187,7 +187,7 @@ LuaFileSystem offers the following functions:
   particular, if the lock exists and is not stale it returns the
   "File exists" message.</dd>
         
-    <dt><a name="getcwd"></a><strong><code>lfs.currentdir ()</code></strong></dt>
+    <dt><a name="currentdir"></a><strong><code>lfs.currentdir ()</code></strong></dt>
     <dd>Returns a string with the current working directory or <code>nil</code>
     plus an error string.</dd>
     
@@ -242,6 +242,8 @@ LuaFileSystem offers the following functions:
     <dt><a name="symlinkattributes"></a><strong><code>lfs.symlinkattributes (filepath [, aname])</code></strong></dt>
     <dd>Identical to <a href="#attributes">lfs.attributes</a> except that
     it obtains information about the link itself (not the file it refers to).
+    It also adds a <strong><code>target</code></strong> field, containing
+    the file name that the symlink points to.
     On Windows this function does not yet support links, and is identical to
     <code>lfs.attributes</code>.
     </dd>

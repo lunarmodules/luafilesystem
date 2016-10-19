@@ -41,22 +41,26 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
-#include <direct.h>
-#include <windows.h>
-#include <io.h>
-#include <sys/locking.h>
-#ifdef __BORLANDC__
- #include <utime.h>
+  #include <direct.h>
+  #include <windows.h>
+  #include <io.h>
+  #include <sys/locking.h>
+  #ifdef __BORLANDC__
+    #include <utime.h>
+  #else
+    #include <sys/utime.h>
+  #endif
+  #include <fcntl.h>
+  /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
+  #define LFS_MAXPATHLEN MAX_PATH
 #else
- #include <sys/utime.h>
-#endif
-#include <fcntl.h>
-#else
-#include <unistd.h>
-#include <dirent.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <utime.h>
+  #include <unistd.h>
+  #include <dirent.h>
+  #include <fcntl.h>
+  #include <sys/types.h>
+  #include <utime.h>
+  #include <sys/param.h> /* for MAXPATHLEN */
+  #define LFS_MAXPATHLEN MAXPATHLEN
 #endif
 
 #include <lua.h>
@@ -83,22 +87,6 @@
 /* Define 'strerror' for systems that do not implement it */
 #ifdef NO_STRERROR
 #define strerror(_)     "System unable to describe the error"
-#endif
-
-/* Define 'getcwd' for systems that do not implement it */
-#ifdef NO_GETCWD
-#define getcwd(p,s)     NULL
-#define getcwd_error    "Function 'getcwd' not provided by system"
-#else
-#define getcwd_error    strerror(errno)
-  #ifdef _WIN32
-	 /* MAX_PATH seems to be 260. Seems kind of small. Is there a better one? */
-    #define LFS_MAXPATHLEN MAX_PATH
-  #else
-	/* For MAXPATHLEN: */
-    #include <sys/param.h>
-    #define LFS_MAXPATHLEN MAXPATHLEN
-  #endif
 #endif
 
 #define DIR_METATABLE "directory metatable"
@@ -186,18 +174,35 @@ static int change_dir (lua_State *L) {
 **  and a string describing the error
 */
 static int get_dir (lua_State *L) {
-  char *path;
-  /* Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead. */
-  char buf[LFS_MAXPATHLEN];
-  if ((path = getcwd(buf, LFS_MAXPATHLEN)) == NULL) {
+#ifdef NO_GETCWD
     lua_pushnil(L);
-    lua_pushstring(L, getcwd_error);
+    lua_pushstring(L, "Function 'getcwd' not provided by system");
     return 2;
-  }
-  else {
-    lua_pushstring(L, path);
-    return 1;
-  }
+#else
+    char *path = NULL;
+    /* Passing (NULL, 0) is not guaranteed to work. Use a temp buffer and size instead. */
+    size_t size = LFS_MAXPATHLEN; /* initial buffer size */
+    int result;
+    while (1) {
+        path = realloc(path, size);
+        if (!path) /* failed to allocate */
+            return pusherror(L, "get_dir realloc() failed");
+        if (getcwd(path, size) != NULL) {
+            /* success, push the path to the Lua stack */
+            lua_pushstring(L, path);
+            result = 1;
+            break;
+        }
+        if (errno != ERANGE) { /* unexpected error */
+            result = pusherror(L, "get_dir getcwd() failed");
+            break;
+        }
+        /* ERANGE = insufficient buffer capacity, double size and retry */
+        size *= 2;
+    }
+    free(path);
+    return result;
+#endif
 }
 
 /*
@@ -815,7 +820,8 @@ static int _file_info_ (lua_State *L, int (*st)(const char*, STAT_STRUCT*)) {
                 /* member not found */
                 return luaL_error(L, "invalid attribute name '%s'", member);
         }
-        /* creates a table if none is given */
+        /* creates a table if none is given, removes extra arguments */
+        lua_settop(L, 2);
         if (!lua_istable (L, 2)) {
                 lua_newtable (L);
         }
@@ -838,10 +844,57 @@ static int file_info (lua_State *L) {
 
 
 /*
+** Push the symlink target to the top of the stack.
+** Assumes the file name is at position 1 of the stack.
+** Returns 1 if successful (with the target on top of the stack),
+** 0 on failure (with stack unchanged, and errno set).
+*/
+static int push_link_target(lua_State *L) {
+#ifdef _WIN32
+        errno = ENOSYS;
+        return 0;
+#else
+        const char *file = luaL_checkstring(L, 1);
+        char *target = NULL;
+        int tsize, size = 256; /* size = initial buffer capacity */
+        while (1) {
+            target = realloc(target, size);
+            if (!target) /* failed to allocate */
+                return 0;
+            tsize = readlink(file, target, size);
+            if (tsize < 0) { /* a readlink() error occurred */
+                free(target);
+                return 0;
+            }
+            if (tsize < size)
+                break;
+            /* possibly truncated readlink() result, double size and retry */
+            size *= 2;
+        }
+        target[tsize] = '\0';
+        lua_pushlstring(L, target, tsize);
+        free(target);
+        return 1;
+#endif
+}
+
+/*
 ** Get symbolic link information using lstat.
 */
 static int link_info (lua_State *L) {
-        return _file_info_ (L, LSTAT_FUNC);
+        int ret;
+        if (lua_isstring (L, 2) && (strcmp(lua_tostring(L, 2), "target") == 0)) {
+                int ok = push_link_target(L);
+                return ok ? 1 : pusherror(L, "could not obtain link target");
+        }
+        ret = _file_info_ (L, LSTAT_FUNC);
+        if (ret == 1 && lua_type(L, -1) == LUA_TTABLE) {
+                int ok = push_link_target(L);
+                if (ok) {
+                        lua_setfield(L, -2, "target");
+                }
+        }
+        return ret;
 }
 
 
