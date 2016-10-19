@@ -93,6 +93,8 @@ if link_ok then
   assert (link_ok == true, "successful lfs.link did not return true")
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
+  assert (lfs.symlinkattributes"_a_link_for_test_".target == tmpfile)
+  assert (lfs.symlinkattributes("_a_link_for_test_", "target") == tmpfile)
   assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
   assert (lfs.attributes (tmpfile, "nlink") == 2)
   assert (os.remove"_a_link_for_test_")
@@ -109,6 +111,9 @@ assert(result) -- on non-Windows platforms, mode is always returned as "binary"
 result, mode = lfs.setmode(f, "text")
 assert(result and mode == "binary")
 f:close()
+local ok, err = pcall(lfs.setmode, f, "binary")
+assert(not ok, "could setmode on closed file")
+assert(err:find("closed file"), "bad error message for setmode on closed file")
 
 io.write(".")
 io.flush()
@@ -128,6 +133,17 @@ for key, value in pairs(attr) do
   assert (value == lfs.attributes (tmpfile, key),
           "lfs.attributes values not consistent")
 end
+
+-- Check that lfs.attributes accepts a table as second argument
+local attr2 = {}
+lfs.attributes(tmpfile, attr2)
+for key, value in pairs(attr2) do
+  assert (value == lfs.attributes (tmpfile, key),
+          "lfs.attributes values with table argument not consistent")
+end
+
+-- Check that extra arguments are ignored
+lfs.attributes(tmpfile, attr2, nil)
 
 -- Remove new file and directory
 assert (os.remove (tmpfile), "could not remove new file")
