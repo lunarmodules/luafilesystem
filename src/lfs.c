@@ -29,6 +29,10 @@
 #endif
 #endif
 
+#ifdef _WIN32
+  #define _WIN32_WINNT 0x600
+#endif
+
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
 #define _LARGEFILE64_SOURCE
 #endif
@@ -117,15 +121,42 @@ typedef struct dir_data {
   #define lfs_setmode(file, m)   (_setmode(_fileno(file), m))
   #define STAT_STRUCT struct _stati64
  #endif
-#define STAT_FUNC _stati64
-#define LSTAT_FUNC STAT_FUNC
+
+ #ifndef _S_IFLNK
+  #define _S_IFLNK 0x400
+ #endif
+
+ #ifndef S_ISDIR
+  #define S_ISDIR(mode)  (mode&_S_IFDIR)
+ #endif
+ #ifndef S_ISREG
+  #define S_ISREG(mode)  (mode&_S_IFREG)
+ #endif
+ #ifndef S_ISLNK
+  #define S_ISLNK(mode)  (mode&_S_IFLNK)
+ #endif
+ #ifndef S_ISSOCK
+  #define S_ISSOCK(mode)  (0)
+ #endif
+ #ifndef S_ISFIFO
+  #define S_ISFIFO(mode)  (0)
+ #endif
+ #ifndef S_ISCHR
+  #define S_ISCHR(mode)  (mode&_S_IFCHR)
+ #endif
+ #ifndef S_ISBLK
+  #define S_ISBLK(mode)  (0)
+ #endif
+
+ #define STAT_FUNC _stati64
+ #define LSTAT_FUNC lfs_win32_lstat
 #else
-#define _O_TEXT               0
-#define _O_BINARY             0
-#define lfs_setmode(file, m)   ((void)file, (void)m, 0)
-#define STAT_STRUCT struct stat
-#define STAT_FUNC stat
-#define LSTAT_FUNC lstat
+ #define _O_TEXT               0
+ #define _O_BINARY             0
+ #define lfs_setmode(file, m)   ((void)file, (void)m, 0)
+ #define STAT_STRUCT struct stat
+ #define STAT_FUNC stat
+ #define LSTAT_FUNC lstat
 #endif
 
 #ifdef _WIN32
@@ -440,20 +471,36 @@ static int file_unlock (lua_State *L) {
 ** @param #2 Name of link.
 ** @param #3 True if link is symbolic (optional).
 */
-static int make_link (lua_State *L) {
-#ifndef _WIN32
+static int make_link(lua_State *L)
+{
   const char *oldpath = luaL_checkstring(L, 1);
   const char *newpath = luaL_checkstring(L, 2);
-  int res = (lua_toboolean(L,3) ? symlink : link)(oldpath, newpath);
-  if (res == -1) {
-    return pusherror(L, NULL);
-  } else {
-    lua_pushinteger(L, 0);
-    return 1;
-  }
+#ifndef _WIN32
+  return pushresult(L,
+    (lua_toboolean(L, 3) ? symlink : link)(oldpath, newpath), NULL);
 #else
-  errno = ENOSYS; /* = "Function not implemented" */
-  return pushresult(L, -1, "make_link is not supported on Windows");
+  int symbolic = lua_toboolean(L, 3);
+  STAT_STRUCT oldpathinfo;
+  int is_dir = 0;
+  if (STAT_FUNC(oldpath, &oldpathinfo) == 0) {
+    is_dir = S_ISDIR(oldpathinfo.st_mode) != 0;
+  }
+  if (!symbolic && is_dir) {
+    lua_pushnil(L);
+    lua_pushstring(L, "hard links to directories are not supported on Windows");
+    return 2;
+  }
+
+  int result = symbolic ? CreateSymbolicLink(newpath, oldpath, is_dir)
+                        : CreateHardLink(newpath, oldpath, NULL);
+
+  if (result) {
+    return pushresult(L, result, NULL);
+  } else {
+    lua_pushnil(L); lua_pushstring(L, symbolic ? "make_link CreateSymbolicLink() failed"
+                                               : "make_link CreateHardLink() failed");
+    return 2;
+  }
 #endif
 }
 
@@ -610,29 +657,6 @@ static int lock_create_meta (lua_State *L) {
 }
 
 
-#ifdef _WIN32
- #ifndef S_ISDIR
-   #define S_ISDIR(mode)  (mode&_S_IFDIR)
- #endif
- #ifndef S_ISREG
-   #define S_ISREG(mode)  (mode&_S_IFREG)
- #endif
- #ifndef S_ISLNK
-   #define S_ISLNK(mode)  (0)
- #endif
- #ifndef S_ISSOCK
-   #define S_ISSOCK(mode)  (0)
- #endif
- #ifndef S_ISFIFO
-   #define S_ISFIFO(mode)  (0)
- #endif
- #ifndef S_ISCHR
-   #define S_ISCHR(mode)  (mode&_S_IFCHR)
- #endif
- #ifndef S_ISBLK
-   #define S_ISBLK(mode)  (0)
- #endif
-#endif
 /*
 ** Convert the inode protection mode to a string.
 */
