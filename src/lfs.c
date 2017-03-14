@@ -43,6 +43,7 @@
 #ifdef _WIN32
   #include <direct.h>
   #include <windows.h>
+  #include "Shlwapi.h"
   #include <io.h>
   #include <sys/locking.h>
   #ifdef __BORLANDC__
@@ -431,19 +432,34 @@ static int file_unlock (lua_State *L) {
 ** @param #3 True if link is symbolic (optional).
 */
 static int make_link (lua_State *L) {
+        const char *oldpath = luaL_checkstring(L, 1);
+        const char *newpath = luaL_checkstring(L, 2);
 #ifndef _WIN32
-  const char *oldpath = luaL_checkstring(L, 1);
-  const char *newpath = luaL_checkstring(L, 2);
-  int res = (lua_toboolean(L,3) ? symlink : link)(oldpath, newpath);
-  if (res == -1) {
-    return pusherror(L, NULL);
-  } else {
-    lua_pushinteger(L, 0);
-    return 1;
-  }
+        int res = (lua_toboolean(L, 3) ? symlink : link)(oldpath, newpath);
+        if (res == -1) {
+                return pusherror(L, NULL);
+        } else {
+               lua_pushinteger(L, 0);
+               return 1;
+        }
 #else
-  errno = ENOSYS; /* = "Function not implemented" */
-  return pushresult(L, -1, "make_link is not supported on Windows");
+        int symlink = lua_toboolean(L, 3);
+        int is_dir = PathIsDirectory(oldpath) == FILE_ATTRIBUTE_DIRECTORY;
+        if (is_dir && !symlink) {
+                lua_pushnil(L); lua_pushstring(L, "hard links to directories are not supported on Windows");
+                return 2;
+        }
+
+        int result = symlink ? CreateSymbolicLink(newpath, oldpath, is_dir)
+                             : CreateHardLink(newpath, oldpath, NULL);
+
+        if (result) {
+                return pushresult(L, result, NULL);
+        } else {
+                lua_pushnil(L); lua_pushstring(L, symlink ? "make_link CreateSymbolicLink() failed"
+                                                          : "make_link CreateHardLink() failed");
+                return 2;
+        }
 #endif
 }
 

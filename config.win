@@ -8,6 +8,9 @@ LUA_INC= "c:\lua5.1\include"
 # Lua library
 LUA_LIB= "c:\lua5.1\lua5.1.lib"
 
+# Windows library
+WIN_LIBS = "Shlwapi.lib"
+
 LIBNAME= $T.dll
 
 # Compilation directives

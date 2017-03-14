@@ -13,7 +13,7 @@ lib: src\lfs.dll
 	$(CC) /c /Fo$@ $(CFLAGS) $<
 
 src\lfs.dll: $(OBJS)
-	link /dll /def:src\$T.def /out:src\lfs.dll $(OBJS) "$(LUA_LIB)"
+	link /dll /def:src\$T.def /out:src\lfs.dll $(OBJS) "$(LUA_LIB)" "$(WIN_LIBS)"
 	IF EXIST src\lfs.dll.manifest mt -manifest src\lfs.dll.manifest -outputresource:src\lfs.dll;2
 
 install: src\lfs.dll
