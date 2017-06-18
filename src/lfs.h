@@ -15,7 +15,7 @@
   #define chdir(p) (_chdir(p))
   #define getcwd(d, s) (_getcwd(d, s))
   #define rmdir(p) (_rmdir(p))
-  #define LFS_EXPORT __declspec (dllexport)
+  #define LFS_EXPORT __declspec(dllexport)
   #ifndef fileno
     #define fileno(f) (_fileno(f))
   #endif
