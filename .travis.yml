@@ -7,6 +7,7 @@ env:
   - LUA="lua 5.2"
   - LUA="lua 5.3"
   - LUA="luajit 2.0"
+  - LUA="luajit 2.1"
 
 before_install:
   - pip install --user cpp-coveralls hererocks
