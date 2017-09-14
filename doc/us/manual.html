@@ -104,7 +104,7 @@ LuaFileSystem offers the following functions:
 <dl class="reference">
     <dt><a name="attributes"></a><strong><code>lfs.attributes (filepath [, aname | atable])</code></strong></dt>
     <dd>Returns a table with the file attributes corresponding to
-    <code>filepath</code> (or <code>nil</code> followed by an error message
+    <code>filepath</code> (or <code>nil</code> followed by an error message and a system-dependent error code
     in case of error).
     If the second optional argument is given and is a string, then only the value of the
     named attribute is returned (this use is equivalent to
@@ -222,14 +222,14 @@ LuaFileSystem offers the following functions:
     <dt><a name="mkdir"></a><strong><code>lfs.mkdir (dirname)</code></strong></dt>
     <dd>Creates a new directory. The argument is the name of the new
     directory.<br />
-    Returns <code>true</code> if the operation was successful;
-    in case of error, it returns <code>nil</code> plus an error string.
+    Returns <code>true</code> in case of success or <code>nil</code>, an error message and
+    a system-dependent error code in case of error.
     </dd>
     
     <dt><a name="rmdir"></a><strong><code>lfs.rmdir (dirname)</code></strong></dt>
     <dd>Removes an existing directory. The argument is the name of the directory.<br />
-    Returns <code>true</code> if the operation was successful;
-    in case of error, it returns <code>nil</code> plus an error string.</dd>
+    Returns <code>true</code> in case of success or <code>nil</code>, an error message and
+    a system-dependent error code in case of error.
 
     <dt><a name="setmode"></a><strong><code>lfs.setmode (file, mode)</code></strong></dt>
     <dd>Sets the writing mode for a file. The mode string can be either <code>"binary"</code> or <code>"text"</code>.
@@ -257,8 +257,8 @@ LuaFileSystem offers the following functions:
     Lua standard function <code>os.time</code>).
     If the modification time is omitted, the access time provided is used;
     if both times are omitted, the current time is used.<br />
-    Returns <code>true</code> if the operation was successful;
-    in case of error, it returns <code>nil</code> plus an error string.
+    Returns <code>true</code> in case of success or <code>nil</code>, an error message and
+    a system-dependent error code in case of error.
     </dd>
     
     <dt><a name="unlock"></a><strong><code>lfs.unlock (filehandle[, start[, length]])</code></strong></dt>
