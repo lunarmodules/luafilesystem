@@ -80,8 +80,10 @@
 
 #endif
 
-#if LUA_VERSION_NUM < 502
-#  define luaL_newlib(L,l) (lua_newtable(L), luaL_register(L,NULL,l))
+#if LUA_VERSION_NUM >= 502
+#  define new_lib(L, l) (luaL_newlib(L, l))
+#else
+#  define new_lib(L, l) (lua_newtable(L), luaL_register(L, NULL, l))
 #endif
 
 /* Define 'strerror' for systems that do not implement it */
@@ -943,7 +945,7 @@ static const struct luaL_Reg fslib[] = {
 LFS_EXPORT int luaopen_lfs (lua_State *L) {
         dir_create_meta (L);
         lock_create_meta (L);
-        luaL_newlib (L, fslib);
+        new_lib (L, fslib);
         lua_pushvalue(L, -1);
         lua_setglobal(L, LFS_LIBNAME);
         set_info (L);
