@@ -1,6 +1,6 @@
 /*
 ** LuaFileSystem
-** Copyright Kepler Project 2003 - 2016 (http://keplerproject.github.io/luafilesystem)
+** Copyright Kepler Project 2003 - 2017 (http://keplerproject.github.io/luafilesystem)
 **
 ** File system manipulation library.
 ** This library offers these functions:
@@ -916,7 +916,7 @@ static int link_info (lua_State *L) {
 ** Assumes the table is on top of the stack.
 */
 static void set_info (lua_State *L) {
-  lua_pushliteral(L, "Copyright (C) 2003-2016 Kepler Project");
+  lua_pushliteral(L, "Copyright (C) 2003-2017 Kepler Project");
   lua_setfield(L, -2, "_COPYRIGHT");
   lua_pushliteral(L, "LuaFileSystem is a Lua library developed to complement the set of functions related to file systems offered by the standard Lua distribution");
   lua_setfield(L, -2, "_DESCRIPTION");

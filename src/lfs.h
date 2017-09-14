@@ -1,6 +1,6 @@
 /*
 ** LuaFileSystem
-** Copyright Kepler Project 2003 - 2016 (http://keplerproject.github.io/luafilesystem)
+** Copyright Kepler Project 2003 - 2017 (http://keplerproject.github.io/luafilesystem)
 */
 
 /* Define 'chdir' for systems that do not implement it */
