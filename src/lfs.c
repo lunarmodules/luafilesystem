@@ -69,7 +69,7 @@
 
 #include "lfs.h"
 
-#define LFS_VERSION "1.6.3"
+#define LFS_VERSION "1.7.0"
 #define LFS_LIBNAME "lfs"
 
 #if LUA_VERSION_NUM >= 503 /* Lua 5.3 */
