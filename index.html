@@ -70,18 +70,23 @@ the underlying directory structure and file attributes.</p>
 
 <h2><a name="status"></a>Status</h2>
 
-<p>Current version is 1.6.3. It works with Lua 5.1, 5.2 and 5.3.</p>
+<p>Current version is 1.7.0. It works with Lua 5.1, 5.2 and 5.3, and it runs on various
+flavors of Unix (including Linux, BSDs, macOS) and Windows.</p>
 
 <h2><a name="download"></a>Download</h2>
 
-<p>LuaFileSystem source can be downloaded from its
-<a href="http://github.com/keplerproject/luafilesystem">Github</a>
-page.</p>
+<p>LuaFileSystem can be installed using <a href="https://luarocks.org">LuaRocks</a>:
+
+<pre class="example">
+$ luarocks install luafilesystem
+</pre>
+
+<p>Its source can be found at its <a href="http://github.com/keplerproject/luafilesystem">Github</a> page.</p>
 
 <h2><a name="history"></a>History</h2>
 
 <dl class="history">
-    <dt><strong>Version 1.7.0</strong> [unreleased]</dt>
+    <dt><strong>Version 1.7.0</strong> [15/Sep/2017]</dt>
     <dd><ul>
         <li>symlinkattributes function now provides 'target' field, containing name of the file that the symlink points to.</li>
         <li>attributes, symlinkattributes, touch, mkdir, and rmdir functions now return system-dependent error code as the third value on error.</li>
