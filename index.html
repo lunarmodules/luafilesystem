@@ -81,6 +81,14 @@ page.</p>
 <h2><a name="history"></a>History</h2>
 
 <dl class="history">
+    <dt><strong>Version 1.7.0</strong> [unreleased]</dt>
+    <dd><ul>
+        <li>symlinkattributes function now provides 'target' field, containing name of the file that the symlink points to.</li>
+        <li>attributes, symlinkattributes, touch, mkdir, and rmdir functions now return system-dependent error code as the third value on error.</li>
+        <li>Fixed detection of closed files for Lua 5.2+ in setmode, lock, and unlock functions.</li>
+        <li>Fixed various compiler warnings.</li>
+    </ul></dd>
+
 	<dt><strong>Version 1.6.3</strong> [15/Jan/2015]</dt>
 	<dd><ul>
         <li>Lua 5.3 support.</li>
