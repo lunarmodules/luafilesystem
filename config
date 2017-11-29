@@ -7,7 +7,8 @@ PREFIX=/usr/local
 LUA_LIBDIR= $(PREFIX)/lib/lua/5.1
 
 # Lua includes directory
-LUA_INC= $(PREFIX)/include
+LUA_INC += -I$(PREFIX)/include
+LUA_INC += -I/usr/include/lua5.1
 
 # OS dependent
 LIB_OPTION= -shared #for Linux
@@ -17,7 +18,7 @@ LIBNAME= $T.so.$V
 
 # Compilation directives
 WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings -pedantic
-INCS= -I$(LUA_INC)
+INCS= $(LUA_INC)
 CFLAGS= $(WARN) $(INCS)
 CC= gcc
 
