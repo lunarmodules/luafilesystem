@@ -72,7 +72,7 @@
 #define LFS_VERSION "1.7.0"
 #define LFS_LIBNAME "lfs"
 
-#if LUA_VERSION_NUM >= 503 /* Lua 5.3 */
+#if LUA_VERSION_NUM >= 503 /* Lua 5.3+ */
 
 #ifndef luaL_optlong
 #define luaL_optlong luaL_optinteger
@@ -221,7 +221,7 @@ static FILE *check_file (lua_State *L, int idx, const char *funcname) {
                 return 0;
         } else
                 return *fh;
-#elif LUA_VERSION_NUM >= 502 && LUA_VERSION_NUM <= 503
+#elif LUA_VERSION_NUM >= 502 && LUA_VERSION_NUM <= 504
         luaL_Stream *fh = (luaL_Stream *)luaL_checkudata (L, idx, "FILE*");
         if (fh->closef == 0 || fh->f == NULL) {
                 luaL_error (L, "%s: closed file", funcname);
