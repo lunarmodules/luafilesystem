@@ -30,7 +30,7 @@ before_build:
 - echo "Installing external deps"
 
 build_script:
-- luarocks make rockspecs/luafilesystem-cvs-3.rockspec
+- luarocks make
 
 before_test:
 
