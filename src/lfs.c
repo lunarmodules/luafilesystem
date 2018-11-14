@@ -382,7 +382,7 @@ static int lfs_lock_dir(lua_State *L) {
     lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
   }
   strcpy(ln, path); strcat(ln, lockfile);
-  fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_NEW,
+  fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
                   FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, NULL);
   free(ln);
   if(fd == INVALID_HANDLE_VALUE) {
