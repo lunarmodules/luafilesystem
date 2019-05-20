@@ -14,6 +14,9 @@ LUA_INC += -I/usr/include/lua5.1
 LIB_OPTION= -shared #for Linux
 #LIB_OPTION= -bundle -undefined dynamic_lookup #for MacOS X
 
+# Minimum runtime OS version on macOS
+MACOSX_DEPLOYMENT_TARGET= 10.5
+
 LIBNAME= $T.so.$V
 
 # Compilation directives
