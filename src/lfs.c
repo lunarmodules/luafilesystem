@@ -60,7 +60,12 @@
   #include <sys/types.h>
   #include <utime.h>
   #include <sys/param.h> /* for MAXPATHLEN */
-  #define LFS_MAXPATHLEN MAXPATHLEN
+  #ifdef MAXPATHLEN
+    #define LFS_MAXPATHLEN MAXPATHLEN
+  #else
+    #include <limits.h> /* for _POSIX_PATH_MAX */
+    #define LFS_MAXPATHLEN _POSIX_PATH_MAX
+  #endif
 #endif
 
 #include <lua.h>
