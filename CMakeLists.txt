@@ -1,0 +1,20 @@
+PROJECT(lfs C)
+cmake_minimum_required(VERSION 2.8)
+
+if(WIN32)
+add_definitions(-DLUA_BUILD_AS_DLL -DLUA_LIB)
+endif()
+
+if(WIN32)
+set(LUA_LIBRARY_L ${LUA_LIB})
+else()
+set(LUA_LIBRARY_L "")
+endif()
+
+INCLUDE_DIRECTORIES(${LUA_INC})
+
+ADD_LIBRARY(lfs SHARED src/lfs.c)
+set_target_properties(lfs PROPERTIES PREFIX "")
+TARGET_LINK_LIBRARIES(lfs ${LUA_LIBRARY_L})
+
+INSTALL (TARGETS lfs RUNTIME DESTINATION ${LUA_LIBDIR} LIBRARY DESTINATION ${LUA_LIBDIR})
