@@ -102,15 +102,15 @@ LuaFileSystem offers the following functions:
 </p>
 
 <dl class="reference">
-    <dt><a name="attributes"></a><strong><code>lfs.attributes (filepath [, aname | atable])</code></strong></dt>
+    <dt><a name="attributes"></a><strong><code>lfs.attributes (filepath [, request_name | result_table])</code></strong></dt>
     <dd>Returns a table with the file attributes corresponding to
     <code>filepath</code> (or <code>nil</code> followed by an error message and a system-dependent error code
     in case of error).
     If the second optional argument is given and is a string, then only the value of the
     named attribute is returned (this use is equivalent to
-    <code>lfs.attributes(filepath)[aname]</code>, but the table is not created
+    <code>lfs.attributes(filepath)[request_name]</code>, but the table is not created
     and only one attribute is retrieved from the O.S.).
-    if a table is passed as the second argument, it is filled with attributes and returned instead of a new table.
+    if a table is passed as the second argument, it (<code>result_table</code>) is filled with attributes and returned instead of a new table.
     The attributes are described as follows;
     attribute <code>mode</code> is a string, all the others are numbers,
     and the time related attributes use the same time reference of
@@ -239,7 +239,7 @@ LuaFileSystem offers the following functions:
     setting the mode has no effect, and the mode is always returned as <code>binary</code>.
     </dd>
     
-    <dt><a name="symlinkattributes"></a><strong><code>lfs.symlinkattributes (filepath [, aname])</code></strong></dt>
+    <dt><a name="symlinkattributes"></a><strong><code>lfs.symlinkattributes (filepath [, request_name])</code></strong></dt>
     <dd>Identical to <a href="#attributes">lfs.attributes</a> except that
     it obtains information about the link itself (not the file it refers to).
     It also adds a <strong><code>target</code></strong> field, containing
