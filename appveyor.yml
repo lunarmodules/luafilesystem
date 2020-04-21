@@ -11,7 +11,6 @@ environment:
   - LUA: "lua 5.1"
   - LUA: "lua 5.2 --compat none"
   - LUA: "lua 5.3 --compat none"
-  - LUA: "luajit 2.0"
   - LUA: "luajit 2.1"
 
 # Abuse this section so we can have a matrix with different Compiler versions
