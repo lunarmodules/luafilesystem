@@ -725,7 +725,13 @@ static int dir_iter_factory(lua_State * L)
   if (d->dir == NULL)
     luaL_error(L, "cannot open %s: %s", path, strerror(errno));
 #endif
+#if LUA_VERSION_NUM >= 504
+  lua_pushnil(L);
+  lua_pushvalue(L, -2);
+  return 4;
+#else
   return 2;
+#endif
 }
 
 
@@ -747,6 +753,11 @@ static int dir_create_meta(lua_State * L)
   lua_setfield(L, -2, "__index");
   lua_pushcfunction(L, dir_close);
   lua_setfield(L, -2, "__gc");
+
+#if LUA_VERSION_NUM >= 504
+  lua_pushcfunction(L, dir_close);
+  lua_setfield(L, -2, "__close");
+#endif
   return 1;
 }
 
