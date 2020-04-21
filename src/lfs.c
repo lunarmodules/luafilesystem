@@ -121,7 +121,6 @@ typedef struct dir_data {
   #define lfs_setmode(file, m)   (_setmode(_fileno(file), m))
   #define STAT_STRUCT struct _stati64
  #endif
-
  #ifndef _S_IFLNK
   #define _S_IFLNK 0x400
  #endif
@@ -164,6 +163,51 @@ typedef struct dir_data {
 #else
   #define lfs_mkdir(path) (mkdir((path), \
     S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH))
+#endif
+
+#ifdef _WIN32
+
+int lfs_win32_pusherror(lua_State *L)
+{
+        int en = GetLastError();
+        lua_pushnil(L);
+        if(en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
+                lua_pushstring(L, "File exists");
+        else
+                lua_pushstring(L, strerror(en));
+        return 2;
+}
+
+#define TICKS_PER_SECOND 10000000
+#define EPOCH_DIFFERENCE 11644473600LL
+time_t windowsToUnixTime(FILETIME ft)
+{
+  ULARGE_INTEGER uli;
+  uli.LowPart = ft.dwLowDateTime;
+  uli.HighPart = ft.dwHighDateTime;
+  return (time_t)(uli.QuadPart / TICKS_PER_SECOND - EPOCH_DIFFERENCE);
+}
+
+int lfs_win32_lstat(const char *path, STAT_STRUCT *buffer)
+{
+  WIN32_FILE_ATTRIBUTE_DATA win32buffer;
+  if (GetFileAttributesEx(path, GetFileExInfoStandard, &win32buffer)) {
+    buffer->st_mode = _S_IFLNK;
+    buffer->st_dev = 0;
+    buffer->st_ino = 0;
+    buffer->st_nlink = 0;
+    buffer->st_uid = 0;
+    buffer->st_gid = 0;
+    buffer->st_rdev = 0;
+    buffer->st_atime = windowsToUnixTime(win32buffer.ftLastAccessTime);
+    buffer->st_mtime = windowsToUnixTime(win32buffer.ftLastWriteTime);
+    buffer->st_ctime = windowsToUnixTime(win32buffer.ftCreationTime);
+    buffer->st_size = 0;
+    return 0;
+  } else {
+    return 1;
+  }
+}
 #endif
 
 /*
@@ -335,17 +379,12 @@ static int lfs_lock_dir(lua_State *L) {
     lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
   }
   strcpy(ln, path); strcat(ln, lockfile);
-  if((fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_NEW,
-                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, NULL)) == INVALID_HANDLE_VALUE) {
-        int en = GetLastError();
-        free(ln); lua_pushnil(L);
-        if(en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
-                lua_pushstring(L, "File exists");
-        else
-                lua_pushstring(L, strerror(en));
-        return 2;
-  }
+  fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_NEW,
+                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, NULL);
   free(ln);
+  if(fd == INVALID_HANDLE_VALUE) {
+        return lfs_win32_pusherror(L);
+  }
   lock = (lfs_Lock*)lua_newuserdata(L, sizeof(lfs_Lock));
   lock->fd = fd;
   luaL_getmetatable (L, LOCK_METATABLE);
@@ -884,35 +923,48 @@ static int file_info (lua_State *L) {
 ** 0 on failure (with stack unchanged, and errno set).
 */
 static int push_link_target(lua_State *L) {
-#ifdef _WIN32
-        errno = ENOSYS;
-        return 0;
-#else
         const char *file = luaL_checkstring(L, 1);
+#ifdef _WIN32
+        HANDLE h = CreateFile(file, GENERIC_READ,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (h == INVALID_HANDLE_VALUE) {
+            return lfs_win32_pusherror(L);
+        }
+#endif
         char *target = NULL;
         int tsize, size = 256; /* size = initial buffer capacity */
-        while (1) {
+        int ok = 0;
+        while (!ok) {
             char* target2 = realloc(target, size);
             if (!target2) { /* failed to allocate */
-                free(target);
-                return 0;
+              break;
             }
             target = target2;
+#ifdef _WIN32
+            tsize = GetFinalPathNameByHandle(h, target, size, FILE_NAME_OPENED);
+#else
             tsize = readlink(file, target, size);
+#endif
             if (tsize < 0) { /* a readlink() error occurred */
-                free(target);
-                return 0;
+              break;
             }
-            if (tsize < size)
-                break;
+            if (tsize < size) {
+              ok = 1;
+              break;
+            }
             /* possibly truncated readlink() result, double size and retry */
             size *= 2;
         }
-        target[tsize] = '\0';
-        lua_pushlstring(L, target, tsize);
-        free(target);
-        return 1;
+        if (ok) {
+          target[tsize] = '\0';
+          lua_pushlstring(L, target, tsize);
+        }
+#ifdef _WIN32
+        CloseHandle(h);
 #endif
+        free(target);
+        return ok;
 }
 
 /*
