@@ -192,6 +192,9 @@ int lfs_win32_lstat(const char *path, STAT_STRUCT *buffer)
 {
   WIN32_FILE_ATTRIBUTE_DATA win32buffer;
   if (GetFileAttributesEx(path, GetFileExInfoStandard, &win32buffer)) {
+    if (!(win32buffer.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+      return STAT_FUNC(path, buffer);
+    }
     buffer->st_mode = _S_IFLNK;
     buffer->st_dev = 0;
     buffer->st_ino = 0;
