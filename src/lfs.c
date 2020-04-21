@@ -29,6 +29,10 @@
 #endif
 #endif
 
+#ifdef _WIN32
+  #define _WIN32_WINNT 0x600
+#endif
+
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
 #define _LARGEFILE64_SOURCE
 #endif
@@ -60,7 +64,12 @@
   #include <sys/types.h>
   #include <utime.h>
   #include <sys/param.h> /* for MAXPATHLEN */
-  #define LFS_MAXPATHLEN MAXPATHLEN
+  #ifdef MAXPATHLEN
+    #define LFS_MAXPATHLEN MAXPATHLEN
+  #else
+    #include <limits.h> /* for _POSIX_PATH_MAX */
+    #define LFS_MAXPATHLEN _POSIX_PATH_MAX
+  #endif
 #endif
 
 #include <lua.h>
@@ -72,7 +81,7 @@
 #define LFS_VERSION "1.7.0"
 #define LFS_LIBNAME "lfs"
 
-#if LUA_VERSION_NUM >= 503 /* Lua 5.3 */
+#if LUA_VERSION_NUM >= 503 /* Lua 5.3+ */
 
 #ifndef luaL_optlong
 #define luaL_optlong luaL_optinteger
@@ -112,15 +121,41 @@ typedef struct dir_data {
   #define lfs_setmode(file, m)   (_setmode(_fileno(file), m))
   #define STAT_STRUCT struct _stati64
  #endif
-#define STAT_FUNC _stati64
-#define LSTAT_FUNC STAT_FUNC
+ #ifndef _S_IFLNK
+  #define _S_IFLNK 0x400
+ #endif
+
+ #ifndef S_ISDIR
+  #define S_ISDIR(mode)  (mode&_S_IFDIR)
+ #endif
+ #ifndef S_ISREG
+  #define S_ISREG(mode)  (mode&_S_IFREG)
+ #endif
+ #ifndef S_ISLNK
+  #define S_ISLNK(mode)  (mode&_S_IFLNK)
+ #endif
+ #ifndef S_ISSOCK
+  #define S_ISSOCK(mode)  (0)
+ #endif
+ #ifndef S_ISFIFO
+  #define S_ISFIFO(mode)  (0)
+ #endif
+ #ifndef S_ISCHR
+  #define S_ISCHR(mode)  (mode&_S_IFCHR)
+ #endif
+ #ifndef S_ISBLK
+  #define S_ISBLK(mode)  (0)
+ #endif
+
+ #define STAT_FUNC _stati64
+ #define LSTAT_FUNC lfs_win32_lstat
 #else
-#define _O_TEXT               0
-#define _O_BINARY             0
-#define lfs_setmode(file, m)   ((void)file, (void)m, 0)
-#define STAT_STRUCT struct stat
-#define STAT_FUNC stat
-#define LSTAT_FUNC lstat
+ #define _O_TEXT               0
+ #define _O_BINARY             0
+ #define lfs_setmode(file, m)   ((void)file, (void)m, 0)
+ #define STAT_STRUCT struct stat
+ #define STAT_FUNC stat
+ #define LSTAT_FUNC lstat
 #endif
 
 #ifdef _WIN32
@@ -128,6 +163,54 @@ typedef struct dir_data {
 #else
   #define lfs_mkdir(path) (mkdir((path), \
     S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH))
+#endif
+
+#ifdef _WIN32
+
+int lfs_win32_pusherror(lua_State *L)
+{
+        int en = GetLastError();
+        lua_pushnil(L);
+        if(en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
+                lua_pushstring(L, "File exists");
+        else
+                lua_pushstring(L, strerror(en));
+        return 2;
+}
+
+#define TICKS_PER_SECOND 10000000
+#define EPOCH_DIFFERENCE 11644473600LL
+time_t windowsToUnixTime(FILETIME ft)
+{
+  ULARGE_INTEGER uli;
+  uli.LowPart = ft.dwLowDateTime;
+  uli.HighPart = ft.dwHighDateTime;
+  return (time_t)(uli.QuadPart / TICKS_PER_SECOND - EPOCH_DIFFERENCE);
+}
+
+int lfs_win32_lstat(const char *path, STAT_STRUCT *buffer)
+{
+  WIN32_FILE_ATTRIBUTE_DATA win32buffer;
+  if (GetFileAttributesEx(path, GetFileExInfoStandard, &win32buffer)) {
+    if (!(win32buffer.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+      return STAT_FUNC(path, buffer);
+    }
+    buffer->st_mode = _S_IFLNK;
+    buffer->st_dev = 0;
+    buffer->st_ino = 0;
+    buffer->st_nlink = 0;
+    buffer->st_uid = 0;
+    buffer->st_gid = 0;
+    buffer->st_rdev = 0;
+    buffer->st_atime = windowsToUnixTime(win32buffer.ftLastAccessTime);
+    buffer->st_mtime = windowsToUnixTime(win32buffer.ftLastWriteTime);
+    buffer->st_ctime = windowsToUnixTime(win32buffer.ftCreationTime);
+    buffer->st_size = 0;
+    return 0;
+  } else {
+    return 1;
+  }
+}
 #endif
 
 /*
@@ -221,7 +304,7 @@ static FILE *check_file (lua_State *L, int idx, const char *funcname) {
                 return 0;
         } else
                 return *fh;
-#elif LUA_VERSION_NUM >= 502 && LUA_VERSION_NUM <= 503
+#elif LUA_VERSION_NUM >= 502 && LUA_VERSION_NUM <= 504
         luaL_Stream *fh = (luaL_Stream *)luaL_checkudata (L, idx, "FILE*");
         if (fh->closef == 0 || fh->f == NULL) {
                 luaL_error (L, "%s: closed file", funcname);
@@ -299,17 +382,13 @@ static int lfs_lock_dir(lua_State *L) {
     lua_pushnil(L); lua_pushstring(L, strerror(errno)); return 2;
   }
   strcpy(ln, path); strcat(ln, lockfile);
-  if((fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
-                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, NULL)) == INVALID_HANDLE_VALUE) {
-        int en = GetLastError();
-        free(ln); lua_pushnil(L);
-        if(en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
-                lua_pushstring(L, "File exists");
-        else
-                lua_pushstring(L, strerror(en));
-        return 2;
-  }
+
+  fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, NULL);
   free(ln);
+  if(fd == INVALID_HANDLE_VALUE) {
+        return lfs_win32_pusherror(L);
+  }
   lock = (lfs_Lock*)lua_newuserdata(L, sizeof(lfs_Lock));
   lock->fd = fd;
   luaL_getmetatable (L, LOCK_METATABLE);
@@ -435,20 +514,36 @@ static int file_unlock (lua_State *L) {
 ** @param #2 Name of link.
 ** @param #3 True if link is symbolic (optional).
 */
-static int make_link (lua_State *L) {
-#ifndef _WIN32
+static int make_link(lua_State *L)
+{
   const char *oldpath = luaL_checkstring(L, 1);
   const char *newpath = luaL_checkstring(L, 2);
-  int res = (lua_toboolean(L,3) ? symlink : link)(oldpath, newpath);
-  if (res == -1) {
-    return pusherror(L, NULL);
-  } else {
-    lua_pushinteger(L, 0);
-    return 1;
-  }
+#ifndef _WIN32
+  return pushresult(L,
+    (lua_toboolean(L, 3) ? symlink : link)(oldpath, newpath), NULL);
 #else
-  errno = ENOSYS; /* = "Function not implemented" */
-  return pushresult(L, -1, "make_link is not supported on Windows");
+  int symbolic = lua_toboolean(L, 3);
+  STAT_STRUCT oldpathinfo;
+  int is_dir = 0;
+  if (STAT_FUNC(oldpath, &oldpathinfo) == 0) {
+    is_dir = S_ISDIR(oldpathinfo.st_mode) != 0;
+  }
+  if (!symbolic && is_dir) {
+    lua_pushnil(L);
+    lua_pushstring(L, "hard links to directories are not supported on Windows");
+    return 2;
+  }
+
+  int result = symbolic ? CreateSymbolicLink(newpath, oldpath, is_dir)
+                        : CreateHardLink(newpath, oldpath, NULL);
+
+  if (result) {
+    return pushresult(L, result, NULL);
+  } else {
+    lua_pushnil(L); lua_pushstring(L, symbolic ? "make_link CreateSymbolicLink() failed"
+                                               : "make_link CreateHardLink() failed");
+    return 2;
+  }
 #endif
 }
 
@@ -605,29 +700,6 @@ static int lock_create_meta (lua_State *L) {
 }
 
 
-#ifdef _WIN32
- #ifndef S_ISDIR
-   #define S_ISDIR(mode)  (mode&_S_IFDIR)
- #endif
- #ifndef S_ISREG
-   #define S_ISREG(mode)  (mode&_S_IFREG)
- #endif
- #ifndef S_ISLNK
-   #define S_ISLNK(mode)  (0)
- #endif
- #ifndef S_ISSOCK
-   #define S_ISSOCK(mode)  (0)
- #endif
- #ifndef S_ISFIFO
-   #define S_ISFIFO(mode)  (0)
- #endif
- #ifndef S_ISCHR
-   #define S_ISCHR(mode)  (mode&_S_IFCHR)
- #endif
- #ifndef S_ISBLK
-   #define S_ISBLK(mode)  (0)
- #endif
-#endif
 /*
 ** Convert the inode protection mode to a string.
 */
@@ -855,35 +927,54 @@ static int file_info (lua_State *L) {
 ** 0 on failure (with stack unchanged, and errno set).
 */
 static int push_link_target(lua_State *L) {
-#ifdef _WIN32
-        errno = ENOSYS;
-        return 0;
-#else
         const char *file = luaL_checkstring(L, 1);
+#ifdef _WIN32
+        HANDLE h = CreateFile(file, GENERIC_READ,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (h == INVALID_HANDLE_VALUE) {
+            return lfs_win32_pusherror(L);
+        }
+#endif
         char *target = NULL;
         int tsize, size = 256; /* size = initial buffer capacity */
-        while (1) {
+        int ok = 0;
+        while (!ok) {
             char* target2 = realloc(target, size);
             if (!target2) { /* failed to allocate */
-                free(target);
-                return 0;
+              break;
             }
             target = target2;
+#ifdef _WIN32
+            tsize = GetFinalPathNameByHandle(h, target, size, FILE_NAME_OPENED);
+#else
             tsize = readlink(file, target, size);
+#endif
             if (tsize < 0) { /* a readlink() error occurred */
-                free(target);
-                return 0;
+              break;
             }
-            if (tsize < size)
-                break;
+            if (tsize < size) {
+#ifdef _WIN32
+              if (tsize > 4 && strncmp(target, "\\\\?\\", 4) == 0) {
+                memmove_s(target, tsize - 3, target + 4, tsize - 3);
+                tsize -= 4;
+              }
+#endif
+              ok = 1;
+              break;
+            }
             /* possibly truncated readlink() result, double size and retry */
             size *= 2;
         }
-        target[tsize] = '\0';
-        lua_pushlstring(L, target, tsize);
-        free(target);
-        return 1;
+        if (ok) {
+          target[tsize] = '\0';
+          lua_pushlstring(L, target, tsize);
+        }
+#ifdef _WIN32
+        CloseHandle(h);
 #endif
+        free(target);
+        return ok;
 }
 
 /*
