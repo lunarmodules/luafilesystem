@@ -4,6 +4,8 @@ local tmp = "/tmp"
 local sep = string.match (package.config, "[^\n]+")
 local upper = ".."
 
+local is_unix = package.config:sub(1,1) == "/"
+
 local lfs = require"lfs"
 print (lfs._VERSION)
 
@@ -60,6 +62,8 @@ if not attrib then
         error ("could not get attributes of file `"..tmpdir.."':\n"..errmsg)
 end
 local f = io.open(tmpfile, "w")
+local data = "hello, file!"
+f:write(data)
 f:close()
 
 io.write(".")
@@ -93,8 +97,37 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
   assert (lfs.symlinkattributes"_a_link_for_test_".target == tmpfile)
   assert (lfs.symlinkattributes("_a_link_for_test_", "target") == tmpfile)
+  
+  assert (lfs.symlinkattributes(tmpfile).mode == "file")
+  
   assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
-  assert (lfs.attributes (tmpfile, "nlink") == 2)
+  assert (lfs.symlinkattributes"_a_hard_link_for_test_".mode == "file")
+  
+  local fd = io.open(tmpfile)
+  assert(fd:read("*a") == data)
+  fd:close()
+
+  fd = io.open("_a_link_for_test_")
+  assert(fd:read("*a") == data)
+  fd:close()
+
+  fd = io.open("_a_hard_link_for_test_")
+  assert(fd:read("*a") == data)
+  fd:close()
+
+  fd = io.open("_a_hard_link_for_test_", "w+")
+  local data2 = "write in hard link"
+  fd:write(data2)
+  fd:close()
+
+  fd = io.open(tmpfile)
+  assert(fd:read("*a") == data2)
+  fd:close()
+
+  if is_unix then
+    assert (lfs.attributes (tmpfile, "nlink") == 2)
+  end
+
   assert (os.remove"_a_link_for_test_")
   assert (os.remove"_a_hard_link_for_test_")
 end
