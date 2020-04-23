@@ -5,7 +5,7 @@
 
 # LuaFileSystem - File System Library for Lua
 
-Copyright 2003-2017 Kepler Project
+Copyright 2003-2020 Kepler Project
 
 https://keplerproject.github.io/luafilesystem
 
