@@ -91,7 +91,6 @@ assert (new_att.modification == testdate1, "could not set modification time")
 io.write(".")
 io.flush()
 
--- Checking link (does not work on Windows)
 if lfs.link (tmpfile, "_a_link_for_test_", true) then
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
