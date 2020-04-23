@@ -70,7 +70,7 @@ the underlying directory structure and file attributes.</p>
 
 <h2><a name="status"></a>Status</h2>
 
-<p>Current version is 1.7.0. It works with Lua 5.1, 5.2 and 5.3, and it runs on various
+<p>Current version is 1.8.0. It works with Lua 5.1, 5.2, 5.3 and 5.4, and it runs on various
 flavors of Unix (including Linux, BSDs, macOS) and Windows.</p>
 
 <h2><a name="download"></a>Download</h2>
@@ -86,6 +86,15 @@ $ luarocks install luafilesystem
 <h2><a name="history"></a>History</h2>
 
 <dl class="history">
+    <dt><strong>Version 1.8.0</strong> [22/Apr/2020]</dt>
+    <dd><ul>
+        <li>Lua 5.4 support</li>
+        <li>lfs.link and lfs.symlinkattributes now work on Windows</li>
+        <li>MACOSX_DEPLOYMENT_TARGET is configurable in the Makefile</li>
+        <li>Fallback to _POSIX_PATH_MAX when MAXPATHLEN is not avaliable</li>
+        <li>Fixed memory leak in case of realloc failure</li>
+    </ul></dd>
+
     <dt><strong>Version 1.7.0</strong> [15/Sep/2017]</dt>
     <dd><ul>
         <li>symlinkattributes function now provides 'target' field, containing name of the file that the symlink points to.</li>
