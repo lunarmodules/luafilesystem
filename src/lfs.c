@@ -167,7 +167,7 @@ typedef struct dir_data {
 #define _O_BINARY             0
 #define lfs_setmode(file, m)   ((void)file, (void)m, 0)
 #define STAT_STRUCT struct stat
-#define STAT_FUNC stat
+#define STAT_FUNC fstat
 #define LSTAT_FUNC lstat
 
 #endif
@@ -1014,13 +1014,34 @@ static int _file_info_(lua_State * L,
   const char *file = luaL_checkstring(L, 1);
   int i;
 
-  if (st(file, &info)) {
+#ifndef _WIN32
+  // From stat(2) manpage: "No permissions are required on the file
+  // itself, but—in the case of stat(), fstatat(), and lstat() execute
+  // (search) permission is required on all of the directories in
+  // pathname that lead to the file."
+  //
+  // Therefore here fstat is used on a previously open file descriptor
+  // to avoid unneeded limitations on POSIX systems.
+  int fd = open(file, O_RDONLY);
+  if(fd<0) {
+	  lua_pushnil(L);
+	  lua_pushfstring(L, "cannot open file '%s': %s",
+	                  file, strerror(errno));
+	  lua_pushinteger(L, errno);
+	  return(3);
+  }
+#endif
+  if (st(fd, &info)) {
     lua_pushnil(L);
     lua_pushfstring(L, "cannot obtain information from file '%s': %s",
                     file, strerror(errno));
     lua_pushinteger(L, errno);
     return 3;
   }
+#ifndef _WIN32
+  close(fd);
+#endif
+
   if (lua_isstring(L, 2)) {
     const char *member = lua_tostring(L, 2);
     for (i = 0; members[i].name; i++) {
