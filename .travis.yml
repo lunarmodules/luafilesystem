@@ -1,5 +1,9 @@
 language: c
 
+arch:
+ - amd64
+ - ppc64le
+ 
 sudo: false
 
 env:
@@ -7,6 +11,10 @@ env:
   - LUA="lua 5.2"
   - LUA="lua 5.3"
   - LUA="luajit 2.1"
+jobs:
+  exclude:
+      - arch: ppc64le
+        env: LUA="luajit 2.1"
 
 before_install:
   - pip install --user cpp-coveralls hererocks
