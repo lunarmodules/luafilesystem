@@ -79,6 +79,19 @@ assert (new_att.modification == testdate, "could not set modification time")
 io.write(".")
 io.flush()
 
+-- High-precision attributes
+local testdate_hi = os.time({ year = 2021, day = 1, month = 23, hour=0}) + 0.5555
+assert (lfs.touch (tmpfile, testdate_hi))
+local new_att_hi = assert (lfs.attributes (tmpfile))
+if new_att_hi.modification ~= testdate_hi then
+    io.write("\n")
+    io.write("warning: no support for high-precision timestamps\n")
+    io.flush()
+end
+
+io.write(".")
+io.flush()
+
 -- Change access and modification time
 local testdate1 = os.time({ year = 2007, day = 10, month = 2, hour=0})
 local testdate2 = os.time({ year = 2007, day = 11, month = 2, hour=0})
@@ -194,7 +207,7 @@ io.write(".")
 io.flush()
 
 -- Stressing directory iterator
-count = 0
+local count = 0
 for i = 1, 4000 do
         for file in lfs.dir (tmp) do
                 count = count + 1

@@ -172,6 +172,15 @@ typedef struct dir_data {
 
 #endif
 
+#if _POSIX_VERSION >= 200809L
+#define UTIME_FUNC(dirp, name, utb)  utimensat(dirp ? dirfd(dirp) : 0, name, utb, 0)
+#define UTIME_STRUCT                 struct timespec
+#else
+#define UTIME_FUNC(dirp, name, utb)  utime(name, utb)
+#define UTIME_STRUCT                 struct utimbuf
+#endif
+
+
 #ifdef _WIN32
 #define lfs_mkdir _mkdir
 #else
@@ -820,17 +829,39 @@ static const char *mode2string(mode_t mode)
 static int file_utime(lua_State * L)
 {
   const char *file = luaL_checkstring(L, 1);
-  struct utimbuf utb, *buf;
+  UTIME_STRUCT utb[2];
+  UTIME_STRUCT *buf;
+#ifndef _WIN32
+  DIR* dirp = NULL;
+#endif
 
   if (lua_gettop(L) == 1)       /* set to current date/time */
     buf = NULL;
   else {
-    utb.actime = (time_t) luaL_optnumber(L, 2, 0);
-    utb.modtime = (time_t) luaL_optinteger(L, 3, utb.actime);
-    buf = &utb;
+#if _POSIX_VERSION >= 200809L
+    lua_Number acctime = luaL_optnumber(L, 2, 0);
+    lua_Number modtime = luaL_optnumber(L, 3, acctime);
+    utb[0].tv_sec = acctime;
+    utb[0].tv_nsec = (acctime - utb[0].tv_sec) * 1000000000;
+    utb[1].tv_sec = modtime;
+    utb[1].tv_nsec = (modtime - utb[1].tv_sec) * 1000000000;
+    if (file[0] != '/') {
+      dirp = opendir(".");
+    }
+#else
+    utb[0].actime = (time_t) luaL_optnumber(L, 2, 0);
+    utb[0].modtime = (time_t) luaL_optnumber(L, 3, utb[0].actime);
+#endif
+    buf = utb;
   }
 
-  return pushresult(L, utime(file, buf), NULL);
+  int res = UTIME_FUNC(dirp, file, buf);
+#ifndef _WIN32
+  if (dirp) {
+    closedir(dirp);
+  }
+#endif
+  return pushresult(L, res, NULL);
 }
 
 
