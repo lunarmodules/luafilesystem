@@ -876,22 +876,37 @@ static void push_st_rdev(lua_State * L, STAT_STRUCT * info)
   lua_pushinteger(L, (lua_Integer) info->st_rdev);
 }
 
+#define push_stat_timespec(field) \
+  lua_pushnumber(L, info->FIELDNAME(field).tv_sec \
+  + info->FIELDNAME(field).tv_nsec / 1000000000.0)
+
+#if _POSIX_VERSION >= 200809L
+#define FIELDNAME(field)           field
+#define push_stat_time(field)      push_stat_timespec(field)
+#elif __APPLE__
+#define FIELDNAME(field)           field ## espec
+#define push_stat_time(field)      push_stat_timespec(field)
+#else
+#define FIELDNAME(field)           field ## e
+#define push_stat_time(field)      lua_pushinteger(L, info->FIELDNAME(field))
+#endif
+
 /* time of last access */
 static void push_st_atime(lua_State * L, STAT_STRUCT * info)
 {
-  lua_pushinteger(L, (lua_Integer) info->st_atime);
+  push_stat_time(st_atim);
 }
 
 /* time of last data modification */
 static void push_st_mtime(lua_State * L, STAT_STRUCT * info)
 {
-  lua_pushinteger(L, (lua_Integer) info->st_mtime);
+  push_stat_time(st_mtim);
 }
 
 /* time of last file status change */
 static void push_st_ctime(lua_State * L, STAT_STRUCT * info)
 {
-  lua_pushinteger(L, (lua_Integer) info->st_ctime);
+  push_stat_time(st_ctim);
 }
 
 /* file size, in bytes */

@@ -151,8 +151,8 @@ io.flush()
 -- Restore access time to current value
 assert (lfs.touch (tmpfile, attrib.access, attrib.modification))
 new_att = assert (lfs.attributes (tmpfile))
-assert (new_att.access == attrib.access)
-assert (new_att.modification == attrib.modification)
+assert (new_att.access - attrib.access < 1)
+assert (new_att.modification - attrib.modification < 1)
 
 io.write(".")
 io.flush()
