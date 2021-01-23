@@ -1,15 +1,34 @@
-language: c
-
+language: generic
 sudo: false
 
-env:
-  - LUA="lua 5.1"
-  - LUA="lua 5.2"
-  - LUA="lua 5.3"
-  - LUA="luajit 2.1"
+jobs:
+  - os: linux
+    env:
+    - LUA="lua 5.1"
+      LIBFLAG="-shared --coverage"
+  - os: linux
+    env:
+    - LUA="lua 5.2"
+      LIBFLAG="-shared --coverage"
+  - os: linux
+    env:
+    - LUA="lua 5.3"
+      LIBFLAG="-shared --coverage"
+  - os: linux
+    env:
+    - LUA="lua 5.4"
+      LIBFLAG="-shared --coverage"
+  - os: linux
+    env:
+    - LUA="luajit 2.1"
+      LIBFLAG="-shared --coverage"
+  - os: osx
+    env:
+    - LUA="lua 5.1"
+      LIBFLAG="-bundle -undefined dynamic_lookup -all_load --coverage"
 
 before_install:
-  - pip install --user cpp-coveralls hererocks
+  - pip install cpp-coveralls hererocks
   - hererocks env --$LUA --luarocks latest
   - export PATH="$PWD/env/bin:$PATH"
   - luarocks install lua-path 
@@ -19,7 +38,7 @@ before_install:
   - luarocks install luacov-coveralls --server=https://luarocks.org/dev --deps-mode=none
 
 install:
-  - luarocks make CFLAGS="-O2 -fPIC -ftest-coverage -fprofile-arcs" LIBFLAG="-shared --coverage"
+  - luarocks make CFLAGS="-O2 -fPIC -ftest-coverage -fprofile-arcs" LIBFLAG="$LIBFLAG"
 
 script:
   - lua -lluacov tests/test.lua
