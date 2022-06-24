@@ -1094,7 +1094,7 @@ static int push_link_target(lua_State * L)
     if (tsize < size) {
 #ifdef _WIN32
       if (tsize > 4 && strncmp(target, "\\\\?\\", 4) == 0) {
-        memmove_s(target, tsize - 3, target + 4, tsize - 3);
+        memmove(target, target + 4, tsize - 3);
         tsize -= 4;
       }
 #endif
