@@ -22,7 +22,7 @@ build = {
       lfs = "src/lfs.c"
    },
    copy_directories = {
-      "doc",
+      "docs",
       "tests"
    }
 }

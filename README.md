@@ -5,8 +5,6 @@
 
 # LuaFileSystem - File System Library for Lua
 
-Copyright 2003-2020 Kepler Project
-
 https://keplerproject.github.io/luafilesystem
 
 # Description
@@ -25,4 +23,4 @@ luarocks install luafilesystem
 
 # Documentation
 
-Please check the documentation at doc/us/ for more information.
+Please check the at `docs/` for more information, also available at the [project website](https://keplerproject.github.io/luafilesystem).
