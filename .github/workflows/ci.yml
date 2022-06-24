@@ -1,0 +1,48 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  TestMatrix:
+    strategy:
+      matrix:
+        lua-version: ["5.4", "5.3", "5.2", "5.1", "luajit"]
+        os: ["ubuntu-latest"]
+        libflag: ["-shared --coverage"]
+        include:
+        - os: "macos-latest"
+          lua-version: "5.4"
+          libflag: "-bundle -undefined dynamic_lookup -all_load --coverage"
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: leafo/gh-actions-lua@v8.0.0
+      with:
+        luaVersion: ${{ matrix.lua-version }}
+
+    - uses: leafo/gh-actions-luarocks@master
+
+    - name: Prep
+      run: |
+        pip install --user cpp-coveralls
+        luarocks install lua-path 
+        luarocks install dkjson
+        luarocks install luacov
+        # install luacov-coveralls, but avoid installing luafilesystem
+        luarocks install luacov-coveralls --server=https://luarocks.org/dev --deps-mode=none
+
+    - name: Build
+      run: |
+        luarocks make CFLAGS="-O2 -fPIC -ftest-coverage -fprofile-arcs" LIBFLAG="${{ matrix.libflag }}"
+
+    - name: Test
+      run: |
+        lua -lluacov tests/test.lua
+
+    - name: Coverage
+      run: |
+        export PATH="/Users/runner/Library/Python/2.7/bin:$PATH"
+        coveralls -b . -i src --dump c.report.json
+        luacov-coveralls -j c.report.json -v -t ${{ secrets.GITHUB_TOKEN }}

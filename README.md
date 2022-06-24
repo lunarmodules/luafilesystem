@@ -1,5 +1,5 @@
 [![License](http://img.shields.io/badge/Licence-MIT-brightgreen.svg)](LICENSE)
-[![Build Status](https://travis-ci.org/keplerproject/luafilesystem.svg?branch=master)](https://travis-ci.org/keplerproject/luafilesystem)
+[![Build Status](https://github.com/keplerproject/luafilesystem/actions/workflows/ci.yml/badge.svg)](https://github.com/keplerproject/luafilesystem/actions)
 [![Build status](https://ci.appveyor.com/api/projects/status/y04s4ms7u16trw8e?svg=true)](https://ci.appveyor.com/project/ignacio/luafilesystem)
 [![Coverage Status](https://coveralls.io/repos/keplerproject/luafilesystem/badge.png)](https://coveralls.io/r/keplerproject/luafilesystem)
 
