@@ -1,23 +1,10 @@
 /*
 ** LuaFileSystem
-** Copyright Kepler Project 2003 - 2020
-** (http://keplerproject.github.io/luafilesystem)
+** File system manipulation library
 **
-** File system manipulation library.
-** This library offers these functions:
-**   lfs.attributes (filepath [, attributename | attributetable])
-**   lfs.chdir (path)
-**   lfs.currentdir ()
-**   lfs.dir (path)
-**   lfs.link (old, new[, symlink])
-**   lfs.lock (fh, mode)
-**   lfs.lock_dir (path)
-**   lfs.mkdir (path)
-**   lfs.rmdir (path)
-**   lfs.setmode (filepath, mode)
-**   lfs.symlinkattributes (filepath [, attributename])
-**   lfs.touch (filepath [, atime [, mtime]])
-**   lfs.unlock (fh)
+** Copyright (C) 2003-2010 Kepler Project.
+** Copyright (C) 2010-2022 The LuaFileSystem authors.
+** (http://lunarmodules.github.io/luafilesystem)
 */
 
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
@@ -1141,8 +1128,6 @@ static int link_info(lua_State * L)
 */
 static void set_info(lua_State * L)
 {
-  lua_pushliteral(L, "Copyright (C) 2003-2017 Kepler Project");
-  lua_setfield(L, -2, "_COPYRIGHT");
   lua_pushliteral(L,
                   "LuaFileSystem is a Lua library developed to complement "
                   "the set of functions related to file systems offered by "

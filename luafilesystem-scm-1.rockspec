@@ -1,7 +1,7 @@
 package = "luafilesystem"
 version = "scm-1"
 source = {
-   url = "git+https://github.com/keplerproject/luafilesystem"
+   url = "git+https://github.com/lunarmodules/luafilesystem"
 }
 description = {
    summary = "File System Library for the Lua Programming Language",
