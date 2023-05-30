@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
 
 #ifdef _WIN32
 
@@ -1137,6 +1139,162 @@ static void set_info(lua_State * L)
   lua_setfield(L, -2, "_VERSION");
 }
 
+/*
+** Change file permissions
+** First argument is file, second is permission string
+** Return true or nil + error string
+** On Windows do nothing and return nil
+*/
+static int lfs_chmod(lua_State * L)
+{
+#ifdef _WIN32
+  lua_pushnil(L);
+  lua_pushliteral(L, "Not implemented for Windows");
+  return 1;
+#else
+  if (!lua_isstring(L, 1)) {
+    lua_pushnil(L);
+    lua_pushliteral(L, "Path has to be a string");
+    return 2;
+  }
+  const char *filepath = lua_tostring(L, 1);
+
+  mode_t mode = 0;
+  const char *mode_string;
+  switch (lua_type(L, 2)) {
+  case LUA_TNUMBER:
+    mode = lua_tonumber(L, 2);
+    break;
+  case LUA_TSTRING:
+    mode_string = lua_tostring(L, 2);
+    if (strlen(mode_string) != 9) {
+      lua_pushnil(L);
+      lua_pushliteral(L, "Mode string has to be 9 characters long");
+      return 2;
+    }
+#define check_mode_string(i, c, v) { if (mode_string[i] == c) mode |= v; else if \
+                                     (mode_string[i] != '-') goto wrong_format; }
+    check_mode_string(0, 'r', S_IRUSR);
+    check_mode_string(1, 'w', S_IWUSR);
+    check_mode_string(2, 'x', S_IXUSR);
+    check_mode_string(3, 'r', S_IRGRP);
+    check_mode_string(4, 'w', S_IWGRP);
+    check_mode_string(5, 'x', S_IXGRP);
+    check_mode_string(6, 'r', S_IROTH);
+    check_mode_string(7, 'w', S_IWOTH);
+    check_mode_string(8, 'x', S_IXOTH);
+    break;
+  wrong_format:
+    lua_pushnil(L);
+    lua_pushliteral(L, "Wrong mode string format");
+    return 2;
+  default:
+    lua_pushnil(L);
+    lua_pushliteral(L, "Mode has to be a string or number");
+    return 2;
+  }
+
+  if (chmod(filepath, mode) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, strerror(errno));
+    return 2;
+  }
+
+  lua_pushboolean(L, 1);
+  return 1;
+#endif
+}
+
+/*
+** Change file owner
+** First argument is file, second is uid (optional), third is gid (optional)
+** Return true or nil + error string
+** On Windows do nothing and return nil
+*/
+static int lfs_chown(lua_State * L)
+{
+#ifdef _WIN32
+  lua_pushnil(L);
+  lua_pushliteral(L, "Not implemented for Windows");
+  return 2;
+#else
+  if (!lua_isstring(L, 1)) {
+    lua_pushnil(L);
+    lua_pushliteral(L, "Path has to be a string");
+    return 2;
+  }
+  const char *filepath = lua_tostring(L, 1);
+
+  struct stat fileinfo;
+  if (stat(filepath, &fileinfo) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, strerror(errno));
+    return 2;
+  }
+
+  uid_t uid;
+  struct passwd *pswd;
+  const char *username;
+  switch (lua_type(L, 2)) {
+  case LUA_TNIL:
+    uid = fileinfo.st_uid;
+    break;
+  case LUA_TSTRING:
+    username = lua_tostring(L, 2);
+    pswd = getpwnam(username);
+    if (pswd == NULL) {
+      lua_pushnil(L);
+      lua_pushliteral(L, "Failed to get uid");
+      return 2;
+    }
+    uid = pswd->pw_uid;
+    break;
+  case LUA_TNUMBER:
+    uid = (uid_t)lua_tonumber(L, 2);
+    break;
+  default:
+    lua_pushnil(L);
+    lua_pushliteral(L, "Uid has to be a string, number or nil");
+    return 2;
+  }
+
+  gid_t gid;
+  struct group *grp;
+  const char *groupname;
+  switch (lua_type(L, 3)) {
+  case LUA_TNIL:
+    gid = fileinfo.st_gid;
+    break;
+  case LUA_TSTRING:
+    groupname = lua_tostring(L, 3);
+    grp = getgrnam(groupname);
+    if (grp == NULL) {
+      lua_pushnil(L);
+      lua_pushliteral(L, "Failed to get gid");
+      return 2;
+    }
+    gid = grp->gr_gid;
+    break;
+  case LUA_TNUMBER:
+    gid = (gid_t)lua_tonumber(L, 3);
+    break;
+  default:
+    lua_pushnil(L);
+    lua_pushliteral(L, "Gid has to be a string, number or nil");
+    return 2;
+  }
+
+  if (chown(filepath, uid, gid) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, strerror(errno));
+    return 2;
+  }
+
+  lua_pushboolean(L, 1);
+  return 1;
+#endif
+}
+
 
 static const struct luaL_Reg fslib[] = {
   { "attributes", file_info },
@@ -1152,6 +1310,8 @@ static const struct luaL_Reg fslib[] = {
   { "touch", file_utime },
   { "unlock", file_unlock },
   { "lock_dir", lfs_lock_dir },
+  { "chmod", lfs_chmod },
+  { "chown", lfs_chown },
   { NULL, NULL },
 };
 
