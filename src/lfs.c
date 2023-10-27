@@ -1054,7 +1054,7 @@ static int push_link_target(lua_State * L)
 {
   const char *file = luaL_checkstring(L, 1);
 #ifdef _WIN32
-  HANDLE h = CreateFileA(file, GENERIC_READ,
+  HANDLE h = CreateFile(file, GENERIC_READ,
                         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
   if (h == INVALID_HANDLE_VALUE) {
