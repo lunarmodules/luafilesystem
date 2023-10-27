@@ -192,7 +192,7 @@ time_t windowsToUnixTime(FILETIME ft)
 int lfs_win32_lstat(const char *path, STAT_STRUCT * buffer)
 {
   WIN32_FILE_ATTRIBUTE_DATA win32buffer;
-  if (GetFileAttributesEx(path, GetFileExInfoStandard, &win32buffer)) {
+  if (GetFileAttributesExA(path, GetFileExInfoStandard, &win32buffer)) {
     if (!(win32buffer.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
       return STAT_FUNC(path, buffer);
     }
@@ -281,7 +281,7 @@ static int get_dir(lua_State * L)
       break;
     }
     path = path2;
-    if (getcwd(path, size) != NULL) {
+    if (getcwd(path, (int)size) != NULL) {
       /* success, push the path to the Lua stack */
       lua_pushstring(L, path);
       result = 1;
@@ -416,7 +416,7 @@ static int lfs_lock_dir(lua_State * L)
   }
   strcpy(ln, path);
   strcat(ln, lockfile);
-  fd = CreateFile(ln, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+  fd = CreateFileA(ln, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
                   FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, NULL);
   free(ln);
   if (fd == INVALID_HANDLE_VALUE) {
@@ -584,8 +584,8 @@ static int make_link(lua_State * L)
     return 2;
   }
 
-  int result = symbolic ? CreateSymbolicLink(newpath, oldpath, is_dir)
-      : CreateHardLink(newpath, oldpath, NULL);
+  int result = symbolic ? CreateSymbolicLinkA(newpath, oldpath, is_dir)
+      : CreateHardLinkA(newpath, oldpath, NULL);
 
   if (result) {
     return pushresult(L, result, NULL);
@@ -1054,7 +1054,7 @@ static int push_link_target(lua_State * L)
 {
   const char *file = luaL_checkstring(L, 1);
 #ifdef _WIN32
-  HANDLE h = CreateFile(file, GENERIC_READ,
+  HANDLE h = CreateFileA(file, GENERIC_READ,
                         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
   if (h == INVALID_HANDLE_VALUE) {
@@ -1071,7 +1071,7 @@ static int push_link_target(lua_State * L)
     }
     target = target2;
 #ifdef _WIN32
-    tsize = (int)GetFinalPathNameByHandle(h, target, size, FILE_NAME_OPENED);
+    tsize = (int)GetFinalPathNameByHandleA(h, target, size, FILE_NAME_OPENED);
 #else
     tsize = (int)readlink(file, target, size);
 #endif
