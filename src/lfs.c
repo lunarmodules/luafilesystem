@@ -281,7 +281,7 @@ static int get_dir(lua_State * L)
       break;
     }
     path = path2;
-    if (getcwd(path, size) != NULL) {
+    if (getcwd(path, (int)size) != NULL) {
       /* success, push the path to the Lua stack */
       lua_pushstring(L, path);
       result = 1;
@@ -1062,7 +1062,7 @@ static int push_link_target(lua_State * L)
   }
 #endif
   char *target = NULL;
-  int tsize, size = 256;        /* size = initial buffer capacity */
+  int tsize = 0, size = 256;        /* size = initial buffer capacity */
   int ok = 0;
   while (!ok) {
     char *target2 = realloc(target, size);
@@ -1071,9 +1071,9 @@ static int push_link_target(lua_State * L)
     }
     target = target2;
 #ifdef _WIN32
-    tsize = GetFinalPathNameByHandle(h, target, size, FILE_NAME_OPENED);
+    tsize = (int)GetFinalPathNameByHandle(h, target, size, FILE_NAME_OPENED);
 #else
-    tsize = readlink(file, target, size);
+    tsize = (int)readlink(file, target, size);
 #endif
     if (tsize < 0) {            /* a readlink() error occurred */
       break;
