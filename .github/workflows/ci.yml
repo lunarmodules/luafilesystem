@@ -43,6 +43,7 @@ jobs:
 
     - name: Coverage
       run: |
-        export PATH="/Users/runner/Library/Python/2.7/bin:$PATH"
+        export MY_PYTHON_VER=$(python -c 'import sys; print(".".join(sys.version.split(".")[0:2]))')
+        export PATH="/Users/runner/Library/Python/$MY_PYTHON_VER/bin:$PATH"
         coveralls -b . -i src --dump c.report.json
         luacov-coveralls -j c.report.json -v -t ${{ secrets.GITHUB_TOKEN }}
