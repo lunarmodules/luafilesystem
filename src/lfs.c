@@ -1137,6 +1137,30 @@ static void set_info(lua_State * L)
   lua_setfield(L, -2, "_VERSION");
 }
 
+static int lfs_cp(lua_State *L)
+{
+    const char *fromPath = luaL_checkstring(L, 1);
+    const char *toPath = luaL_checkstring(L, 2);
+    FILE *from = fopen(fromPath, "rb");
+    if (!from) {
+        luaL_error(L, "can't open '%s'", fromPath);
+    }
+    FILE *to = fopen(toPath, "wb");
+    if (!to) {
+        fclose(from);
+        luaL_error(L, "can't open '%s'", to);
+    }
+    
+    size_t len;
+    unsigned char buff[BUFSIZ];
+    while ((len = fread(buff, sizeof(unsigned char), BUFSIZ, from)) > 0) {
+        fwrite(buff, sizeof(unsigned char), len, to);
+    }
+    fflush(to);
+    fclose(from);
+    fclose(to);
+    return 0;
+}
 
 static const struct luaL_Reg fslib[] = {
   { "attributes", file_info },
@@ -1152,6 +1176,7 @@ static const struct luaL_Reg fslib[] = {
   { "touch", file_utime },
   { "unlock", file_unlock },
   { "lock_dir", lfs_lock_dir },
+  { "cp", lfs_cp},
   { NULL, NULL },
 };
 
