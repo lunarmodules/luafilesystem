@@ -18,11 +18,11 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
-    - uses: leafo/gh-actions-lua@v8.0.0
+    - uses: luarocks/gh-actions-lua@master
       with:
         luaVersion: ${{ matrix.lua-version }}
 
-    - uses: leafo/gh-actions-luarocks@master
+    - uses: luarocks/gh-actions-luarocks@master
 
     - name: Prep
       run: |
