@@ -168,7 +168,7 @@ typedef struct dir_data {
 
 #ifdef _WIN32
 
-int lfs_win32_pusherror(lua_State * L)
+static int lfs_win32_pusherror(lua_State * L)
 {
   int en = GetLastError();
   lua_pushnil(L);
@@ -181,7 +181,7 @@ int lfs_win32_pusherror(lua_State * L)
 
 #define TICKS_PER_SECOND 10000000
 #define EPOCH_DIFFERENCE 11644473600LL
-time_t windowsToUnixTime(FILETIME ft)
+static time_t windowsToUnixTime(FILETIME ft)
 {
   ULARGE_INTEGER uli;
   uli.LowPart = ft.dwLowDateTime;
@@ -189,7 +189,7 @@ time_t windowsToUnixTime(FILETIME ft)
   return (time_t) (uli.QuadPart / TICKS_PER_SECOND - EPOCH_DIFFERENCE);
 }
 
-int lfs_win32_lstat(const char *path, STAT_STRUCT * buffer)
+static int lfs_win32_lstat(const char *path, STAT_STRUCT * buffer)
 {
   WIN32_FILE_ATTRIBUTE_DATA win32buffer;
   if (GetFileAttributesEx(path, GetFileExInfoStandard, &win32buffer)) {
