@@ -37,7 +37,22 @@ before_build:
   - call lua_install-%LUAV%\bin\activate
 
 build_script:
-- luarocks make
+- echo "Which 'make' .exe ..."
+- set MAKE_COMMAND=
+- WHERE /q make && (
+  echo "'make' found."
+  set MAKE_COMMAND = make
+)
+- WHERE /q mingw32-make && (
+echo "'mingw32-make' found."
+set MAKE_COMMAND=mingw32-make
+)
+- IF "%MAKE_COMMAND%"=="" (
+echo "Error: Neither 'make' nor 'mingw32-make' could be found."
+exit 1
+)
+- echo "Using '%MAKE_COMMAND%' .exe."
+- luarocks make MAKE=%MAKE_COMMAND%
 
 before_test:
 
