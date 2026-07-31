@@ -31,7 +31,7 @@ jobs:
       # 'luarocks/gh-actions-lua' step requires msvc to build PUC-Rio Lua
       # versions on Windows (LuaJIT will be built using MinGW/gcc).
       if: ${{ matrix.toolchain == 'msvc' }}
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
 
     - uses: luarocks/gh-actions-lua@master
       with:
