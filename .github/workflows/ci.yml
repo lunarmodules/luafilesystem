@@ -25,7 +25,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Setup MSVC
       # 'luarocks/gh-actions-lua' step requires msvc to build PUC-Rio Lua
@@ -33,11 +33,11 @@ jobs:
       if: ${{ matrix.toolchain == 'msvc' }}
       uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
 
-    - uses: luarocks/gh-actions-lua@master
+    - uses: luarocks/gh-actions-lua@fc6f8de246f8c01f6e1a56a1b851143e23370ff3 # v12
       with:
         luaVersion: ${{ matrix.lua-version }}
 
-    - uses: luarocks/gh-actions-luarocks@master
+    - uses: luarocks/gh-actions-luarocks@95d2308a0aff36ad31ebadca493ed14853399842 # v7
 
     - name: Prep luacov
       run: |
