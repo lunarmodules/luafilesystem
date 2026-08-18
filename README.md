@@ -1,7 +1,7 @@
 [![License](http://img.shields.io/badge/Licence-MIT-brightgreen.svg)](LICENSE)
 [![Build Status](https://github.com/lunarmodules/luafilesystem/actions/workflows/ci.yml/badge.svg)](https://github.com/lunarmodules/luafilesystem/actions)
 [![Build status](https://ci.appveyor.com/api/projects/status/y04s4ms7u16trw8e?svg=true)](https://ci.appveyor.com/project/ignacio/luafilesystem)
-[![Coverage Status](https://coveralls.io/repos/lunarmodules/luafilesystem/badge.png)](https://coveralls.io/r/lunarmodules/luafilesystem)
+[![Coverage Status](https://coveralls.io/repos/github/lunarmodules/luafilesystem/badge.svg?branch=master)](https://coveralls.io/github/lunarmodules/luafilesystem?branch=master)
 
 # LuaFileSystem - File System Library for Lua
 
