@@ -44,10 +44,6 @@ jobs:
 
     - uses: luarocks/gh-actions-luarocks@95d2308a0aff36ad31ebadca493ed14853399842 # v7
 
-    - name: Prep luacov
-      run: |
-        luarocks install luacov
-
     - name: GCC Build
       if: runner.os != 'Windows' || matrix.toolchain != 'msvc'
       run: |
@@ -61,11 +57,7 @@ jobs:
 
     - name: Test
       run: |
-        lua -lluacov tests/test.lua
-
-    - name: Generate coverage report
-      run: |
-        luacov
+        lua tests/test.lua
 
     - name: Run gcov in the main source file
       if: runner.os != 'Windows' || matrix.toolchain != 'msvc'
