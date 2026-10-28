@@ -18,7 +18,7 @@
 #endif
 
 #ifdef _WIN32
-#define _WIN32_WINNT 0x600
+#define _WIN32_WINNT 0x602     /* Windows 8 / Server 2012: needed for FILE_ID_INFO (ReFS object ids) */
 #endif
 
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
@@ -38,6 +38,7 @@
 #include <windows.h>
 #include <io.h>
 #include <sys/locking.h>
+#include <wchar.h>
 
 #ifdef __BORLANDC__
 #include <utime.h>
@@ -168,15 +169,99 @@ typedef struct dir_data {
 
 #ifdef _WIN32
 
+static const char *lfs_win32_errmsg(int en)
+{
+  if (en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
+    return "File exists";
+  return strerror(en);
+}
+
 static int lfs_win32_pusherror(lua_State * L)
+{
+  lua_pushnil(L);
+  lua_pushstring(L, lfs_win32_errmsg(GetLastError()));
+  return 2;
+}
+
+/*
+** Fetch the raw filesystem/object identity for 'file' on Windows: the volume
+** serial number and per-object file id, rendered as unpadded lowercase hex into
+** the caller's buffers. 'nofollow' identifies the link itself (matching
+** lstat) rather than what it points to (matching stat).
+** Returns 0 on success, non-zero on failure (with GetLastError() set).
+*/
+static int lfs_win32_objectid(const char *file, int nofollow,
+                               char *fsid_buf, size_t fsid_bufsize,
+                               char *objid_buf, size_t objid_bufsize)
+{
+  DWORD flags = FILE_FLAG_BACKUP_SEMANTICS;
+  HANDLE h;
+  DWORD volume_serial;
+  WCHAR fs_name[MAX_PATH + 1];
+
+  if (nofollow)
+    flags |= FILE_FLAG_OPEN_REPARSE_POINT;
+
+  h = CreateFile(file, FILE_READ_ATTRIBUTES,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                 NULL, OPEN_EXISTING, flags, NULL);
+  if (h == INVALID_HANDLE_VALUE)
+    return 1;
+
+  if (!GetVolumeInformationByHandleW(h, NULL, 0, &volume_serial, NULL, NULL,
+                                     fs_name, MAX_PATH + 1)) {
+    CloseHandle(h);
+    return 1;
+  }
+
+  if (wcscmp(fs_name, L"ReFS") == 0) {
+    FILE_ID_INFO id_info;
+    int i, pos;
+
+    if (!GetFileInformationByHandleEx(h, FileIdInfo, &id_info, sizeof(id_info))) {
+      CloseHandle(h);
+      return 1;
+    }
+    CloseHandle(h);
+
+    snprintf(fsid_buf, fsid_bufsize, "%llx",
+             (unsigned long long) id_info.VolumeSerialNumber);
+
+    pos = 0;
+    for (i = 0; i < (int) sizeof(id_info.FileId.Identifier); i++) {
+      pos += snprintf(objid_buf + pos, objid_bufsize - pos,
+                      "%02x", id_info.FileId.Identifier[i]);
+    }
+  } else {
+    BY_HANDLE_FILE_INFORMATION info;
+    unsigned long long file_index;
+
+    if (!GetFileInformationByHandle(h, &info)) {
+      CloseHandle(h);
+      return 1;
+    }
+    CloseHandle(h);
+
+    snprintf(fsid_buf, fsid_bufsize, "%lx", (unsigned long) volume_serial);
+
+    file_index = ((unsigned long long) info.nFileIndexHigh << 32) | info.nFileIndexLow;
+    snprintf(objid_buf, objid_bufsize, "%llx", file_index);
+  }
+  return 0;
+}
+
+/*
+** Like lfs_win32_pusherror, but returns 3 values (nil, errmsg, errno) to match
+** the rest of _file_info_'s error contract.
+*/
+static int lfs_win32_id_pusherror(lua_State * L, const char *file)
 {
   int en = GetLastError();
   lua_pushnil(L);
-  if (en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
-    lua_pushstring(L, "File exists");
-  else
-    lua_pushstring(L, strerror(en));
-  return 2;
+  lua_pushfstring(L, "cannot obtain filesystem identity for '%s': %s",
+                  file, lfs_win32_errmsg(en));
+  lua_pushinteger(L, en);
+  return 3;
 }
 
 #define TICKS_PER_SECOND 10000000
@@ -991,11 +1076,52 @@ struct _stat_members members[] = {
   { NULL, NULL }
 };
 
+#define LFS_ID_BUFSIZE 40       /* fits 128-bit (32 hex digit) objid plus NUL, with room to spare */
+
+/*
+** Push the object identity fields (fsid, objid) for 'file' onto the stack as
+** two strings, in that order. 'nofollow' identifies the link itself rather
+** than its target. 'info' is the STAT_STRUCT _file_info_ already populated
+** for 'file' - on POSIX that already has everything needed, so no extra
+** syscall happens here; Windows needs its own handle-based fetch regardless,
+** since STAT_STRUCT never carries a real device/object id there.
+** Returns 1 on success (stack: ..., fsid, objid), or 0 on failure, having
+** already pushed (nil, errmsg, errno) in place of them.
+*/
+static int push_object_id(lua_State * L, const char *file, int nofollow,
+                          STAT_STRUCT * info)
+{
+#ifdef _WIN32
+  char fsid_buf[LFS_ID_BUFSIZE];
+  char objid_buf[LFS_ID_BUFSIZE];
+
+  (void) info;
+  if (lfs_win32_objectid(file, nofollow, fsid_buf, sizeof(fsid_buf),
+                         objid_buf, sizeof(objid_buf))) {
+    lfs_win32_id_pusherror(L, file);
+    return 0;
+  }
+  lua_pushstring(L, fsid_buf);
+  lua_pushstring(L, objid_buf);
+  return 1;
+#else
+  char buf[LFS_ID_BUFSIZE];
+
+  (void) file;
+  (void) nofollow;
+  snprintf(buf, sizeof(buf), "%llx", (unsigned long long) info->st_dev);
+  lua_pushstring(L, buf);
+  snprintf(buf, sizeof(buf), "%llx", (unsigned long long) info->st_ino);
+  lua_pushstring(L, buf);
+  return 1;
+#endif
+}
+
 /*
 ** Get file or symbolic link information
 */
 static int _file_info_(lua_State * L,
-                       int (*st)(const char *, STAT_STRUCT *))
+                       int (*st)(const char *, STAT_STRUCT *), int nofollow)
 {
   STAT_STRUCT info;
   const char *file = luaL_checkstring(L, 1);
@@ -1017,6 +1143,18 @@ static int _file_info_(lua_State * L,
         return 1;
       }
     }
+    if (strcmp(member, "fsid") == 0 || strcmp(member, "objid") == 0) {
+      if (!push_object_id(L, file, nofollow, &info)) {
+        return 3;
+      }
+      /* keep whichever of the two was requested, discard the other */
+      if (strcmp(member, "fsid") == 0) {
+        lua_pop(L, 1);
+      } else {
+        lua_remove(L, -2);
+      }
+      return 1;
+    }
     /* member not found */
     return luaL_error(L, "invalid attribute name '%s'", member);
   }
@@ -1031,6 +1169,11 @@ static int _file_info_(lua_State * L,
     members[i].push(L, &info);
     lua_rawset(L, -3);
   }
+  if (!push_object_id(L, file, nofollow, &info)) {
+    return 3;
+  }
+  lua_setfield(L, -3, "objid");
+  lua_setfield(L, -2, "fsid");
   return 1;
 }
 
@@ -1040,7 +1183,7 @@ static int _file_info_(lua_State * L,
 */
 static int file_info(lua_State * L)
 {
-  return _file_info_(L, STAT_FUNC);
+  return _file_info_(L, STAT_FUNC, 0);
 }
 
 
@@ -1054,6 +1197,9 @@ static int push_link_target(lua_State * L)
 {
   const char *file = luaL_checkstring(L, 1);
 #ifdef _WIN32
+  /* TODO: GENERIC_READ is more access than this needs (it only reads the path
+     via GetFinalPathNameByHandle, never the file's contents) - FILE_READ_ATTRIBUTES
+     would suffice and avoid spurious access-denied failures on restrictive ACLs. */
   HANDLE h = CreateFile(file, GENERIC_READ,
                         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -1112,7 +1258,7 @@ static int link_info(lua_State * L)
     int ok = push_link_target(L);
     return ok ? 1 : pusherror(L, "could not obtain link target");
   }
-  ret = _file_info_(L, LSTAT_FUNC);
+  ret = _file_info_(L, LSTAT_FUNC, 1);
   if (ret == 1 && lua_type(L, -1) == LUA_TTABLE) {
     int ok = push_link_target(L);
     if (ok) {

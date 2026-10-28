@@ -112,17 +112,36 @@ LuaFileSystem offers the following functions:
     and only one attribute is retrieved from the O.S.).
     if a table is passed as the second argument, it (<code>result_table</code>) is filled with attributes and returned instead of a new table.
     The attributes are described as follows;
-    attribute <code>mode</code> is a string, all the others are numbers,
+    attributes <code>mode</code>, <code>fsid</code> and <code>objid</code> are strings,
+    all the others are numbers,
     and the time related attributes use the same time reference of
-    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-os.time"><code>os.time</code></a>: 
+    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-os.time"><code>os.time</code></a>:
         <dl>
         <dt><strong><code>dev</code></strong></dt>
         <dd>on Unix systems, this represents the device that the inode resides on. On Windows systems,
         represents the drive number of the disk containing the file</dd>
-        
+
         <dt><strong><code>ino</code></strong></dt>
         <dd>on Unix systems, this represents the inode number. On Windows systems this has no meaning</dd>
-        
+
+        <dt><strong><code>fsid</code></strong></dt>
+        <dd>a hex string identifying the filesystem the object resides on. Two paths have the same
+        <code>fsid</code> if and only if they're on the same filesystem, on any platform. Only equality
+        is meaningful: the string's length and content otherwise carry no guarantees. On Windows this is
+        the volume serial number (<code>dev</code> there is only the drive number, which is not unique per
+        volume); on Unix systems it is the same underlying value as <code>dev</code>, just encoded losslessly
+        as a string instead of through a Lua number</dd>
+
+        <dt><strong><code>objid</code></strong></dt>
+        <dd>a hex string identifying this object (file or directory) within its filesystem. Two paths have
+        the same <code>objid</code> and <code>fsid</code> if and only if they point to the same object -
+        usable to detect hard links, symlink cycles, or duplicate objects reached by different paths. Stable
+        for as long as the object exists; not guaranteed to survive a delete and recreate. On Windows this is
+        a real per-object file id (<code>ino</code> there is always <code>0</code>); on Unix systems it is the
+        same underlying value as <code>ino</code>. On FAT32/exFAT volumes specifically, <code>objid</code> is
+        best-effort only: it is not guaranteed to be stable or collision-free the way it is on NTFS, ReFS and
+        Unix filesystems</dd>
+
         <dt><strong><code>mode</code></strong></dt>
         <dd>string representing the associated protection mode (the values could be
         <code>file</code>, <code>directory</code>, <code>link</code>, <code>socket</code>,

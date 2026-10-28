@@ -127,6 +127,50 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
     assert (lfs.attributes (tmpfile, "nlink") == 2)
   end
 
+  -- object identity: fsid/objid
+
+  local fsid = assert (lfs.attributes (tmpfile, "fsid"))
+  local objid = assert (lfs.attributes (tmpfile, "objid"))
+  assert (type(fsid) == "string" and type(objid) == "string")
+
+  assert (lfs.attributes (tmpfile, "objid") == objid,
+          "objid not stable across repeated queries")
+  assert (lfs.attributes (tmpfile, "fsid") == fsid,
+          "fsid not stable across repeated queries")
+
+  -- a hardlink points at the same object
+  assert (lfs.attributes ("_a_hard_link_for_test_", "objid") == objid,
+          "a hardlink should share objid with its target")
+  assert (lfs.attributes ("_a_hard_link_for_test_", "fsid") == fsid,
+          "a hardlink should share fsid with its target")
+
+  -- following a symlink reports the target's identity; not following reports the link's own
+  assert (lfs.attributes ("_a_link_for_test_", "objid") == objid,
+          "attributes() on a symlink should report the target's objid")
+  assert (lfs.symlinkattributes ("_a_link_for_test_", "objid") ~= objid,
+          "symlinkattributes() on a symlink should report the link's own objid")
+
+  -- distinct objects: different objid, same fsid (same filesystem)
+  local dir_objid = assert (lfs.attributes (tmpdir, "objid"))
+  assert (dir_objid ~= objid, "distinct objects should not share objid")
+  assert (lfs.attributes (tmpdir, "fsid") == fsid,
+          "objects on the same filesystem should share fsid")
+
+  -- object identity on a directory: idempotence, and a symlink to a directory
+  assert (lfs.attributes (tmpdir, "objid") == dir_objid,
+          "objid of a directory not stable across repeated queries")
+
+  if lfs.link (tmpdir, "_a_dir_link_for_test_", true) then
+    assert (lfs.attributes ("_a_dir_link_for_test_", "objid") == dir_objid,
+            "attributes() on a symlink to a directory should report the target's objid")
+    assert (lfs.symlinkattributes ("_a_dir_link_for_test_", "objid") ~= dir_objid,
+            "symlinkattributes() on a symlink to a directory should report the link's own objid")
+    assert (os.remove"_a_dir_link_for_test_")
+  end
+
+  io.write(".")
+  io.flush()
+
   assert (os.remove"_a_link_for_test_")
   assert (os.remove"_a_hard_link_for_test_")
 end
