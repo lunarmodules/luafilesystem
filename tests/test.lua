@@ -91,17 +91,45 @@ assert (new_att.modification == testdate1, "could not set modification time")
 io.write(".")
 io.flush()
 
+-- object identity: fsid/objid. These need neither a symlink nor a hardlink,
+-- just plain files/directories, so they run unconditionally rather than
+-- nested under the symlink-privilege guard below - otherwise an account
+-- without symlink privilege would get zero coverage of this feature, not
+-- just of its link-specific part.
+
+local fsid = assert (lfs.attributes (tmpfile, "fsid"))
+local objid = assert (lfs.attributes (tmpfile, "objid"))
+assert (type(fsid) == "string" and type(objid) == "string")
+
+assert (lfs.attributes (tmpfile, "objid") == objid,
+        "objid not stable across repeated queries")
+assert (lfs.attributes (tmpfile, "fsid") == fsid,
+        "fsid not stable across repeated queries")
+
+-- distinct objects: different objid, same fsid (same filesystem)
+local dir_objid = assert (lfs.attributes (tmpdir, "objid"))
+assert (dir_objid ~= objid, "distinct objects should not share objid")
+assert (lfs.attributes (tmpdir, "fsid") == fsid,
+        "objects on the same filesystem should share fsid")
+
+-- object identity on a directory: idempotence
+assert (lfs.attributes (tmpdir, "objid") == dir_objid,
+        "objid of a directory not stable across repeated queries")
+
+io.write(".")
+io.flush()
+
 if lfs.link (tmpfile, "_a_link_for_test_", true) then
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
   assert (lfs.symlinkattributes"_a_link_for_test_".target == tmpfile)
   assert (lfs.symlinkattributes("_a_link_for_test_", "target") == tmpfile)
-  
+
   assert (lfs.symlinkattributes(tmpfile).mode == "file")
-  
+
   assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
   assert (lfs.symlinkattributes"_a_hard_link_for_test_".mode == "file")
-  
+
   local fd = io.open(tmpfile)
   assert(fd:read("*a") == data)
   fd:close()
@@ -127,18 +155,8 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
     assert (lfs.attributes (tmpfile, "nlink") == 2)
   end
 
-  -- object identity: fsid/objid
-
-  local fsid = assert (lfs.attributes (tmpfile, "fsid"))
-  local objid = assert (lfs.attributes (tmpfile, "objid"))
-  assert (type(fsid) == "string" and type(objid) == "string")
-
-  assert (lfs.attributes (tmpfile, "objid") == objid,
-          "objid not stable across repeated queries")
-  assert (lfs.attributes (tmpfile, "fsid") == fsid,
-          "fsid not stable across repeated queries")
-
-  -- a hardlink points at the same object
+  -- a hardlink points at the same object (the hardlink itself needs no
+  -- symlink privilege, but its creation above is nested here regardless)
   assert (lfs.attributes ("_a_hard_link_for_test_", "objid") == objid,
           "a hardlink should share objid with its target")
   assert (lfs.attributes ("_a_hard_link_for_test_", "fsid") == fsid,
@@ -149,16 +167,6 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
           "attributes() on a symlink should report the target's objid")
   assert (lfs.symlinkattributes ("_a_link_for_test_", "objid") ~= objid,
           "symlinkattributes() on a symlink should report the link's own objid")
-
-  -- distinct objects: different objid, same fsid (same filesystem)
-  local dir_objid = assert (lfs.attributes (tmpdir, "objid"))
-  assert (dir_objid ~= objid, "distinct objects should not share objid")
-  assert (lfs.attributes (tmpdir, "fsid") == fsid,
-          "objects on the same filesystem should share fsid")
-
-  -- object identity on a directory: idempotence, and a symlink to a directory
-  assert (lfs.attributes (tmpdir, "objid") == dir_objid,
-          "objid of a directory not stable across repeated queries")
 
   if lfs.link (tmpdir, "_a_dir_link_for_test_", true) then
     assert (lfs.attributes ("_a_dir_link_for_test_", "objid") == dir_objid,
