@@ -165,7 +165,15 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
             "attributes() on a symlink to a directory should report the target's objid")
     assert (lfs.symlinkattributes ("_a_dir_link_for_test_", "objid") ~= dir_objid,
             "symlinkattributes() on a symlink to a directory should report the link's own objid")
-    assert (os.remove"_a_dir_link_for_test_")
+    -- a symlink to a directory is itself directory-typed on Windows (DeleteFile
+    -- refuses it; RemoveDirectory is required, and only removes the link, not
+    -- the target). On POSIX, rmdir() follows the symlink to the target instead
+    -- of removing the link, so unlink() (os.remove) is the correct one there.
+    if is_unix then
+      assert (os.remove"_a_dir_link_for_test_")
+    else
+      assert (lfs.rmdir"_a_dir_link_for_test_")
+    end
   end
 
   io.write(".")
