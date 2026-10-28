@@ -138,9 +138,10 @@ LuaFileSystem offers the following functions:
         usable to detect hard links, symlink cycles, or duplicate objects reached by different paths. Stable
         for as long as the object exists; not guaranteed to survive a delete and recreate. On Windows this is
         a real per-object file id (<code>ino</code> there is always <code>0</code>); on Unix systems it is the
-        same underlying value as <code>ino</code>. On FAT32/exFAT volumes specifically, <code>objid</code> is
-        best-effort only: it is not guaranteed to be stable or collision-free the way it is on NTFS, ReFS and
-        Unix filesystems</dd>
+        same underlying value as <code>ino</code>. On FAT32/exFAT volumes, and on a network share whose server
+        or protocol doesn't support persistent file ids, <code>objid</code> is best-effort only: it is not
+        guaranteed to be stable or collision-free the way it is on NTFS, ReFS and Unix filesystems (the same
+        caveat already applies, usually silently, to <code>ino</code> over NFS or CIFS on Unix systems)</dd>
 
         <dt><strong><code>mode</code></strong></dt>
         <dd>string representing the associated protection mode (the values could be

@@ -196,8 +196,8 @@ static int lfs_win32_objectid(const char *file, int nofollow,
 {
   DWORD flags = FILE_FLAG_BACKUP_SEMANTICS;
   HANDLE h;
-  DWORD volume_serial;
   WCHAR fs_name[MAX_PATH + 1];
+  int is_refs;
 
   if (nofollow)
     flags |= FILE_FLAG_OPEN_REPARSE_POINT;
@@ -208,13 +208,15 @@ static int lfs_win32_objectid(const char *file, int nofollow,
   if (h == INVALID_HANDLE_VALUE)
     return 1;
 
-  if (!GetVolumeInformationByHandleW(h, NULL, 0, &volume_serial, NULL, NULL,
-                                     fs_name, MAX_PATH + 1)) {
-    CloseHandle(h);
-    return 1;
-  }
+  /* GetVolumeInformationByHandleW doesn't support remote storage (SMB shares,
+     mapped network drives); treat its failure as "can't tell, assume not
+     ReFS" rather than failing outright - GetFileInformationByHandle below
+     works everywhere, including over SMB, and is enough on its own. */
+  is_refs = GetVolumeInformationByHandleW(h, NULL, 0, NULL, NULL, NULL,
+                                          fs_name, MAX_PATH + 1)
+            && wcscmp(fs_name, L"ReFS") == 0;
 
-  if (wcscmp(fs_name, L"ReFS") == 0) {
+  if (is_refs) {
     FILE_ID_INFO id_info;
     int i, pos;
 
@@ -242,7 +244,7 @@ static int lfs_win32_objectid(const char *file, int nofollow,
     }
     CloseHandle(h);
 
-    snprintf(fsid_buf, fsid_bufsize, "%lx", (unsigned long) volume_serial);
+    snprintf(fsid_buf, fsid_bufsize, "%lx", (unsigned long) info.dwVolumeSerialNumber);
 
     file_index = ((unsigned long long) info.nFileIndexHigh << 32) | info.nFileIndexLow;
     snprintf(objid_buf, objid_bufsize, "%llx", file_index);
