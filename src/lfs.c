@@ -252,14 +252,21 @@ static int lfs_win32_objectid(const char *file, int nofollow,
 
 /*
 ** Like lfs_win32_pusherror, but returns 3 values (nil, errmsg, errno) to match
-** the rest of _file_info_'s error contract.
+** the rest of _file_info_'s error contract. Unlike lfs_win32_errmsg, this does
+** NOT run the code through strerror(): GetLastError() values and C-runtime
+** errno values are different numbering spaces.
 */
 static int lfs_win32_id_pusherror(lua_State * L, const char *file)
 {
   int en = GetLastError();
+  char msg[256];
+  if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                      NULL, (DWORD) en, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                      msg, sizeof(msg), NULL)) {
+    snprintf(msg, sizeof(msg), "Windows error %lu", (unsigned long) en);
+  }
   lua_pushnil(L);
-  lua_pushfstring(L, "cannot obtain filesystem identity for '%s': %s",
-                  file, lfs_win32_errmsg(en));
+  lua_pushfstring(L, "cannot obtain filesystem identity for '%s': %s", file, msg);
   lua_pushinteger(L, en);
   return 3;
 }
