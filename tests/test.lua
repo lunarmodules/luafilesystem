@@ -119,7 +119,8 @@ assert (lfs.attributes (tmpdir, "objid") == dir_objid,
 io.write(".")
 io.flush()
 
-if lfs.link (tmpfile, "_a_link_for_test_", true) then
+local symlink_ok, symlink_err = lfs.link (tmpfile, "_a_link_for_test_", true)
+if symlink_ok then
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
   assert (lfs.symlinkattributes"_a_link_for_test_".target == tmpfile)
@@ -153,6 +154,8 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
 
   if is_unix then
     assert (lfs.attributes (tmpfile, "nlink") == 2)
+  else
+    io.stderr:write("WARNING: skipping nlink test - not meaningful on Windows\n")
   end
 
   -- a hardlink points at the same object (the hardlink itself needs no
@@ -168,7 +171,8 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
   assert (lfs.symlinkattributes ("_a_link_for_test_", "objid") ~= objid,
           "symlinkattributes() on a symlink should report the link's own objid")
 
-  if lfs.link (tmpdir, "_a_dir_link_for_test_", true) then
+  local dirlink_ok, dirlink_err = lfs.link (tmpdir, "_a_dir_link_for_test_", true)
+  if dirlink_ok then
     assert (lfs.attributes ("_a_dir_link_for_test_", "objid") == dir_objid,
             "attributes() on a symlink to a directory should report the target's objid")
     assert (lfs.symlinkattributes ("_a_dir_link_for_test_", "objid") ~= dir_objid,
@@ -182,6 +186,9 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
     else
       assert (lfs.rmdir"_a_dir_link_for_test_")
     end
+  else
+    io.stderr:write("WARNING: skipping directory-symlink identity test - could not create a symlink: "
+                     ..tostring(dirlink_err).."\n")
   end
 
   io.write(".")
@@ -189,6 +196,9 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
 
   assert (os.remove"_a_link_for_test_")
   assert (os.remove"_a_hard_link_for_test_")
+else
+  io.stderr:write("WARNING: skipping symlink/hardlink identity tests - could not create a symlink: "
+                   ..tostring(symlink_err).."\n")
 end
 
 io.write(".")
