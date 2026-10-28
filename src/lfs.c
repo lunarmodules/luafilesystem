@@ -38,7 +38,6 @@
 #include <windows.h>
 #include <io.h>
 #include <sys/locking.h>
-#include <wchar.h>
 
 #ifdef __BORLANDC__
 #include <utime.h>
@@ -196,8 +195,7 @@ static int lfs_win32_objectid(const char *file, int nofollow,
 {
   DWORD flags = FILE_FLAG_BACKUP_SEMANTICS;
   HANDLE h;
-  WCHAR fs_name[MAX_PATH + 1];
-  int is_refs;
+  FILE_ID_INFO id_info;
 
   if (nofollow)
     flags |= FILE_FLAG_OPEN_REPARSE_POINT;
@@ -208,22 +206,17 @@ static int lfs_win32_objectid(const char *file, int nofollow,
   if (h == INVALID_HANDLE_VALUE)
     return 1;
 
-  /* GetVolumeInformationByHandleW doesn't support remote storage (SMB shares,
-     mapped network drives); treat its failure as "can't tell, assume not
-     ReFS" rather than failing outright - GetFileInformationByHandle below
-     works everywhere, including over SMB, and is enough on its own. */
-  is_refs = GetVolumeInformationByHandleW(h, NULL, 0, NULL, NULL, NULL,
-                                          fs_name, MAX_PATH + 1)
-            && wcscmp(fs_name, L"ReFS") == 0;
-
-  if (is_refs) {
-    FILE_ID_INFO id_info;
+  /* Try the 128-bit extended id first, unconditionally: it's a per-handle
+     query rather than the volume-management call that doesn't support
+     remote storage, so it can succeed over SMB too - and NTFS answers it
+     just as well as ReFS does (zero-extended into the 128 bits), so this
+     gives the *same* representation for the same object whether accessed
+     locally or over a share, wherever the server forwards it. Only fall
+     back to the legacy 64-bit id, which isn't guaranteed unique on ReFS,
+     when this isn't supported at all. */
+  if (GetFileInformationByHandleEx(h, FileIdInfo, &id_info, sizeof(id_info))) {
     int i, pos;
 
-    if (!GetFileInformationByHandleEx(h, FileIdInfo, &id_info, sizeof(id_info))) {
-      CloseHandle(h);
-      return 1;
-    }
     CloseHandle(h);
 
     snprintf(fsid_buf, fsid_bufsize, "%llx",
