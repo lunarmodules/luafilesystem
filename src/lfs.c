@@ -232,7 +232,9 @@ static int lfs_win32_objectid(const char *file, int nofollow,
     unsigned long long file_index;
 
     if (!GetFileInformationByHandle(h, &info)) {
+      DWORD err = GetLastError();
       CloseHandle(h);
+      SetLastError(err);
       return 1;
     }
     CloseHandle(h);
