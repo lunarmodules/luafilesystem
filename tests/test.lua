@@ -168,14 +168,14 @@ if symlink_ok then
   -- following a symlink reports the target's identity; not following reports the link's own
   assert (lfs.attributes ("_a_link_for_test_", "objid") == objid,
           "attributes() on a symlink should report the target's objid")
-  assert (lfs.symlinkattributes ("_a_link_for_test_", "objid") ~= objid,
+  assert (assert (lfs.symlinkattributes ("_a_link_for_test_", "objid")) ~= objid,
           "symlinkattributes() on a symlink should report the link's own objid")
 
   local dirlink_ok, dirlink_err = lfs.link (tmpdir, "_a_dir_link_for_test_", true)
   if dirlink_ok then
     assert (lfs.attributes ("_a_dir_link_for_test_", "objid") == dir_objid,
             "attributes() on a symlink to a directory should report the target's objid")
-    assert (lfs.symlinkattributes ("_a_dir_link_for_test_", "objid") ~= dir_objid,
+    assert (assert (lfs.symlinkattributes ("_a_dir_link_for_test_", "objid")) ~= dir_objid,
             "symlinkattributes() on a symlink to a directory should report the link's own objid")
     -- a symlink to a directory is itself directory-typed on Windows (DeleteFile
     -- refuses it; RemoveDirectory is required, and only removes the link, not
