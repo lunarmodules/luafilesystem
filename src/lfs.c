@@ -1176,11 +1176,9 @@ static int _file_info_(lua_State * L,
   if (!push_object_id(L, file, nofollow, &info)) {
     return 3;
   }
-  /* lua_rawset, not lua_setfield: every other member above is written raw,
-     bypassing any __newindex on a caller-supplied result_table - do the same
-     here instead of newly invoking it. push_object_id already pushed both
-     values before their keys, so swap each pair into (key, value) order
-     with lua_insert before the raw set. */
+  /* push_object_id already pushed both values before their keys, so 
+     swap each pair into (key, value) order with lua_insert before the
+     raw set. */
   lua_pushliteral(L, "objid");
   lua_insert(L, -2);
   lua_rawset(L, -4);

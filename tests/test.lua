@@ -91,11 +91,7 @@ assert (new_att.modification == testdate1, "could not set modification time")
 io.write(".")
 io.flush()
 
--- object identity: fsid/objid. These need neither a symlink nor a hardlink,
--- just plain files/directories, so they run unconditionally rather than
--- nested under the symlink-privilege guard below - otherwise an account
--- without symlink privilege would get zero coverage of this feature, not
--- just of its link-specific part.
+-- object identity: fsid/objid.
 
 local fsid = assert (lfs.attributes (tmpfile, "fsid"))
 local objid = assert (lfs.attributes (tmpfile, "objid"))
