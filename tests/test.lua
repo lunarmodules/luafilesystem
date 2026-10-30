@@ -91,17 +91,42 @@ assert (new_att.modification == testdate1, "could not set modification time")
 io.write(".")
 io.flush()
 
-if lfs.link (tmpfile, "_a_link_for_test_", true) then
+-- object identity: fsid/objid.
+
+local fsid = assert (lfs.attributes (tmpfile, "fsid"))
+local objid = assert (lfs.attributes (tmpfile, "objid"))
+assert (type(fsid) == "string" and type(objid) == "string")
+
+assert (lfs.attributes (tmpfile, "objid") == objid,
+        "objid not stable across repeated queries")
+assert (lfs.attributes (tmpfile, "fsid") == fsid,
+        "fsid not stable across repeated queries")
+
+-- distinct objects: different objid, same fsid (same filesystem)
+local dir_objid = assert (lfs.attributes (tmpdir, "objid"))
+assert (dir_objid ~= objid, "distinct objects should not share objid")
+assert (lfs.attributes (tmpdir, "fsid") == fsid,
+        "objects on the same filesystem should share fsid")
+
+-- object identity on a directory: idempotence
+assert (lfs.attributes (tmpdir, "objid") == dir_objid,
+        "objid of a directory not stable across repeated queries")
+
+io.write(".")
+io.flush()
+
+local symlink_ok, symlink_err = lfs.link (tmpfile, "_a_link_for_test_", true)
+if symlink_ok then
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
   assert (lfs.symlinkattributes"_a_link_for_test_".mode == "link")
   assert (lfs.symlinkattributes"_a_link_for_test_".target == tmpfile)
   assert (lfs.symlinkattributes("_a_link_for_test_", "target") == tmpfile)
-  
+
   assert (lfs.symlinkattributes(tmpfile).mode == "file")
-  
+
   assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
   assert (lfs.symlinkattributes"_a_hard_link_for_test_".mode == "file")
-  
+
   local fd = io.open(tmpfile)
   assert(fd:read("*a") == data)
   fd:close()
@@ -125,10 +150,51 @@ if lfs.link (tmpfile, "_a_link_for_test_", true) then
 
   if is_unix then
     assert (lfs.attributes (tmpfile, "nlink") == 2)
+  else
+    io.stderr:write("WARNING: skipping nlink test - not meaningful on Windows\n")
   end
+
+  -- a hardlink points at the same object (the hardlink itself needs no
+  -- symlink privilege, but its creation above is nested here regardless)
+  assert (lfs.attributes ("_a_hard_link_for_test_", "objid") == objid,
+          "a hardlink should share objid with its target")
+  assert (lfs.attributes ("_a_hard_link_for_test_", "fsid") == fsid,
+          "a hardlink should share fsid with its target")
+
+  -- following a symlink reports the target's identity; not following reports the link's own
+  assert (lfs.attributes ("_a_link_for_test_", "objid") == objid,
+          "attributes() on a symlink should report the target's objid")
+  assert (assert (lfs.symlinkattributes ("_a_link_for_test_", "objid")) ~= objid,
+          "symlinkattributes() on a symlink should report the link's own objid")
+
+  local dirlink_ok, dirlink_err = lfs.link (tmpdir, "_a_dir_link_for_test_", true)
+  if dirlink_ok then
+    assert (lfs.attributes ("_a_dir_link_for_test_", "objid") == dir_objid,
+            "attributes() on a symlink to a directory should report the target's objid")
+    assert (assert (lfs.symlinkattributes ("_a_dir_link_for_test_", "objid")) ~= dir_objid,
+            "symlinkattributes() on a symlink to a directory should report the link's own objid")
+    -- a symlink to a directory is itself directory-typed on Windows (DeleteFile
+    -- refuses it; RemoveDirectory is required, and only removes the link, not
+    -- the target). On POSIX, rmdir() follows the symlink to the target instead
+    -- of removing the link, so unlink() (os.remove) is the correct one there.
+    if is_unix then
+      assert (os.remove"_a_dir_link_for_test_")
+    else
+      assert (lfs.rmdir"_a_dir_link_for_test_")
+    end
+  else
+    io.stderr:write("WARNING: skipping directory-symlink identity test - could not create a symlink: "
+                     ..tostring(dirlink_err).."\n")
+  end
+
+  io.write(".")
+  io.flush()
 
   assert (os.remove"_a_link_for_test_")
   assert (os.remove"_a_hard_link_for_test_")
+else
+  io.stderr:write("WARNING: skipping symlink/hardlink identity tests - could not create a symlink: "
+                   ..tostring(symlink_err).."\n")
 end
 
 io.write(".")
