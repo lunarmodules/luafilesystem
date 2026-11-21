@@ -70,6 +70,8 @@ local lfs = require"lfs"
 
 function attrdir (path, ancestors)
     ancestors = ancestors or {}
+    local id = lfs.attributes (path, "filekey")
+    ancestors[id] = true
     for file in lfs.dir(path) do
         if file ~= "." and file ~= ".." then
             local f = path..'/'..file
@@ -77,11 +79,11 @@ function attrdir (path, ancestors)
             local attr = lfs.attributes (f)
             assert (type(attr) == "table")
             if attr.mode == "directory" then
-                local id = attr.filekey
-                if not ancestors[id] then
-                    ancestors[id] = true
+                local child_id = attr.filekey
+                if not ancestors[child_id] then
+                    ancestors[child_id] = true
                     attrdir (f, ancestors)
-                    ancestors[id] = nil
+                    ancestors[child_id] = nil
                 end
             else
                 for name, value in pairs(attr) do
@@ -90,6 +92,7 @@ function attrdir (path, ancestors)
             end
         end
     end
+    ancestors[id] = nil
 end
 
 attrdir (".")
