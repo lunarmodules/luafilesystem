@@ -91,26 +91,21 @@ assert (new_att.modification == testdate1, "could not set modification time")
 io.write(".")
 io.flush()
 
--- object identity: fsid/objid.
+-- object identity: filekey.
 
-local fsid = assert (lfs.attributes (tmpfile, "fsid"))
-local objid = assert (lfs.attributes (tmpfile, "objid"))
-assert (type(fsid) == "string" and type(objid) == "string")
+local filekey = assert (lfs.attributes (tmpfile, "filekey"))
+assert (type(filekey) == "string")
 
-assert (lfs.attributes (tmpfile, "objid") == objid,
-        "objid not stable across repeated queries")
-assert (lfs.attributes (tmpfile, "fsid") == fsid,
-        "fsid not stable across repeated queries")
+assert (lfs.attributes (tmpfile, "filekey") == filekey,
+        "filekey not stable across repeated queries")
 
--- distinct objects: different objid, same fsid (same filesystem)
-local dir_objid = assert (lfs.attributes (tmpdir, "objid"))
-assert (dir_objid ~= objid, "distinct objects should not share objid")
-assert (lfs.attributes (tmpdir, "fsid") == fsid,
-        "objects on the same filesystem should share fsid")
+-- distinct objects: different filekey
+local dir_filekey = assert (lfs.attributes (tmpdir, "filekey"))
+assert (dir_filekey ~= filekey, "distinct objects should not share filekey")
 
 -- object identity on a directory: idempotence
-assert (lfs.attributes (tmpdir, "objid") == dir_objid,
-        "objid of a directory not stable across repeated queries")
+assert (lfs.attributes (tmpdir, "filekey") == dir_filekey,
+        "filekey of a directory not stable across repeated queries")
 
 io.write(".")
 io.flush()
@@ -156,23 +151,21 @@ if symlink_ok then
 
   -- a hardlink points at the same object (the hardlink itself needs no
   -- symlink privilege, but its creation above is nested here regardless)
-  assert (lfs.attributes ("_a_hard_link_for_test_", "objid") == objid,
-          "a hardlink should share objid with its target")
-  assert (lfs.attributes ("_a_hard_link_for_test_", "fsid") == fsid,
-          "a hardlink should share fsid with its target")
+  assert (lfs.attributes ("_a_hard_link_for_test_", "filekey") == filekey,
+          "a hardlink should share filekey with its target")
 
   -- following a symlink reports the target's identity; not following reports the link's own
-  assert (lfs.attributes ("_a_link_for_test_", "objid") == objid,
-          "attributes() on a symlink should report the target's objid")
-  assert (assert (lfs.symlinkattributes ("_a_link_for_test_", "objid")) ~= objid,
-          "symlinkattributes() on a symlink should report the link's own objid")
+  assert (lfs.attributes ("_a_link_for_test_", "filekey") == filekey,
+          "attributes() on a symlink should report the target's filekey")
+  assert (assert (lfs.symlinkattributes ("_a_link_for_test_", "filekey")) ~= filekey,
+          "symlinkattributes() on a symlink should report the link's own filekey")
 
   local dirlink_ok, dirlink_err = lfs.link (tmpdir, "_a_dir_link_for_test_", true)
   if dirlink_ok then
-    assert (lfs.attributes ("_a_dir_link_for_test_", "objid") == dir_objid,
-            "attributes() on a symlink to a directory should report the target's objid")
-    assert (assert (lfs.symlinkattributes ("_a_dir_link_for_test_", "objid")) ~= dir_objid,
-            "symlinkattributes() on a symlink to a directory should report the link's own objid")
+    assert (lfs.attributes ("_a_dir_link_for_test_", "filekey") == dir_filekey,
+            "attributes() on a symlink to a directory should report the target's filekey")
+    assert (assert (lfs.symlinkattributes ("_a_dir_link_for_test_", "filekey")) ~= dir_filekey,
+            "symlinkattributes() on a symlink to a directory should report the link's own filekey")
     -- a symlink to a directory is itself directory-typed on Windows (DeleteFile
     -- refuses it; RemoveDirectory is required, and only removes the link, not
     -- the target). On POSIX, rmdir() follows the symlink to the target instead
