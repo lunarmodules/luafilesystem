@@ -1178,7 +1178,13 @@ static int _file_info_(lua_State * L,
   if (!push_object_id(L, file, nofollow, &info)) {
     return 3;
   }
-  lua_setfield(L, -2, "filekey");
+  /* push_object_id already pushed the value; push the key and swap it
+     below the value with lua_insert so lua_rawset sees (table, key, value) -
+     matching the loop above's raw, metamethod-bypassing population of a
+     caller-supplied result_table. */
+  lua_pushliteral(L, "filekey");
+  lua_insert(L, -2);
+  lua_rawset(L, -3);
   return 1;
 }
 
