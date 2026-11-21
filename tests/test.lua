@@ -110,6 +110,54 @@ assert (lfs.attributes (tmpdir, "filekey") == dir_filekey,
 io.write(".")
 io.flush()
 
+-- hard-link creation needs no special privilege (unlike symbolic links,
+-- gated below), but isn't supported on every filesystem (e.g. FAT32/exFAT,
+-- which filekey still documents as best-effort) - gate on its own success
+-- so this runs independently of symlink support, without hard-failing where
+-- hardlinks just aren't available.
+local hardlink_ok, hardlink_err = lfs.link (tmpfile, "_a_hard_link_for_test_")
+local tmpfile_data = data   -- updated below if the hardlink write happens, so the
+                            -- later read-through-symlink check stays consistent
+local fd
+if hardlink_ok then
+  assert (lfs.symlinkattributes"_a_hard_link_for_test_".mode == "file")
+
+  fd = io.open(tmpfile)
+  assert(fd:read("*a") == data)
+  fd:close()
+
+  fd = io.open("_a_hard_link_for_test_")
+  assert(fd:read("*a") == data)
+  fd:close()
+
+  fd = io.open("_a_hard_link_for_test_", "w+")
+  tmpfile_data = "write in hard link"
+  fd:write(tmpfile_data)
+  fd:close()
+
+  fd = io.open(tmpfile)
+  assert(fd:read("*a") == tmpfile_data)
+  fd:close()
+
+  if is_unix then
+    assert (lfs.attributes (tmpfile, "nlink") == 2)
+  else
+    io.stderr:write("WARNING: skipping nlink test - not meaningful on Windows\n")
+  end
+
+  -- a hardlink points at the same object
+  assert (lfs.attributes ("_a_hard_link_for_test_", "filekey") == filekey,
+          "a hardlink should share filekey with its target")
+
+  assert (os.remove"_a_hard_link_for_test_")
+else
+  io.stderr:write("WARNING: skipping hard-link identity tests - could not create a hard link: "
+                   ..tostring(hardlink_err).."\n")
+end
+
+io.write(".")
+io.flush()
+
 local symlink_ok, symlink_err = lfs.link (tmpfile, "_a_link_for_test_", true)
 if symlink_ok then
   assert (lfs.attributes"_a_link_for_test_".mode == "file")
@@ -119,40 +167,9 @@ if symlink_ok then
 
   assert (lfs.symlinkattributes(tmpfile).mode == "file")
 
-  assert (lfs.link (tmpfile, "_a_hard_link_for_test_"))
-  assert (lfs.symlinkattributes"_a_hard_link_for_test_".mode == "file")
-
-  local fd = io.open(tmpfile)
-  assert(fd:read("*a") == data)
-  fd:close()
-
   fd = io.open("_a_link_for_test_")
-  assert(fd:read("*a") == data)
+  assert(fd:read("*a") == tmpfile_data)
   fd:close()
-
-  fd = io.open("_a_hard_link_for_test_")
-  assert(fd:read("*a") == data)
-  fd:close()
-
-  fd = io.open("_a_hard_link_for_test_", "w+")
-  local data2 = "write in hard link"
-  fd:write(data2)
-  fd:close()
-
-  fd = io.open(tmpfile)
-  assert(fd:read("*a") == data2)
-  fd:close()
-
-  if is_unix then
-    assert (lfs.attributes (tmpfile, "nlink") == 2)
-  else
-    io.stderr:write("WARNING: skipping nlink test - not meaningful on Windows\n")
-  end
-
-  -- a hardlink points at the same object (the hardlink itself needs no
-  -- symlink privilege, but its creation above is nested here regardless)
-  assert (lfs.attributes ("_a_hard_link_for_test_", "filekey") == filekey,
-          "a hardlink should share filekey with its target")
 
   -- following a symlink reports the target's identity; not following reports the link's own
   assert (lfs.attributes ("_a_link_for_test_", "filekey") == filekey,
@@ -184,9 +201,8 @@ if symlink_ok then
   io.flush()
 
   assert (os.remove"_a_link_for_test_")
-  assert (os.remove"_a_hard_link_for_test_")
 else
-  io.stderr:write("WARNING: skipping symlink/hardlink identity tests - could not create a symlink: "
+  io.stderr:write("WARNING: skipping symlink identity tests - could not create a symlink: "
                    ..tostring(symlink_err).."\n")
 end
 
