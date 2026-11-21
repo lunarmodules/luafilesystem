@@ -18,7 +18,12 @@
 #endif
 
 #ifdef _WIN32
-#define _WIN32_WINNT 0x600
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0602     /* Windows 8 / Server 2012: enables FILE_ID_INFO (ReFS object ids) below */
+#endif
+#if _WIN32_WINNT >= 0x0602
+#define LFS_HAVE_REFS_OBJECTID
+#endif
 #endif
 
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
@@ -168,15 +173,108 @@ typedef struct dir_data {
 
 #ifdef _WIN32
 
+static const char *lfs_win32_errmsg(int en)
+{
+  if (en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
+    return "File exists";
+  return strerror(en);
+}
+
 static int lfs_win32_pusherror(lua_State * L)
 {
-  int en = GetLastError();
   lua_pushnil(L);
-  if (en == ERROR_FILE_EXISTS || en == ERROR_SHARING_VIOLATION)
-    lua_pushstring(L, "File exists");
-  else
-    lua_pushstring(L, strerror(en));
+  lua_pushstring(L, lfs_win32_errmsg(GetLastError()));
   return 2;
+}
+
+/*
+** Fetch the raw filesystem/object identity for 'file' on Windows: the volume
+** serial number and per-object file id, rendered as unpadded lowercase hex into
+** the caller's buffers. 'nofollow' identifies the link itself (matching
+** lstat) rather than what it points to (matching stat).
+** Returns 0 on success, non-zero on failure (with GetLastError() set).
+*/
+static int lfs_win32_objectid(const char *file, int nofollow,
+                               char *fsid_buf, size_t fsid_bufsize,
+                               char *objid_buf, size_t objid_bufsize)
+{
+  DWORD flags = FILE_FLAG_BACKUP_SEMANTICS;
+  HANDLE h;
+#ifdef LFS_HAVE_REFS_OBJECTID
+  FILE_ID_INFO id_info;
+#endif
+  BY_HANDLE_FILE_INFORMATION info;
+  unsigned long long file_index;
+
+  if (nofollow)
+    flags |= FILE_FLAG_OPEN_REPARSE_POINT;
+
+  h = CreateFile(file, FILE_READ_ATTRIBUTES,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                 NULL, OPEN_EXISTING, flags, NULL);
+  if (h == INVALID_HANDLE_VALUE)
+    return 1;
+
+#ifdef LFS_HAVE_REFS_OBJECTID
+  /* Try the 128-bit extended id first, unconditionally: it's a per-handle
+     query rather than the volume-management call that doesn't support
+     remote storage, so it can succeed over SMB too - and NTFS answers it
+     just as well as ReFS does (zero-extended into the 128 bits), so this
+     gives the *same* representation for the same object whether accessed
+     locally or over a share, wherever the server forwards it. Only fall
+     back to the legacy 64-bit id, which isn't guaranteed unique on ReFS,
+     when this isn't supported at all. */
+  if (GetFileInformationByHandleEx(h, FileIdInfo, &id_info, sizeof(id_info))) {
+    int i, pos;
+
+    CloseHandle(h);
+
+    snprintf(fsid_buf, fsid_bufsize, "%llx",
+             (unsigned long long) id_info.VolumeSerialNumber);
+
+    pos = 0;
+    for (i = 0; i < (int) sizeof(id_info.FileId.Identifier); i++) {
+      pos += snprintf(objid_buf + pos, objid_bufsize - pos,
+                      "%02x", id_info.FileId.Identifier[i]);
+    }
+    return 0;
+  }
+#endif
+
+  if (!GetFileInformationByHandle(h, &info)) {
+    DWORD err = GetLastError();
+    CloseHandle(h);
+    SetLastError(err);
+    return 1;
+  }
+  CloseHandle(h);
+
+  snprintf(fsid_buf, fsid_bufsize, "%lx", (unsigned long) info.dwVolumeSerialNumber);
+
+  file_index = ((unsigned long long) info.nFileIndexHigh << 32) | info.nFileIndexLow;
+  snprintf(objid_buf, objid_bufsize, "%llx", file_index);
+  return 0;
+}
+
+/*
+** Like lfs_win32_pusherror, but returns 3 values (nil, errmsg, errno) to match
+** the rest of _file_info_'s error contract. Unlike lfs_win32_errmsg, this does
+** NOT run the code through strerror(): GetLastError() values and C-runtime
+** errno values are different numbering spaces.
+*/
+static int lfs_win32_id_pusherror(lua_State * L, const char *file)
+{
+  int en = GetLastError();
+  char msg[256];
+  if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                      NULL, (DWORD) en, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                      msg, sizeof(msg), NULL)) {
+    snprintf(msg, sizeof(msg), "Windows error %lu", (unsigned long) en);
+  }
+  lua_pushnil(L);
+  lua_pushfstring(L, "cannot obtain filesystem identity for '%s': %s", file, msg);
+  lua_pushinteger(L, en);
+  return 3;
 }
 
 #define TICKS_PER_SECOND 10000000
@@ -991,11 +1089,51 @@ struct _stat_members members[] = {
   { NULL, NULL }
 };
 
+#define LFS_ID_BUFSIZE 40       /* fits 128-bit (32 hex digit) id plus NUL, with room to spare */
+#define LFS_FILEKEY_BUFSIZE (2 * LFS_ID_BUFSIZE)  /* fits both ids plus the ':' joining them */
+
+/*
+** Push a single opaque 'filekey' string for 'file' onto the stack: two
+** objects compare equal under this key if and only if they're the same
+** object. 'nofollow' identifies the link itself rather than its target.
+** 'info' is the STAT_STRUCT _file_info_ already populated for 'file' - on
+** POSIX that already has everything needed, so no extra syscall happens
+** here; Windows needs its own handle-based fetch regardless, since
+** STAT_STRUCT never carries a real device/object id there.
+** Returns 1 on success (stack: ..., filekey), or 0 on failure, having
+** already pushed (nil, errmsg, errno) in its place.
+*/
+static int push_object_id(lua_State * L, const char *file, int nofollow,
+                          STAT_STRUCT * info)
+{
+  char buf[LFS_FILEKEY_BUFSIZE];
+
+#ifdef _WIN32
+  char fsid_buf[LFS_ID_BUFSIZE];
+  char objid_buf[LFS_ID_BUFSIZE];
+
+  (void) info;
+  if (lfs_win32_objectid(file, nofollow, fsid_buf, sizeof(fsid_buf),
+                         objid_buf, sizeof(objid_buf))) {
+    lfs_win32_id_pusherror(L, file);
+    return 0;
+  }
+  snprintf(buf, sizeof(buf), "%s:%s", fsid_buf, objid_buf);
+#else
+  (void) file;
+  (void) nofollow;
+  snprintf(buf, sizeof(buf), "%llx:%llx",
+           (unsigned long long) info->st_dev, (unsigned long long) info->st_ino);
+#endif
+  lua_pushstring(L, buf);
+  return 1;
+}
+
 /*
 ** Get file or symbolic link information
 */
 static int _file_info_(lua_State * L,
-                       int (*st)(const char *, STAT_STRUCT *))
+                       int (*st)(const char *, STAT_STRUCT *), int nofollow)
 {
   STAT_STRUCT info;
   const char *file = luaL_checkstring(L, 1);
@@ -1017,6 +1155,12 @@ static int _file_info_(lua_State * L,
         return 1;
       }
     }
+    if (strcmp(member, "filekey") == 0) {
+      if (!push_object_id(L, file, nofollow, &info)) {
+        return 3;
+      }
+      return 1;
+    }
     /* member not found */
     return luaL_error(L, "invalid attribute name '%s'", member);
   }
@@ -1031,6 +1175,16 @@ static int _file_info_(lua_State * L,
     members[i].push(L, &info);
     lua_rawset(L, -3);
   }
+  if (!push_object_id(L, file, nofollow, &info)) {
+    return 3;
+  }
+  /* push_object_id already pushed the value; push the key and swap it
+     below the value with lua_insert so lua_rawset sees (table, key, value) -
+     matching the loop above's raw, metamethod-bypassing population of a
+     caller-supplied result_table. */
+  lua_pushliteral(L, "filekey");
+  lua_insert(L, -2);
+  lua_rawset(L, -3);
   return 1;
 }
 
@@ -1040,7 +1194,7 @@ static int _file_info_(lua_State * L,
 */
 static int file_info(lua_State * L)
 {
-  return _file_info_(L, STAT_FUNC);
+  return _file_info_(L, STAT_FUNC, 0);
 }
 
 
@@ -1054,6 +1208,9 @@ static int push_link_target(lua_State * L)
 {
   const char *file = luaL_checkstring(L, 1);
 #ifdef _WIN32
+  /* TODO: GENERIC_READ is more access than this needs (it only reads the path
+     via GetFinalPathNameByHandle, never the file's contents) - FILE_READ_ATTRIBUTES
+     would suffice and avoid spurious access-denied failures on restrictive ACLs. */
   HANDLE h = CreateFile(file, GENERIC_READ,
                         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -1112,7 +1269,7 @@ static int link_info(lua_State * L)
     int ok = push_link_target(L);
     return ok ? 1 : pusherror(L, "could not obtain link target");
   }
-  ret = _file_info_(L, LSTAT_FUNC);
+  ret = _file_info_(L, LSTAT_FUNC, 1);
   if (ret == 1 && lua_type(L, -1) == LUA_TTABLE) {
     int ok = push_link_target(L);
     if (ok) {

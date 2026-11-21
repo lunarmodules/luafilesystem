@@ -61,12 +61,17 @@
 <h3>Directory iterator</h3>
 
 <p>The following example iterates over a directory and recursively lists the
-attributes for each file inside it.</p>
+attributes for each file inside it. <code>attributes</code> follows symlinks, so a
+directory reached again through a symlink cycle is tracked by its <code>filekey</code>
+and not descended into twice.</p>
 
 <pre class="example">
 local lfs = require"lfs"
 
-function attrdir (path)
+function attrdir (path, ancestors)
+    ancestors = ancestors or {}
+    local id = lfs.attributes (path, "filekey")
+    ancestors[id] = true
     for file in lfs.dir(path) do
         if file ~= "." and file ~= ".." then
             local f = path..'/'..file
@@ -74,7 +79,12 @@ function attrdir (path)
             local attr = lfs.attributes (f)
             assert (type(attr) == "table")
             if attr.mode == "directory" then
-                attrdir (f)
+                local child_id = attr.filekey
+                if not ancestors[child_id] then
+                    ancestors[child_id] = true
+                    attrdir (f, ancestors)
+                    ancestors[child_id] = nil
+                end
             else
                 for name, value in pairs(attr) do
                     print (name, value)
@@ -82,6 +92,7 @@ function attrdir (path)
             end
         end
     end
+    ancestors[id] = nil
 end
 
 attrdir (".")
