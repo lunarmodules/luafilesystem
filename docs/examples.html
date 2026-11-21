@@ -62,8 +62,8 @@
 
 <p>The following example iterates over a directory and recursively lists the
 attributes for each file inside it. <code>attributes</code> follows symlinks, so a
-directory reached again through a symlink cycle is tracked by its <code>fsid</code>/
-<code>objid</code> and not descended into twice.</p>
+directory reached again through a symlink cycle is tracked by its <code>filekey</code>
+and not descended into twice.</p>
 
 <pre class="example">
 local lfs = require"lfs"
@@ -77,7 +77,7 @@ function attrdir (path, ancestors)
             local attr = lfs.attributes (f)
             assert (type(attr) == "table")
             if attr.mode == "directory" then
-                local id = attr.fsid..":"..attr.objid
+                local id = attr.filekey
                 if not ancestors[id] then
                     ancestors[id] = true
                     attrdir (f, ancestors)

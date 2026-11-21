@@ -1089,21 +1089,25 @@ struct _stat_members members[] = {
   { NULL, NULL }
 };
 
-#define LFS_ID_BUFSIZE 40       /* fits 128-bit (32 hex digit) objid plus NUL, with room to spare */
+#define LFS_ID_BUFSIZE 40       /* fits 128-bit (32 hex digit) id plus NUL, with room to spare */
+#define LFS_FILEKEY_BUFSIZE (2 * LFS_ID_BUFSIZE)  /* fits both ids plus the ':' joining them */
 
 /*
-** Push the object identity fields (fsid, objid) for 'file' onto the stack as
-** two strings, in that order. 'nofollow' identifies the link itself rather
-** than its target. 'info' is the STAT_STRUCT _file_info_ already populated
-** for 'file' - on POSIX that already has everything needed, so no extra
-** syscall happens here; Windows needs its own handle-based fetch regardless,
-** since STAT_STRUCT never carries a real device/object id there.
-** Returns 1 on success (stack: ..., fsid, objid), or 0 on failure, having
-** already pushed (nil, errmsg, errno) in place of them.
+** Push a single opaque 'filekey' string for 'file' onto the stack: two
+** objects compare equal under this key if and only if they're the same
+** object. 'nofollow' identifies the link itself rather than its target.
+** 'info' is the STAT_STRUCT _file_info_ already populated for 'file' - on
+** POSIX that already has everything needed, so no extra syscall happens
+** here; Windows needs its own handle-based fetch regardless, since
+** STAT_STRUCT never carries a real device/object id there.
+** Returns 1 on success (stack: ..., filekey), or 0 on failure, having
+** already pushed (nil, errmsg, errno) in its place.
 */
 static int push_object_id(lua_State * L, const char *file, int nofollow,
                           STAT_STRUCT * info)
 {
+  char buf[LFS_FILEKEY_BUFSIZE];
+
 #ifdef _WIN32
   char fsid_buf[LFS_ID_BUFSIZE];
   char objid_buf[LFS_ID_BUFSIZE];
@@ -1114,20 +1118,15 @@ static int push_object_id(lua_State * L, const char *file, int nofollow,
     lfs_win32_id_pusherror(L, file);
     return 0;
   }
-  lua_pushstring(L, fsid_buf);
-  lua_pushstring(L, objid_buf);
-  return 1;
+  snprintf(buf, sizeof(buf), "%s:%s", fsid_buf, objid_buf);
 #else
-  char buf[LFS_ID_BUFSIZE];
-
   (void) file;
   (void) nofollow;
-  snprintf(buf, sizeof(buf), "%llx", (unsigned long long) info->st_dev);
-  lua_pushstring(L, buf);
-  snprintf(buf, sizeof(buf), "%llx", (unsigned long long) info->st_ino);
+  snprintf(buf, sizeof(buf), "%llx:%llx",
+           (unsigned long long) info->st_dev, (unsigned long long) info->st_ino);
+#endif
   lua_pushstring(L, buf);
   return 1;
-#endif
 }
 
 /*
@@ -1156,15 +1155,9 @@ static int _file_info_(lua_State * L,
         return 1;
       }
     }
-    if (strcmp(member, "fsid") == 0 || strcmp(member, "objid") == 0) {
+    if (strcmp(member, "filekey") == 0) {
       if (!push_object_id(L, file, nofollow, &info)) {
         return 3;
-      }
-      /* keep whichever of the two was requested, discard the other */
-      if (strcmp(member, "fsid") == 0) {
-        lua_pop(L, 1);
-      } else {
-        lua_remove(L, -2);
       }
       return 1;
     }
@@ -1185,15 +1178,7 @@ static int _file_info_(lua_State * L,
   if (!push_object_id(L, file, nofollow, &info)) {
     return 3;
   }
-  /* push_object_id already pushed both values before their keys, so 
-     swap each pair into (key, value) order with lua_insert before the
-     raw set. */
-  lua_pushliteral(L, "objid");
-  lua_insert(L, -2);
-  lua_rawset(L, -4);
-  lua_pushliteral(L, "fsid");
-  lua_insert(L, -2);
-  lua_rawset(L, -3);
+  lua_setfield(L, -2, "filekey");
   return 1;
 }
 
